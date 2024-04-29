@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="isel.pt.ps.projeto.ProjetoApplicationTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-04-29T12:54:42" hostname="Miguels-MacBook-Pro-2.local" time="0.747">
+  <properties/>
+  <testcase name="contextLoads()" classname="isel.pt.ps.projeto.ProjetoApplicationTests" time="0.747"/>
+  <system-out><![CDATA[13:54:40.116 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [isel.pt.ps.projeto.ProjetoApplicationTests]: ProjetoApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+13:54:40.424 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration isel.pt.ps.projeto.ProjetoApplication for test class isel.pt.ps.projeto.ProjetoApplicationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.3)
+
+2024-04-29T13:54:40.925+01:00  INFO 39279 --- [projeto] [    Test worker] i.pt.ps.projeto.ProjetoApplicationTests  : Starting ProjetoApplicationTests using Java 19.0.2 with PID 39279 (started by miguelmoreira in /Users/miguelmoreira/Downloads/projeto)
+2024-04-29T13:54:40.927+01:00  INFO 39279 --- [projeto] [    Test worker] i.pt.ps.projeto.ProjetoApplicationTests  : No active profile set, falling back to 1 default profile: "default"
+2024-04-29T13:54:42.043+01:00  INFO 39279 --- [projeto] [    Test worker] i.pt.ps.projeto.ProjetoApplicationTests  : Started ProjetoApplicationTests in 1.442 seconds (process running for 2.661)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
