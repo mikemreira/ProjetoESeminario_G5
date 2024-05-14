@@ -1,7 +1,7 @@
 package isel.pt.ps.projeto.services
 
 import isel.pt.ps.projeto.models.User
-import isel.pt.ps.projeto.repository.UsersRepository
+import isel.pt.ps.projeto.repository.jdbc.UsersRepository
 import org.springframework.stereotype.Component
 
 @Component

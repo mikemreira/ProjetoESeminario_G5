@@ -1,9 +1,14 @@
+DROP TABLE IF EXISTS Registo;
+DROP TABLE IF EXISTS Papel;
+DROP TABLE IF EXISTS Obra;
+DROP TABLE IF EXISTS Utilizador;
+
 create table Utilizador (
     id int primary key,
     nome varchar(64),
     email varchar(64) unique,
     morada varchar(64),
-    foto bytea
+    foto bytea default null
 );
 
 create table Obra (
@@ -13,7 +18,7 @@ create table Obra (
     descrição varchar(260),
     data_inicio date not null default current_date,
     data_fim date default null,
-    foto bytea,
+    foto bytea default null,
     status VARCHAR(64) check (status in ('deleted', 'recoverable', 'on going', 'completed'))
 );
 
