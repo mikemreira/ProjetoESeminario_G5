@@ -2,7 +2,6 @@ package isel.pt.ps.projeto.models
 
 import kotlinx.datetime.LocalDate
 
-
 /**
  * id int primary key,
  *     nome varchar(64) not null,
@@ -21,5 +20,5 @@ data class Construction(
     val descricao: String,
     val data_inicio: LocalDate,
     val data_fim: LocalDate? = null,
-    val status: String
+    val status: String,
 )

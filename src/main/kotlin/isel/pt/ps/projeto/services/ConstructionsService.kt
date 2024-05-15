@@ -8,5 +8,6 @@ import org.springframework.stereotype.Component
 @Component
 class ConstructionsService(private val constructionsRepository: ConstructionsRepository) {
     fun getConstruction(oid: Int): Construction = constructionsRepository.getConstruction(oid)
+
     fun getConstructionUsers(oid: Int): List<User> = constructionsRepository.getConstructionsUsers(oid)
 }

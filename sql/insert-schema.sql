@@ -1,11 +1,11 @@
 -- Inserting data into Utilizador table
-INSERT INTO Utilizador (id, nome, email, morada)
+INSERT INTO Utilizador (nome, pass, email, morada)
 VALUES
-    (1, 'John Doe', 'john@example.com', '123 Main Street'),
-    (2, 'Jane Smith', 'jane@example.com', '456 Elm Street'),
-    (3, 'Michael Brown', 'michael@example.com', '789 Oak Avenue'),
-    (4, 'Emily Johnson', 'emily@example.com', '101 Pine Road'),
-    (5, 'Daniel Lee', 'daniel@example.com', '222 Maple Lane');
+    ('John Doe', '123','john@example.com', '123 Main Street'),
+    ('Jane Smith', '123','jane@example.com', '456 Elm Street'),
+    ('Michael Brown', '123','michael@example.com', '789 Oak Avenue'),
+    ('Emily Johnson', '123','emily@example.com', '101 Pine Road'),
+    ('Daniel Lee', '123','daniel@example.com', '222 Maple Lane');
 
 -- Inserting data into Obra table
 INSERT INTO Obra (id, nome, localização, descrição, data_inicio, data_fim, status)

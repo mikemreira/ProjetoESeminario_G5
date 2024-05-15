@@ -8,11 +8,8 @@ import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.stereotype.Component
 import java.sql.Connection
 
-
-
 @Component
 class ConstructionsRepository : ConstructionRepository {
-
     private fun initializeConnection(): Connection {
         val dataSource = PGSimpleDataSource()
         dataSource.setURL(jdbcDatabaseUrl)
@@ -23,10 +20,11 @@ class ConstructionsRepository : ConstructionRepository {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pStatement = it.prepareStatement(
-                    "select * from obra \n"+
-                        "where id = ?"
-                )
+                val pStatement =
+                    it.prepareStatement(
+                        "select * from obra \n" +
+                            "where id = ?",
+                    )
                 pStatement.setInt(1, oid)
                 val result = pStatement.executeQuery()
                 result.next()
@@ -38,12 +36,12 @@ class ConstructionsRepository : ConstructionRepository {
                     result.getString("descrição"),
                     result.getDate("data_inicio").toString().toLocalDate(),
                     result.getDate("data_fim").toString().toLocalDate(),
-                    result.getString("status")
+                    result.getString("status"),
                 )
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 it.rollback()
                 throw e
-            }finally {
+            } finally {
                 it.commit()
             }
         }
@@ -53,12 +51,13 @@ class ConstructionsRepository : ConstructionRepository {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pStatement = it.prepareStatement(
-                    "select ut.id, ut.nome, ut.email, ut.morada from utilizador ut\n" +
-                        "inner join papel pa on pa.id_utilizador = ut.id\n" +
-                        "inner join obra o on o.id = pa.id_obra\n" +
-                        "where o.id = ?"
-                )
+                val pStatement =
+                    it.prepareStatement(
+                        "select ut.id, ut.nome, ut.email, ut.morada from utilizador ut\n" +
+                            "inner join papel pa on pa.id_utilizador = ut.id\n" +
+                            "inner join obra o on o.id = pa.id_obra\n" +
+                            "where o.id = ?",
+                    )
                 pStatement.setInt(1, oid)
                 val result = pStatement.executeQuery()
                 val list = mutableListOf<User>()
@@ -66,11 +65,12 @@ class ConstructionsRepository : ConstructionRepository {
                     list.add(User(result.getInt("id"), result.getString("nome"), result.getString("email"), result.getString("morada")))
                 }
                 list
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 it.rollback()
                 throw e
-            }finally {
+            } finally {
                 it.commit()
             }
-        }    }
+        }
+    }
 }
