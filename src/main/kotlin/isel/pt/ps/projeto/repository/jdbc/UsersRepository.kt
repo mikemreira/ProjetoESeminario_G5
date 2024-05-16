@@ -44,7 +44,7 @@ class UsersRepository : UserRepository {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pStatement = it.prepareStatement("insert into utilizador (nome, email, pass) values(?, ?, ?)")
+                val pStatement = it.prepareStatement("insert into utilizador (nome, email, password) values(?, ?, ?)")
                 pStatement.setString(1, nome)
                 pStatement.setString(2, email)
                 pStatement.setString(3, pass)
@@ -73,7 +73,7 @@ class UsersRepository : UserRepository {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val statement = it.prepareStatement("select * from utilizador where email=? and pass=?")
+                val statement = it.prepareStatement("select * from utilizador where email=? and password=?")
                 statement.setString(1, email)
                 statement.setString(2, password)
                 val result = statement.executeQuery()
@@ -89,7 +89,7 @@ class UsersRepository : UserRepository {
             } catch (e: SQLException) {
                 it.rollback()
                 if (e.sqlState == "23505") {
-                    throw IllegalArgumentException("User email already exists")
+                    throw IllegalArgumentException("Unique key violation")
                 }
                 throw e
             } finally {

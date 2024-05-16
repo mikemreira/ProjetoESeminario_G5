@@ -4,22 +4,22 @@ DROP TABLE IF EXISTS Obra;
 DROP TABLE IF EXISTS Token;
 DROP TABLE IF EXISTS Utilizador;
 
-create table Utilizador (
+create table if not exists Utilizador (
                             id int generated always as identity primary key,
-                            pass varchar(64),
+                            password varchar(64),
                             nome varchar(64),
                             email varchar(64) unique,
                             morada varchar(64) default null,
                             foto bytea default null
 );
 
-create table Token(
+create table if not exists Token(
                       token varchar(256) primary key,
                       id_utilizador int unique,
                       constraint fk_utilizador foreign key(id_utilizador) references utilizador(id)
 );
 
-create table Obra (
+create table if not exists Obra (
                       id int primary key,
                       nome varchar(64) not null,
                       localização varchar(64) not null,
@@ -30,14 +30,14 @@ create table Obra (
                       status VARCHAR(64) check (status in ('deleted', 'recoverable', 'on going', 'completed'))
 );
 
-create table Papel (
+create table if not exists Papel (
                        id_utilizador int references Utilizador (id),
                        id_obra int references Obra (id),
                        papel varchar(64) check (papel in ('admin', 'funcionario')),
                        primary key (id_utilizador, id_obra)
 );
 
-create table Registo (
+create table if not exists Registo (
                          id int,
                          id_utilizador int references Utilizador(id),
                          id_obra int references Obra(id),
