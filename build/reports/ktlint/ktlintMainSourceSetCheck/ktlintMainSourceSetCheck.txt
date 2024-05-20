@@ -1,4 +1,4 @@
-[90mC:\Users\jnico\Documents\ISEL\2324v\PS\ProjetoESeminario_G5\src\main\kotlin\isel\pt\ps\projeto\repository\jdbc\[0mUsersRepository.kt[90m:[0m14[90m:11:[0m Property name should use the screaming snake case notation when the value can not be changed [90m(standard:property-naming)[0m
+[90mC:\Users\jnico\Documents\ISEL\2324v\PS\ProjetoESeminario_G5\src\main\kotlin\isel\pt\ps\projeto\repository\jdbc\[0mUsersRepository.kt[90m:[0m15[90m:11:[0m Property name should use the screaming snake case notation when the value can not be changed [90m(standard:property-naming)[0m
 
 Summary error count (descending) by rule:
   standard:property-naming: 1

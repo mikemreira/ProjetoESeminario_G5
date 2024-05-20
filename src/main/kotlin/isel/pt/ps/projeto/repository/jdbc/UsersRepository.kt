@@ -1,5 +1,6 @@
 package isel.pt.ps.projeto.repository.jdbc
 
+import isel.pt.ps.projeto.domain.users.PasswordValidationInfo
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.models.users.UserAndToken
 import isel.pt.ps.projeto.repository.UserRepository
@@ -71,7 +72,7 @@ class UsersRepository : UserRepository {
     override fun signUp(
         nome: String,
         email: String,
-        pass: String,
+        pass: PasswordValidationInfo,
     ): User {
         initializeConnection().use {
             it.autoCommit = false
@@ -79,7 +80,7 @@ class UsersRepository : UserRepository {
                 val pStatement = it.prepareStatement("insert into utilizador (nome, email, password) values(?, ?, ?)")
                 pStatement.setString(1, nome)
                 pStatement.setString(2, email)
-                pStatement.setString(3, pass)
+                pStatement.setString(3, pass.validationInfo)
                 pStatement.executeUpdate()
                 val statement = it.prepareStatement("select * from utilizador where email=?")
                 statement.setString(1, email)
@@ -100,14 +101,14 @@ class UsersRepository : UserRepository {
 
     override fun signIn(
         email: String,
-        password: String,
+        pass: String,
     ): UserAndToken {
         initializeConnection().use {
             it.autoCommit = false
             return try {
                 val statement = it.prepareStatement("select * from utilizador where email=? and password=?")
                 statement.setString(1, email)
-                statement.setString(2, password)
+                statement.setString(2, pass)
                 val result = statement.executeQuery()
                 result.next()
                 val token = UUID.randomUUID()

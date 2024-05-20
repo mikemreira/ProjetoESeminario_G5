@@ -38,6 +38,8 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.3")
     implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.5.+")
     implementation(group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version = "0.4.+")
+    // To get password encode
+    implementation("org.springframework.security:spring-security-core:6.2.3")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
