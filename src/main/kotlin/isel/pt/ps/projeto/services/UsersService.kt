@@ -1,7 +1,7 @@
 package isel.pt.ps.projeto.services
 
-import isel.pt.ps.projeto.models.User
-import isel.pt.ps.projeto.models.UserAndToken
+import isel.pt.ps.projeto.models.users.User
+import isel.pt.ps.projeto.models.users.UserAndToken
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
 import org.springframework.stereotype.Component
 
@@ -21,5 +21,9 @@ class UsersService(private val usersRepository: UsersRepository) {
     ): UserAndToken {
         require(email.isNotEmpty() && password.isNotEmpty()) { "Email and password must not be empty" }
         return usersRepository.signIn(email, password)
+    }
+
+    fun getUserByToken(token: String): User? {
+        return usersRepository.getUserByToken(token)
     }
 }

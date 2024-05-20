@@ -1,9 +1,9 @@
 package isel.pt.ps.projeto.controllers
 
-import isel.pt.ps.projeto.models.UserAndToken
-import isel.pt.ps.projeto.models.UserSignIn
-import isel.pt.ps.projeto.models.UserSignUp
-import isel.pt.ps.projeto.models.UserSignUpOutputModel
+import isel.pt.ps.projeto.models.users.UserAndToken
+import isel.pt.ps.projeto.models.users.UserSignIn
+import isel.pt.ps.projeto.models.users.UserSignUp
+import isel.pt.ps.projeto.models.users.UserSignUpOutputModel
 import isel.pt.ps.projeto.services.UsersService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -25,7 +25,7 @@ class UsersController(private val usersService: UsersService) {
         return ResponseEntity.status(200).body(listOfUsers)
     }
 
-    @PostMapping("/signup", consumes=["application/json", "text/plain;charset=UTF-8"], produces=["application/json"])
+    @PostMapping("/signup", consumes = ["application/json", "text/plain;charset=UTF-8"], produces = ["application/json"])
     fun signUp(
         @RequestBody input: UserSignUp,
     ): ResponseEntity<*> {

@@ -1,7 +1,7 @@
 package isel.pt.ps.projeto.repository.jdbc
 
-import isel.pt.ps.projeto.models.User
-import isel.pt.ps.projeto.models.UserAndToken
+import isel.pt.ps.projeto.models.users.User
+import isel.pt.ps.projeto.models.users.UserAndToken
 import isel.pt.ps.projeto.repository.UserRepository
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.stereotype.Component
@@ -34,6 +34,38 @@ class UsersRepository : UserRepository {
 
     override fun getUserById(id: Int): User {
         TODO("Not yet implemented")
+    }
+
+    override fun getUserByToken(token: String): User? {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement =
+                    it.prepareStatement(
+                        "" +
+                            "select u.id, u.nome, u.email, u.morada from token t\n" +
+                            "inner join utilizador u on u.id = t.id_utilizador\n" +
+                            "where t.id_utilizador = ?",
+                    )
+                pStatement.setString(1, token)
+                val result = pStatement.executeQuery()
+                if (!result.next()) {
+                    null
+                } else {
+                    User(
+                        result.getInt("id"),
+                        result.getString("nome"),
+                        result.getString("email"),
+                        result.getString("morada"),
+                    )
+                }
+            } catch (e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
     }
 
     override fun signUp(

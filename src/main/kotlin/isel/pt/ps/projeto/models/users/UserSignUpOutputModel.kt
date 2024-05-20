@@ -1,4 +1,4 @@
-package isel.pt.ps.projeto.models
+package isel.pt.ps.projeto.models.users
 
 import kotlinx.serialization.Serializable
 

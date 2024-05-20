@@ -1,7 +1,7 @@
 package isel.pt.ps.projeto.repository.jdbc
 
-import isel.pt.ps.projeto.models.Construction
-import isel.pt.ps.projeto.models.User
+import isel.pt.ps.projeto.models.constructions.Construction
+import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.repository.ConstructionRepository
 import kotlinx.datetime.toLocalDate
 import org.postgresql.ds.PGSimpleDataSource
@@ -63,6 +63,43 @@ class ConstructionsRepository : ConstructionRepository {
                 val list = mutableListOf<User>()
                 while (result.next()) {
                     list.add(User(result.getInt("id"), result.getString("nome"), result.getString("email"), result.getString("morada")))
+                }
+                list
+            } catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun getConstructionsOfUser(id: Int): List<Construction> {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement =
+                    it.prepareStatement(
+                        "select o.id, o.nome, o.localização, o.descrição, o.data_inicio, o.data_fim, o.status from utilizador u\n" +
+                            "inner join papel p on p.id_utilizador = u.id\n" +
+                            "inner join obra o on o.id = p.id_obra\n" +
+                            "where u.id = ?",
+                    )
+                pStatement.setInt(1, id)
+                val result = pStatement.executeQuery()
+                val list = mutableListOf<Construction>()
+                while (result.next()) {
+                    list.add(
+                        Construction(
+                            result.getInt("id"),
+                            result.getString("nome"),
+                            result.getString("localização"),
+                            result.getString("descrição"),
+                            result.getDate("data_inicio").toString().toLocalDate(),
+                            result.getDate("data_fim").toString().toLocalDate(),
+                            result.getString("status"),
+                        ),
+                    )
                 }
                 list
             } catch (e: Exception) {

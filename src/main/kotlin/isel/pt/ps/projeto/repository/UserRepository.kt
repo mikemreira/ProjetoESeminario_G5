@@ -1,7 +1,7 @@
 package isel.pt.ps.projeto.repository
 
-import isel.pt.ps.projeto.models.User
-import isel.pt.ps.projeto.models.UserAndToken
+import isel.pt.ps.projeto.models.users.User
+import isel.pt.ps.projeto.models.users.UserAndToken
 
 interface UserRepository {
     /**
@@ -10,6 +10,8 @@ interface UserRepository {
     fun getUsers(): List<User> // Is will be updated to depend on construction
 
     fun getUserById(id: Int): User
+
+    fun getUserByToken(token: String): User?
 
     /**
      * Post
