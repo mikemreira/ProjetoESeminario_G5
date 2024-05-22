@@ -17,6 +17,10 @@ interface UserRepository {
 
     fun getUserByToken(token: String): User?
 
+    fun getTokenByTokenValidationInfo(token: TokenValidationInfo): Pair<User, Token>?
+
+    fun updateTokenLastUsed(token: Token, now: Instant)
+
     fun getUserByEmail(email: String): User?
 
     fun checkUserByEmail(email: String): Boolean

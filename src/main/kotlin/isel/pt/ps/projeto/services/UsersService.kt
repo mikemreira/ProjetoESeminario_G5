@@ -105,6 +105,25 @@ class UsersService(
         }
     }
 
+    /**
+     *  fun getUserByToken(token: String): User? {
+     *         if (!usersDomain.canBeToken(token)) {
+     *             return null
+     *         }
+     *         return transactionManager.run {
+     *             val usersRepository = it.usersRepository
+     *             val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
+     *             val userAndToken = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
+     *             if (userAndToken != null && usersDomain.isTokenTimeValid(clock, userAndToken.second)) {
+     *                 usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
+     *                 userAndToken.first
+     *             } else {
+     *                 null
+     *             }
+     *         }
+     *     }
+     */
+
     fun checkUserByEmail(email: String): Boolean {
         return usersRepository.checkUserByEmail(email)
     }

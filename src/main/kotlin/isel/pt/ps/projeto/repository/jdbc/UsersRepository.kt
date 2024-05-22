@@ -356,4 +356,26 @@ class UsersRepository : UserRepository {
     override fun deleteUser(id: Int): User {
         TODO("Not yet implemented")
     }
+
+    private data class UserAndTokenModel(
+        val id: Int,
+        val nome: String,
+        val email: String,
+        val passwordValidation: PasswordValidationInfo,
+        val morada: String,
+        val tokenValidation: TokenValidationInfo,
+        val createdAt: Long,
+        val lastUsedAt: Long
+    ) {
+        val userAndToken: Pair<User, Token>
+            get() = Pair(
+                User(id, nome, email, passwordValidation, morada),
+                Token(
+                    tokenValidation,
+                    id,
+                    Instant.fromEpochSeconds(createdAt),
+                    Instant.fromEpochSeconds(lastUsedAt)
+                )
+            )
+    }
 }
