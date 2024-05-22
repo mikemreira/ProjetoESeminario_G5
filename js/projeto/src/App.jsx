@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import './App.css'
-import SignUp from './SignUp'
+import SignUp from './login/SignUp'
 import Home from './Home'
-import LogIn from './LogIn'
+import LogIn from './login/LogIn'
 import Success from './Success'
 
 const router = createBrowserRouter([

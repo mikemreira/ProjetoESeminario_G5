@@ -34,11 +34,11 @@ export default function LogIn() {
         body: JSON.stringify(values)
     }).then(res => {
         setSubmitted(true)
-        if (res.status == 201) {
+        if (res.status == 200) {
             return res.json()
         } else setValid(false)
     }).then(body => {
-        console.log(body.token)
+        console.log(body)
         setCookies("token", body.token, { path: '/' })
         setValid(true)
     })

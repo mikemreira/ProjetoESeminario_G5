@@ -92,10 +92,17 @@ class UsersService(
     }
 
     fun getUserByToken(token: String): User? {
-        if(!usersDomain.canBeToken(token))
+        if(!usersDomain.canBeToken(token)) {
             return null
+        }
         val validToken = usersDomain.createTokenValidationInformation(token)
-        return usersRepository.getUserByToken(validToken.validationInfo)
+        val userAndToken = usersRepository.getTokenByTokenValidationInfo(validToken)
+        if (userAndToken != null && usersDomain.isTokenTimeValid(clock, userAndToken.second)) {
+            usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
+            return userAndToken.first
+        } else {
+            return null
+        }
     }
 
     fun checkUserByEmail(email: String): Boolean {

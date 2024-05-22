@@ -30,7 +30,8 @@ class Problem(
 
         val unauthorizedUser = Problem("Unauthorized user")
 
-        val alreadyInQueue = Problem("Already in queue")
+        val invalidToken = Problem("Invalid Token")
 
+        val userDoesntExist = Problem("User does not exist")
     }
 }

@@ -33,7 +33,7 @@ export default function SignUp() {
         body: JSON.stringify(values)
     }).then(res => {
         setSubmitted(true)
-        if (res.status == 201) {
+        if (res.ok) {
             setValid(true)
         } else setValid(false)
         return res.json()

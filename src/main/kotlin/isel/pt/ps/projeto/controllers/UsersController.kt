@@ -1,11 +1,9 @@
 package isel.pt.ps.projeto.controllers
 
+import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
 import isel.pt.ps.projeto.domain.users.AuthenticatedUser
 import isel.pt.ps.projeto.models.Problem
-import isel.pt.ps.projeto.models.users.UserSignIn
-import isel.pt.ps.projeto.models.users.UserSignUp
-import isel.pt.ps.projeto.models.users.UserSignUpOutputModel
-import isel.pt.ps.projeto.models.users.UserTokenCreateOutputModel
+import isel.pt.ps.projeto.models.users.*
 import isel.pt.ps.projeto.services.TokenError
 import isel.pt.ps.projeto.services.UserError
 import isel.pt.ps.projeto.services.UsersService
@@ -15,19 +13,28 @@ import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/users")
-class UsersController(private val usersService: UsersService) {
+class UsersController(
+    private val usersService: UsersService,
+    private val requestTokenProcessor: RequestTokenProcessor
+) {
     private val logger: Logger = LoggerFactory.getLogger(UsersController::class.java)
 
-    @RequestMapping("/me")
-    fun getUserMe() = ResponseEntity.status(200).body("Hello me!")
+    @GetMapping("/me")
+    fun getUserByToken(@RequestHeader("Authorization") token : String): ResponseEntity<*> {
+        val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
+                return ResponseEntity.status(200).body(
+                    UserOutputModel(
+                        authUser.user.id,
+                        authUser.user.nome,
+                        authUser.user.email,
+                        authUser.user.morada
+                    )
+                )
+    }
 
     @GetMapping
     fun getUsers(): ResponseEntity<*> {
@@ -75,7 +82,6 @@ class UsersController(private val usersService: UsersService) {
         user: AuthenticatedUser,
         response: HttpServletResponse,
     ){
-        println("BUENAS")
         usersService.signOut(user.token)
     }
 

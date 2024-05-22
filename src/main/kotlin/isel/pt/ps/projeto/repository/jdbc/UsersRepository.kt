@@ -6,6 +6,7 @@ import isel.pt.ps.projeto.domain.users.TokenValidationInfo
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.models.users.UserAndToken
 import isel.pt.ps.projeto.repository.UserRepository
+import kotlinx.datetime.Instant
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.stereotype.Component
 import java.sql.Connection
@@ -76,6 +77,87 @@ class UsersRepository : UserRepository {
             } finally {
                 it.commit()
             }
+        }
+    }
+
+    /**
+     *  override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? =
+     *         handle.createQuery(
+     *             """
+     *                 select id, username, password_validation, token_validation, created_at, last_used_at
+     *                 from Users as users
+     *                 inner join Tokens as tokens
+     *                 on users.id = tokens.user_id
+     *                 where token_validation = :validation_information
+     *             """
+     *         )
+     *             .bind("validation_information", tokenValidationInfo.validationInfo)
+     *             .mapTo<UserAndTokenModel>()
+     *             .singleOrNull()
+     *             ?.userAndToken
+     *
+     */
+
+    override fun getTokenByTokenValidationInfo(token: TokenValidationInfo): Pair<User, Token>? {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement(
+                    "select id, nome, email, password, morada, token_validation, created_at, last_used_at\n" +
+                        "    from utilizador u \n" +
+                        "    inner join Tokens t\n" +
+                        "    on u.id = t.id_utilizador\n" +
+                        "    where token_validation = ?"
+                )
+                pStatement.setString(1, token.validationInfo)
+                val result = pStatement.executeQuery()
+                result.next()
+                UserAndTokenModel(
+                    result.getInt("id"),
+                    result.getString("nome"),
+                    result.getString("email"),
+                    PasswordValidationInfo(result.getString("password")),
+                    "",
+                    TokenValidationInfo(result.getString("token_validation")),
+                    result.getLong("created_at"),
+                    result.getLong("last_used_at")
+                ).userAndToken
+            } catch(e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+
+        }
+    }
+
+    /**
+     * override fun updateTokenLastUsed(token: Token, now: Instant) {
+     *         handle.createUpdate(
+     *             """
+     *                 update Tokens
+     *                 set last_used_at = :last_used_at
+     *                 where token_validation = :validation_information
+     *             """.trimIndent()
+     *         )
+     *             .bind("last_used_at", now.epochSeconds)
+     *             .bind("validation_information", token.tokenValidationInfo.validationInfo)
+     *             .execute()
+     *     }
+     */
+
+    override fun updateTokenLastUsed(token: Token, now: Instant) {
+        initializeConnection().use {
+            it.autoCommit = false
+            val pStatement = it.prepareStatement(
+                "update Tokens\n" +
+                "set last_used_at = ?\n" +
+                "where token_validation = ?"
+            )
+            pStatement.setLong(1, now.epochSeconds)
+            pStatement.setString(2, token.tokenValidationInfo.validationInfo)
+            pStatement.executeUpdate()
         }
     }
 
