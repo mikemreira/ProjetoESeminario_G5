@@ -85,13 +85,17 @@ class UsersService(
     }
 
     fun signOut(token: String): Boolean {
+        println("Hello")
         val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
         usersRepository.signOut(tokenValidationInfo)
         return true
     }
 
     fun getUserByToken(token: String): User? {
-        return usersRepository.getUserByToken(token)
+        if(!usersDomain.canBeToken(token))
+            return null
+        val validToken = usersDomain.createTokenValidationInformation(token)
+        return usersRepository.getUserByToken(validToken.validationInfo)
     }
 
     fun checkUserByEmail(email: String): Boolean {

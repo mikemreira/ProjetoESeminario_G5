@@ -53,10 +53,9 @@ class UsersRepository : UserRepository {
             return try {
                 val pStatement =
                     it.prepareStatement(
-                        "" +
-                            "select u.id, u.nome, u.email, u.morada from token t\n" +
+                            "select u.id, u.nome, u.password, u.email, u.morada from tokens t\n" +
                             "inner join utilizador u on u.id = t.id_utilizador\n" +
-                            "where t.id_utilizador = ?",
+                            "where t.token_validation = ?",
                     )
                 pStatement.setString(1, token)
                 val result = pStatement.executeQuery()
@@ -68,7 +67,7 @@ class UsersRepository : UserRepository {
                         result.getString("nome"),
                         result.getString("email"),
                         PasswordValidationInfo(result.getString("password")),
-                        result.getString("morada"),
+                        "",
                     )
                 }
             } catch (e: SQLException) {
@@ -209,12 +208,12 @@ class UsersRepository : UserRepository {
         }
     }
 
-    override fun signOut(token: TokenValidationInfo) {
+    override fun signOut(tokenValidationInfo: TokenValidationInfo) {
         initializeConnection().use {
             it.autoCommit = false
             try {
                 val pStatement = it.prepareStatement("delete from tokens where token_validation = ?")
-                pStatement.setString(1, token.validationInfo)
+                pStatement.setString(1, tokenValidationInfo.validationInfo)
                 pStatement.executeUpdate()
             } catch (e: SQLException) {
                 it.rollback()
@@ -242,12 +241,10 @@ class UsersRepository : UserRepository {
                     "                             order by last_used_at desc offset ?\n" +
                     "                   )"
                 )
-                println("HELLO")
                 pStatement.setInt(1, token.userId)
                 pStatement.setInt(2, token.userId)
                 pStatement.setInt(3, maxTokens-1)
                 pStatement.executeUpdate()
-                println("HELLO")
                 val pStatement2 = it.prepareStatement(
                     "insert into Tokens(id_utilizador, token_validation, created_at, last_used_at)\n" +
                     "                     values (?, ?, ?, ?)"

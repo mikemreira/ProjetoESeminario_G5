@@ -1,7 +1,11 @@
 package isel.pt.ps.projeto.controllers
 
+import isel.pt.ps.projeto.domain.users.AuthenticatedUser
 import isel.pt.ps.projeto.models.Problem
-import isel.pt.ps.projeto.models.users.*
+import isel.pt.ps.projeto.models.users.UserSignIn
+import isel.pt.ps.projeto.models.users.UserSignUp
+import isel.pt.ps.projeto.models.users.UserSignUpOutputModel
+import isel.pt.ps.projeto.models.users.UserTokenCreateOutputModel
 import isel.pt.ps.projeto.services.TokenError
 import isel.pt.ps.projeto.services.UserError
 import isel.pt.ps.projeto.services.UsersService
@@ -71,6 +75,7 @@ class UsersController(private val usersService: UsersService) {
         user: AuthenticatedUser,
         response: HttpServletResponse,
     ){
+        println("BUENAS")
         usersService.signOut(user.token)
     }
 

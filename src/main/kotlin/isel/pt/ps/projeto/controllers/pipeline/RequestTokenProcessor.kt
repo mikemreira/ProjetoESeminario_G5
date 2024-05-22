@@ -1,6 +1,6 @@
 package isel.pt.ps.projeto.controllers.pipeline
 
-import isel.pt.ps.projeto.models.users.AuthenticatedUser
+import isel.pt.ps.projeto.domain.users.AuthenticatedUser
 import isel.pt.ps.projeto.services.UsersService
 import org.springframework.stereotype.Component
 
@@ -9,6 +9,7 @@ class RequestTokenProcessor(
     val usersService: UsersService,
 ) {
     fun processAuthorizationHeaderValue(authorizationValue: String?): AuthenticatedUser? {
+        println("AUTH : "+authorizationValue)
         if (authorizationValue == null) {
             return null
         }
