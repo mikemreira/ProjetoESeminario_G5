@@ -1,5 +1,6 @@
 package isel.pt.ps.projeto.repository.jdbc
 
+import isel.pt.ps.projeto.domain.users.PasswordValidationInfo
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.repository.ConstructionRepository
@@ -62,7 +63,12 @@ class ConstructionsRepository : ConstructionRepository {
                 val result = pStatement.executeQuery()
                 val list = mutableListOf<User>()
                 while (result.next()) {
-                    list.add(User(result.getInt("id"), result.getString("nome"), result.getString("email"), result.getString("morada")))
+                    list.add(User(
+                        result.getInt("id"),
+                        result.getString("nome"),
+                        result.getString("email"),
+                        PasswordValidationInfo(result.getString("pass")),
+                        result.getString("morada")))
                 }
                 list
             } catch (e: Exception) {

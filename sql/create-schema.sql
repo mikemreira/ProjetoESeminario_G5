@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS Registo;
 DROP TABLE IF EXISTS Papel;
 DROP TABLE IF EXISTS Obra;
-DROP TABLE IF EXISTS Token;
+DROP TABLE IF EXISTS Tokens;
 DROP TABLE IF EXISTS Utilizador;
 
 create table if not exists Utilizador (
@@ -13,10 +13,11 @@ create table if not exists Utilizador (
                             foto bytea default null
 );
 
-create table if not exists Token(
-                      token varchar(256) primary key,
-                      id_utilizador int unique,
-                      constraint fk_utilizador foreign key(id_utilizador) references utilizador(id)
+create table if not exists Tokens(
+    token_validation VARCHAR(256) primary key,
+    id_utilizador int references utilizador(id),
+    created_at bigint not null,
+    last_used_at bigint not null
 );
 
 create table if not exists Obra (

@@ -20,6 +20,8 @@ class Problem(
 
         val userAlreadyExists = Problem("Username already exists")
 
+        val emailAlreadyExists = Problem("Email already exists")
+
         val insecurePassword = Problem("Insecure Password")
 
         val userOrPasswordAreInvalid = Problem("User or password invalid")
@@ -30,20 +32,5 @@ class Problem(
 
         val alreadyInQueue = Problem("Already in queue")
 
-        val invalidSettings = Problem("Invalid settings")
-
-        val alreadyInGame = Problem("Already in game")
-
-        val notYourTurn = Problem("Not your turn")
-
-        val gameNotFound = Problem("Game not found")
-
-        val invalidPlay = Problem("Invalid play")
-
-        val playerNotInGame = Problem("Player is not in game")
-
-        val playerNotFound = Problem("Player not found")
-
-        val gameFinished = Problem("Game is already over")
     }
 }

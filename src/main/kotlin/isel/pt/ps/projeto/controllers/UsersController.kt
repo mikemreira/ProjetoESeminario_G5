@@ -1,15 +1,13 @@
 package isel.pt.ps.projeto.controllers
 
 import isel.pt.ps.projeto.models.Problem
-import isel.pt.ps.projeto.models.users.UserAndToken
-import isel.pt.ps.projeto.models.users.UserSignIn
-import isel.pt.ps.projeto.models.users.UserSignUp
-import isel.pt.ps.projeto.models.users.UserSignUpOutputModel
+import isel.pt.ps.projeto.models.users.*
 import isel.pt.ps.projeto.services.TokenError
 import isel.pt.ps.projeto.services.UserError
 import isel.pt.ps.projeto.services.UsersService
 import isel.pt.ps.projeto.utils.Failure
 import isel.pt.ps.projeto.utils.Success
+import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
@@ -45,26 +43,35 @@ class UsersController(private val usersService: UsersService) {
                     .body(UserSignUpOutputModel("User added"))
             is Failure ->
                 when (res.value) {
-                    UserError.InsecurePassword -> ResponseEntity.status(400).body(UserSignUpOutputModel("Insecure password"))
-                    UserError.UserAlreadyExists -> ResponseEntity.status(400).body(UserSignUpOutputModel("User already exists"))
+                    UserError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
+                    UserError.UserAlreadyExists -> Problem.response(400, Problem.userAlreadyExists)
+                    UserError.InvalidEmail -> Problem.response(400, Problem.emailAlreadyExists)
                 }
         }
-        // return ResponseEntity.status(201).body(UserSignUpOutputModel("User added"))
     }
 
     @PostMapping("/signin")
     fun signIn(
         @RequestBody input: UserSignIn,
+        response: HttpServletResponse,
     ): ResponseEntity<*> {
         val res = usersService.signIn(input.email, input.password)
         return when (res) {
             is Success ->
-                ResponseEntity.status(200).body(UserAndToken(res.value.user, res.value.token))
+                ResponseEntity.status(200).body(UserTokenCreateOutputModel(res.value.tokenValue))
             is Failure ->
                 when (res.value) {
                     TokenError.UserOrPasswordAreInvalid -> Problem.response(400, Problem.userOrPasswordAreInvalid)
                 }
         }
-        // return ResponseEntity.status(201).body(UserAndToken(userAndToken.user, userAndToken.token))
     }
+
+    @PostMapping("/signout")
+    fun signOut(
+        user: AuthenticatedUser,
+        response: HttpServletResponse,
+    ){
+        usersService.signOut(user.token)
+    }
+
 }

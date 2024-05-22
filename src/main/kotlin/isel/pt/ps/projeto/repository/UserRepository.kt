@@ -1,6 +1,8 @@
 package isel.pt.ps.projeto.repository
 
 import isel.pt.ps.projeto.domain.users.PasswordValidationInfo
+import isel.pt.ps.projeto.domain.users.Token
+import isel.pt.ps.projeto.domain.users.TokenValidationInfo
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.models.users.UserAndToken
 
@@ -14,6 +16,9 @@ interface UserRepository {
 
     fun getUserByToken(token: String): User?
 
+    fun getUserByEmail(email: String): User?
+
+    fun checkUserByEmail(email: String): Boolean
     /**
      * Post
      */
@@ -25,9 +30,16 @@ interface UserRepository {
 
     fun signIn(
         email: String,
-        pass: String,
     ): UserAndToken
 
+    fun signOut(
+        tokenValidationInfo: TokenValidationInfo
+    )
+
+    fun createToken(
+        token: Token,
+        maxTokens: Int
+    )
     /**
      * Put
      */
