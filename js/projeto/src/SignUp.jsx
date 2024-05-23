@@ -1,16 +1,15 @@
 import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { useCookies } from "react-cookie"
+import NavBar from "./NavBar";
 
-export default function LogIn() {
-  const [cookies, setCookies] = useCookies(["token"])
+export default function SignUp() {
   const [values, setValues] = useState({
+    name: "",
     email: "",
     password: ""
   });
 
   const handleInputChange = (event) => {
-    /* event.persist(); NO LONGER USED IN v.17*/
     event.preventDefault();
 
     const { name, value } = event.target;
@@ -26,7 +25,7 @@ export default function LogIn() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    fetch("/api/users/signin", {
+    fetch("/api/users/signup", {
         method: "POST",
         headers: {
             'Content-type': 'application/json'
@@ -34,13 +33,12 @@ export default function LogIn() {
         body: JSON.stringify(values)
     }).then(res => {
         setSubmitted(true)
-        if (res.status == 200) {
-            return res.json()
+        if (res.status == 201) {
+            setValid(true)
         } else setValid(false)
+        return res.json()
     }).then(body => {
         console.log(body)
-        setCookies("token", body.token, { path: '/' })
-        setValid(true)
     })
   };
 
@@ -48,12 +46,26 @@ export default function LogIn() {
     <div className="form-container">
       <form className="register-form" onSubmit={handleSubmit}>
         {submitted && valid && (
-            <Navigate to={"/success"} replace={true}/>
+            <Navigate to={"/login"} replace={true}/>
+        )}
+        {!valid && (
+          <input
+            class="form-field"
+            type="text"
+            placeholder="Username"
+            name="name"
+            value={values.name}
+            onChange={handleInputChange}
+          />
+        )}
+
+        {submitted && !values.name && (
+          <span id="first-name-error">Please enter a username</span>
         )}
 
         {!valid && (
           <input
-            class="form-field"
+            className="form-field"
             type="email"
             placeholder="E-mail"
             name="email"
@@ -68,7 +80,7 @@ export default function LogIn() {
 
         {!valid && (
           <input
-            class="form-field"
+            className="form-field"
             type="password"
             placeholder="Password"
             name="password"
@@ -81,8 +93,8 @@ export default function LogIn() {
           <span id="email-error">Please enter a password</span>
         )}
         {!valid && (
-          <button class="form-field" type="submit">
-            Log In
+          <button className="form-field" type="submit">
+            Register
           </button>
         )}
       </form>

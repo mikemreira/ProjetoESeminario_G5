@@ -1,42 +1,52 @@
-import { useState } from 'react'
-import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import './App.css'
-import SignUp from './login/SignUp'
+import { Outlet, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from 'react-router-dom'
+import SignUp from './SignUp'
 import Home from './Home'
-import LogIn from './login/LogIn'
+import LogIn from './LogIn'
+import './App.css'
 import Success from './Success'
-import Obras from './obras/Obras'
+import NavBar from './NavBar'
+
+const AppLayout = () => {
+  return (
+  <>
+    <NavBar/>
+    <Outlet/>
+  </>
+  )
+}
 
 const router = createBrowserRouter([
   {
-      "path": "/",
-      "element": <Home/>,
-  },
-  {
-      "path": "/login",
-      "element": <LogIn />
-  },
-  {
-    "path": "/signup",
-    "element": <SignUp/>
-  },
-  {
-    "path": "/success",
-    "element": <Success/>
-  },
-  {
-        "path": "/obras",
-        "element": <Obras/>
-    }
+    "path": "/",
+    "element": <AppLayout/>,
+    "children": [
+      {
+          "path": "/",
+          "element": <Home/>,
+      },
+      {
+          "path": "/login",
+          "element": <LogIn />
+      },
+      {
+        "path": "/signup",
+        "element": <SignUp/>
+      },
+      {
+        "path": "/success",
+        "element": <Success/>
+      }
+  ]}
 ])
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-    <RouterProvider router={router}>
-      <Home/>
-    </RouterProvider>
+    
+      <RouterProvider router={router}>
+      
+      </RouterProvider>
+  
     /*
     <>
       <div>

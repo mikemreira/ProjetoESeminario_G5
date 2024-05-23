@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
+import { useCookies } from "react-cookie"
 
-export default function SignUp() {
+export default function LogIn() {
+  const [cookies, setCookies] = useCookies(["token"])
   const [values, setValues] = useState({
-    name: "",
     email: "",
     password: ""
   });
@@ -25,7 +26,7 @@ export default function SignUp() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    fetch("/api/users/signup", {
+    fetch("/api/users/signin", {
         method: "POST",
         headers: {
             'Content-type': 'application/json'
@@ -33,38 +34,22 @@ export default function SignUp() {
         body: JSON.stringify(values)
     }).then(res => {
         setSubmitted(true)
-        if (res.ok) {
-            setValid(true)
+        if (res.status == 201) {
+            return res.json()
         } else setValid(false)
-        return res.json()
     }).then(body => {
-        console.log(body)
+        console.log(body.token)
+        setCookies("token", body.token, { path: '/' })
+        sessionStorage.setItem("token", body.token)
+        setValid(true)
     })
-    if (values.firstName && values.lastName && values.email) {
-      setValid(true);
-    }
-    setSubmitted(true);
   };
 
   return (
     <div className="form-container">
       <form className="register-form" onSubmit={handleSubmit}>
         {submitted && valid && (
-            <Navigate to={"/login"} replace={true}/>
-        )}
-        {!valid && (
-          <input
-            class="form-field"
-            type="text"
-            placeholder="Username"
-            name="name"
-            value={values.name}
-            onChange={handleInputChange}
-          />
-        )}
-
-        {submitted && !values.name && (
-          <span id="first-name-error">Please enter a username</span>
+            <Navigate to={"/success"} replace={true}/>
         )}
 
         {!valid && (
@@ -98,7 +83,7 @@ export default function SignUp() {
         )}
         {!valid && (
           <button class="form-field" type="submit">
-            Register
+            Log In
           </button>
         )}
       </form>
