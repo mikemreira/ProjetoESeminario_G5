@@ -5,6 +5,7 @@ import SignUp from './login/SignUp'
 import Home from './Home'
 import LogIn from './login/LogIn'
 import Success from './Success'
+import Obras from './obras/Obras'
 
 const router = createBrowserRouter([
   {
@@ -22,7 +23,11 @@ const router = createBrowserRouter([
   {
     "path": "/success",
     "element": <Success/>
-  }
+  },
+  {
+        "path": "/obras",
+        "element": <Obras/>
+    }
 ])
 
 function App() {

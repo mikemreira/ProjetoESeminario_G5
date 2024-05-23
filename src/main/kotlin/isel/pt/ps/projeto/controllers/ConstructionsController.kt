@@ -3,6 +3,7 @@ package isel.pt.ps.projeto.controllers
 import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
 import isel.pt.ps.projeto.models.Problem
 import isel.pt.ps.projeto.models.constructions.ConstructionOutputModel
+import isel.pt.ps.projeto.models.constructions.ObrasOutputModel
 import isel.pt.ps.projeto.services.ConstructionsService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -50,6 +51,6 @@ class ConstructionsController(
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         val constructions = constructionService.getConstructionsOfUser(authUser.user.id)
-        return ResponseEntity.status(200).body(constructions)
+        return ResponseEntity.status(200).body(ObrasOutputModel(constructions))
     }
 }

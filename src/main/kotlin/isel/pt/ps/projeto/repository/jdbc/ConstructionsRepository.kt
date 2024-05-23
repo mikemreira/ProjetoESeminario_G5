@@ -102,7 +102,7 @@ class ConstructionsRepository : ConstructionRepository {
                             result.getString("localização"),
                             result.getString("descrição"),
                             result.getDate("data_inicio").toString().toLocalDate(),
-                            result.getDate("data_fim").toString().toLocalDate(),
+                            null,
                             result.getString("status"),
                         ),
                     )

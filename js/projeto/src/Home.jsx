@@ -12,6 +12,10 @@ export default function Home() {
             <div>
                 <Link to="/signup">Sign Up</Link>
             </div>
+
+            <div>
+                <Link to="/obras">Obras</Link>
+            </div>
         </>
     )
 }
