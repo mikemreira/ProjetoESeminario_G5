@@ -54,7 +54,7 @@ class UsersRepository : UserRepository {
             return try {
                 val pStatement =
                     it.prepareStatement(
-                            "select u.id, u.nome, u.password, u.email, u.morada from tokens t\n" +
+                            "select u.id, u.nome, u.password, u.email, u.morada from token t\n" +
                             "inner join utilizador u on u.id = t.id_utilizador\n" +
                             "where t.token_validation = ?",
                     )
@@ -86,8 +86,8 @@ class UsersRepository : UserRepository {
      *             """
      *                 select id, username, password_validation, token_validation, created_at, last_used_at
      *                 from Users as users
-     *                 inner join Tokens as tokens
-     *                 on users.id = tokens.user_id
+     *                 inner join Token as token
+     *                 on users.id = token.user_id
      *                 where token_validation = :validation_information
      *             """
      *         )
@@ -105,7 +105,7 @@ class UsersRepository : UserRepository {
                 val pStatement = it.prepareStatement(
                     "select id, nome, email, password, morada, token_validation, created_at, last_used_at\n" +
                         "    from utilizador u \n" +
-                        "    inner join Tokens t\n" +
+                        "    inner join Token t\n" +
                         "    on u.id = t.id_utilizador\n" +
                         "    where token_validation = ?"
                 )
@@ -136,7 +136,7 @@ class UsersRepository : UserRepository {
      * override fun updateTokenLastUsed(token: Token, now: Instant) {
      *         handle.createUpdate(
      *             """
-     *                 update Tokens
+     *                 update Token
      *                 set last_used_at = :last_used_at
      *                 where token_validation = :validation_information
      *             """.trimIndent()
@@ -151,7 +151,7 @@ class UsersRepository : UserRepository {
         initializeConnection().use {
             it.autoCommit = false
             val pStatement = it.prepareStatement(
-                "update Tokens\n" +
+                "update Token\n" +
                 "set last_used_at = ?\n" +
                 "where token_validation = ?"
             )
@@ -294,7 +294,7 @@ class UsersRepository : UserRepository {
         initializeConnection().use {
             it.autoCommit = false
             try {
-                val pStatement = it.prepareStatement("delete from tokens where token_validation = ?")
+                val pStatement = it.prepareStatement("delete from token where token_validation = ?")
                 pStatement.setString(1, tokenValidationInfo.validationInfo)
                 pStatement.executeUpdate()
             } catch (e: SQLException) {
@@ -316,10 +316,10 @@ class UsersRepository : UserRepository {
             try {
                 println("3 :"+token.tokenValidationInfo.validationInfo)
                 val pStatement = it.prepareStatement(
-                    "delete from Tokens\n" +
+                    "delete from Token\n" +
                     "                 where id_utilizador = ?\n" +
                     "                     and token_validation in (\n" +
-                    "                         select token_validation from Tokens where id_utilizador = ?\n" +
+                    "                         select token_validation from Token where id_utilizador = ?\n" +
                     "                             order by last_used_at desc offset ?\n" +
                     "                   )"
                 )
@@ -328,7 +328,7 @@ class UsersRepository : UserRepository {
                 pStatement.setInt(3, maxTokens-1)
                 pStatement.executeUpdate()
                 val pStatement2 = it.prepareStatement(
-                    "insert into Tokens(id_utilizador, token_validation, created_at, last_used_at)\n" +
+                    "insert into Token(id_utilizador, token_validation, created_at, last_used_at)\n" +
                     "                     values (?, ?, ?, ?)"
                 )
                 pStatement2.setInt(1, token.userId)

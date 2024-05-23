@@ -50,7 +50,7 @@ class UsersController(
         val res = usersService.signUp(input.name, input.email, input.password)
         return when (res) {
             is Success ->
-                ResponseEntity.status(200)
+                ResponseEntity.status(201)
                     .body(UserSignUpOutputModel("User added"))
             is Failure ->
                 when (res.value) {
@@ -69,7 +69,7 @@ class UsersController(
         val res = usersService.signIn(input.email, input.password)
         return when (res) {
             is Success ->
-                ResponseEntity.status(200).body(UserTokenCreateOutputModel(res.value.tokenValue))
+                ResponseEntity.status(201).body(UserTokenCreateOutputModel(res.value.tokenValue))
             is Failure ->
                 when (res.value) {
                     TokenError.UserOrPasswordAreInvalid -> Problem.response(400, Problem.userOrPasswordAreInvalid)
