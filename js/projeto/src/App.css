@@ -50,7 +50,8 @@ input {
 
 .error {
   border-style: solid;
-  border: 2px solid #ffa4a4;
+  border: 0px solid red;
+  color: red;
 }
 
 button {

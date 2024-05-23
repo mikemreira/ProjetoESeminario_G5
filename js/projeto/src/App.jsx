@@ -1,16 +1,21 @@
 import { Outlet, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from 'react-router-dom'
-import SignUp from './SignUp'
+import SignUp from './user/SignUp.jsx'
 import Home from './Home'
-import LogIn from './LogIn'
+import LogIn from './user/LogIn.jsx'
 import './App.css'
-import Success from './Success'
+import Success from './user/Success.jsx'
 import NavBar from './NavBar'
+import Obras from "./obra/Obras.tsx"
+import LogOut from "./user/LogOut.tsx"
+import {AuthnContainer} from "./context/Authn.tsx";
 
 const AppLayout = () => {
   return (
   <>
-    <NavBar/>
-    <Outlet/>
+    <AuthnContainer>
+      <NavBar/>
+      <Outlet/>
+    </AuthnContainer>
   </>
   )
 }
@@ -29,12 +34,20 @@ const router = createBrowserRouter([
           "element": <LogIn />
       },
       {
+        "path": "/logout",
+        "element": <LogOut />
+      },
+      {
         "path": "/signup",
         "element": <SignUp/>
       },
       {
         "path": "/success",
         "element": <Success/>
+      },
+      {
+        "path": "/obras",
+        "element": <Obras/>
       }
   ]}
 ])

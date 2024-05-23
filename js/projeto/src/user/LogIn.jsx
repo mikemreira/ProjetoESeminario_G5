@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useCookies } from "react-cookie"
+import {useSetUser} from "../context/Authn.tsx";
 
 export default function LogIn() {
   const [cookies, setCookies] = useCookies(["token"])
@@ -22,6 +23,8 @@ export default function LogIn() {
 
   const [submitted, setSubmitted] = useState(false);
   const [valid, setValid] = useState(false);
+  const [error, setError] = useState(undefined)
+  const setUser = useSetUser()
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -34,14 +37,21 @@ export default function LogIn() {
         body: JSON.stringify(values)
     }).then(res => {
         setSubmitted(true)
-        if (res.status == 201) {
-            return res.json()
-        } else setValid(false)
+        if (res.status == 201) return res.json()
+        else {
+            setValid(false)
+            return { error: "Invalid email or password" }
+        }
     }).then(body => {
-        console.log(body.token)
-        setCookies("token", body.token, { path: '/' })
-        sessionStorage.setItem("token", body.token)
-        setValid(true)
+        if (body.error) setError(body.error)
+        else {
+            setValid(true)
+            setCookies("token", body.token, { path: '/' })
+            setUser(body.token)
+            sessionStorage.setItem("token", body.token)
+        }
+    }).catch(error => {
+        setError(error.message)
     })
   };
 
@@ -86,6 +96,7 @@ export default function LogIn() {
             Log In
           </button>
         )}
+          <div className="error">{error}</div>
       </form>
     </div>
   );
