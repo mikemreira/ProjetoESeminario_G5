@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useCookies } from "react-cookie"
 import {useSetUser} from "../context/Authn.tsx";
+import Button from '@mui/material/Button';
+import Snackbar from '@mui/material/Snackbar';
 
 export default function LogIn() {
   const [cookies, setCookies] = useCookies(["token"])
@@ -24,7 +26,8 @@ export default function LogIn() {
   const [submitted, setSubmitted] = useState(false);
   const [valid, setValid] = useState(false);
   const [error, setError] = useState(undefined)
-  const setUser = useSetUser()
+  const setUser = useSetUser();
+  const [open, setOpen] = React.useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -54,6 +57,16 @@ export default function LogIn() {
         setError(error.message)
     })
   };
+    const handleClick = () => {
+        setOpen(true);
+    };
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setOpen(false);
+    }
 
   return (
     <div className="form-container">
@@ -92,11 +105,17 @@ export default function LogIn() {
           <span id="email-error">Please enter a password</span>
         )}
         {!valid && (
-          <button class="form-field" type="submit">
+          <button class="form-field" type="submit" onClick={handleClick}>
             Log In
           </button>
         )}
-          <div className="error">{error}</div>
+          <Snackbar
+              open={open}
+              autoHideDuration={5000}
+              onClose={handleClose}
+              message={error}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          />
       </form>
     </div>
   );

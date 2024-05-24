@@ -8,6 +8,7 @@ import NavBar from './NavBar'
 import Obras from "./obra/Obras.tsx"
 import LogOut from "./user/LogOut.tsx"
 import {AuthnContainer} from "./context/Authn.tsx";
+import Profile from "./user/Profile.tsx";
 
 const AppLayout = () => {
   return (
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
       {
         "path": "/obras",
         "element": <Obras/>
+      },
+      {
+        "path": "/profile",
+        "element": <Profile />
       }
   ]}
 ])
@@ -59,14 +64,7 @@ function App() {
       <RouterProvider router={router}>
       
       </RouterProvider>
-  
-    /*
-    <>
-      <div>
-        <SignUp></SignUp>
-      </div>
-    </>
-    */
+
   )
 }
 

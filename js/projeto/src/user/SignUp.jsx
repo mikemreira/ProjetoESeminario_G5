@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
 import NavBar from "../NavBar.jsx";
+import Snackbar from "@mui/material/Snackbar";
 
 export default function SignUp() {
   const [values, setValues] = useState({
@@ -8,6 +9,18 @@ export default function SignUp() {
     email: "",
     password: ""
   });
+    const [open, setOpen] = React.useState(false);
+
+    const handleClick = () => {
+        setOpen(true);
+    };
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setOpen(false);
+    }
 
   const handleInputChange = (event) => {
     event.preventDefault();
@@ -100,11 +113,17 @@ export default function SignUp() {
                 <span id="email-error">Please enter a password</span>
             )}
             {!valid && (
-                <button className="form-field" type="submit">
+                <button className="form-field" type="submit" onClick={handleClick}>
                     Register
                 </button>
             )}
-            <div className="error">{error}</div>
+            <Snackbar
+                open={open}
+                autoHideDuration={5000}
+                onClose={handleClose}
+                message={error}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            />
         </form>
     </div>
   );
