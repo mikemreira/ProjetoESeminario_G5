@@ -8,6 +8,7 @@ class Problem(
     val error = typeString
 
     companion object {
+
         const val MEDIA_TYPE = "application/problem+json"
 
         fun response(
@@ -32,6 +33,14 @@ class Problem(
 
         val invalidToken = Problem("Invalid Token")
 
-        val userDoesntExist = Problem("User does not exist")
+        val constructionNotFound = Problem("Construction not found")
+
+        val noConstructions = Problem("No constructions")
+
+        val constructionAlreadyExists = Problem("Construction with that name already exists")
+
+        val invalidConstruction = Problem("Invalid construction")
+
+        val emptyEmployees = Problem("No employees in construction")
     }
 }

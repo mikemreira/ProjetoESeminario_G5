@@ -9,4 +9,8 @@ interface ConstructionRepository {
     fun getConstructionsUsers(oid: Int): List<User>
 
     fun getConstructionsOfUser(id: Int): List<Construction>
+
+    fun createConstruction(userId: Int, construction: Construction): Int
+
+    fun checkConstructionByName(name: String): Boolean
 }

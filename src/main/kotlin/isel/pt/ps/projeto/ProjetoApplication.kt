@@ -2,6 +2,7 @@ package isel.pt.ps.projeto
 
 import isel.pt.ps.projeto.controllers.pipeline.AuthenticatedUserArgumentResolver
 import isel.pt.ps.projeto.controllers.pipeline.AuthenticationInterceptor
+import isel.pt.ps.projeto.domain.constructions.ConstructionsDomain
 import isel.pt.ps.projeto.domain.users.Sha256TokenEncoder
 import isel.pt.ps.projeto.domain.users.UsersDomainConfig
 import kotlinx.datetime.Clock
@@ -34,6 +35,9 @@ class ProjetoApplication {
             tokenRollingTtl = 1.hours,
             maxTokensPerUser = 3
         )
+
+    @Bean
+    fun constructionDomain() = ConstructionsDomain()
 }
 
 @Configuration

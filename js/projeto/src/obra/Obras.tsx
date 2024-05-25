@@ -16,6 +16,9 @@ import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import LastPageIcon from '@mui/icons-material/LastPage';
 import { useTheme } from '@mui/material/styles';
 import {Box} from "@mui/material";
+import Fab from '@mui/material/Fab';
+import AddIcon from '@mui/icons-material/Add';
+import {useNavigate} from "react-router-dom";
 
 interface DateObject {
     year: number;
@@ -29,11 +32,11 @@ interface DateObject {
 
 interface Obra {
     oid: number;
-    nome: string;
-    localizacao: string;
-    descricao: string;
-    data_inicio: DateObject | null;
-    data_fim: DateObject | null;
+    name: string;
+    location: string;
+    description: string;
+    startDate: DateObject | null;
+    endDate: DateObject | null;
     status: string;
 }
 
@@ -88,6 +91,13 @@ export default function Obras() {
         setPage(0);
     };
 
+    const navigate = useNavigate();
+
+    const handleClickAddObra = () => {
+        navigate("/addObra")
+    }
+
+
     return (
         <div>
             <h1>Obras</h1>
@@ -110,12 +120,12 @@ export default function Obras() {
                         ).map((obra) => (
                             <TableRow key={obra.oid}>
                                 <TableCell component="th" scope="row">
-                                    {obra.nome}
+                                    {obra.name}
                                 </TableCell>
-                                <TableCell>{obra.localizacao}</TableCell>
-                                <TableCell>{obra.descricao}</TableCell>
-                                <TableCell>{formatDate(obra.data_inicio)}</TableCell>
-                                <TableCell>{formatDate(obra.data_fim)}</TableCell>
+                                <TableCell>{obra.location}</TableCell>
+                                <TableCell>{obra.description}</TableCell>
+                                <TableCell>{formatDate(obra.startDate)}</TableCell>
+                                <TableCell>{formatDate(obra.endDate)}</TableCell>
                                 <TableCell>{obra.status}</TableCell>
                             </TableRow>
                         ))}
@@ -132,6 +142,11 @@ export default function Obras() {
                 onRowsPerPageChange={handleChangeRowsPerPage}
                 ActionsComponent={(props) => <TablePaginationActions {...props} />}
             />
+            <Box sx={{ display: 'flex',justifyContent: 'flex-end','& > :not(style)': { m: 1 } }}>
+                <Fab color="primary" aria-label="add" onClick={handleClickAddObra}>
+                    <AddIcon />
+                </Fab>
+            </Box>
         </div>
     );
 

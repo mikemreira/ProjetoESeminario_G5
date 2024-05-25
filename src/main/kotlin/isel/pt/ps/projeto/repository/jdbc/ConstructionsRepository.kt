@@ -116,4 +116,12 @@ class ConstructionsRepository : ConstructionRepository {
             }
         }
     }
+
+    override fun createConstruction(userId: Int, construction: Construction): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun checkConstructionByName(name: String): Boolean {
+        TODO("Not yet implemented")
+    }
 }

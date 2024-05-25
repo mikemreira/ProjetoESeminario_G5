@@ -2,13 +2,12 @@ package isel.pt.ps.projeto.models.constructions
 
 import kotlinx.datetime.LocalDate
 
-data class ConstructionOutputModel(
-    val oid: Int,
+data class ConstructionInputModel (
     val name: String,
     val location: String,
     val description: String,
     val startDate: LocalDate,
-    val endDate: LocalDate? = null,
-    val foto: String? = null,
+    val endDate: LocalDate?,
+    val foto: String?,
     val status: String
 )

@@ -4,6 +4,7 @@ import { useCookies } from "react-cookie"
 import {useSetUser} from "../context/Authn.tsx";
 import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
+import Alert from "@mui/material/Alert";
 
 export default function LogIn() {
   const [cookies, setCookies] = useCookies(["token"])
@@ -109,14 +110,18 @@ export default function LogIn() {
             Log In
           </button>
         )}
-          <Snackbar
-              open={open}
-              autoHideDuration={5000}
-              onClose={handleClose}
-              message={error}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-          />
+          {submitted && !valid && <Alert severity="error" sx={{ m: 1 }}>{error}</Alert>}
       </form>
     </div>
   );
 }
+/*
+<Snackbar
+    open={open}
+    autoHideDuration={5000}
+    onClose={handleClose}
+    message={error}
+    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+/>
+
+ */

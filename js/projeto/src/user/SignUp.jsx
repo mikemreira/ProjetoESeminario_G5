@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
 import NavBar from "../NavBar.jsx";
 import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 
 export default function SignUp() {
   const [values, setValues] = useState({
@@ -117,13 +118,7 @@ export default function SignUp() {
                     Register
                 </button>
             )}
-            <Snackbar
-                open={open}
-                autoHideDuration={5000}
-                onClose={handleClose}
-                message={error}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            />
+            {submitted && !valid && <Alert severity="error" sx={{ m: 1 }}>{error}</Alert>}
         </form>
     </div>
   );
