@@ -33,7 +33,6 @@ class ConstructionsRepository : ConstructionRepository {
                 pStatement.setInt(1, oid)
                 val result = pStatement.executeQuery()
                 result.next()
-
                 Construction(
                     result.getInt("id"),
                     result.getString("nome"),
@@ -146,11 +145,20 @@ class ConstructionsRepository : ConstructionRepository {
                 insertStatement.executeUpdate()
                 insertStatement.generatedKeys.use { generatedKeys ->
                     if (generatedKeys.next()) {
-                        generatedKeys.getInt(1)
+                        val oid = generatedKeys.getInt(1)
+                        val insertStatementRole = it.prepareStatement(
+                            "INSERT INTO Papel (id_utilizador, id_obra, papel)\n" +
+                            "VALUES\n" +
+                            " (?, ?, 'admin')")
+                        insertStatementRole.setInt(1, userId)
+                        insertStatementRole.setInt(2, oid)
+                        insertStatementRole.executeUpdate()
+                        oid
                     } else {
                         throw SQLException("Creating Obra failed, no ID obtained.")
                     }
                 }
+
             }  catch (e: Exception) {
                 it.rollback()
                 throw e
@@ -158,6 +166,10 @@ class ConstructionsRepository : ConstructionRepository {
                 it.commit()
             }
         }
+    }
+
+    override fun getUserRoleFromConstruction(id: Int, oid: Int): String {
+        TODO("Not yet implemented")
     }
 
 
