@@ -11,6 +11,7 @@ import isel.pt.ps.projeto.services.ConstructionInfoError
 import isel.pt.ps.projeto.services.ConstructionsService
 import isel.pt.ps.projeto.utils.Failure
 import isel.pt.ps.projeto.utils.Success
+import kotlinx.datetime.toLocalDate
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -105,13 +106,14 @@ class ConstructionsController(
     ): ResponseEntity<*> {
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        println(input.startDate)
         val res = constructionService.createConstruction(
             authUser.user.id,
             input.name,
             input.location,
             input.description,
-            input.startDate,
-            input.endDate,
+            input.startDate.toLocalDate(),
+            input.endDate?.toLocalDate(),
             input.foto,
             input.status
         )

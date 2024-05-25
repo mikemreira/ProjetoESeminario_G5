@@ -21,14 +21,14 @@ create table if not exists Token(
 );
 
 create table if not exists Obra (
-                      id int primary key,
+                      id int generated always as identity primary key,
                       nome varchar(64) not null,
                       localização varchar(64) not null,
                       descrição varchar(260),
                       data_inicio date not null default current_date,
                       data_fim date default null,
                       foto bytea default null,
-                      status VARCHAR(64) check (status in ('deleted', 'recoverable', 'on going', 'completed'))
+                      status VARCHAR(64) check (status in ('deleted', 'recoverable', 'on going', 'completed')) default 'on going'
 );
 
 create table if not exists Papel (

@@ -9,6 +9,9 @@ import kotlinx.datetime.toLocalDate
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.stereotype.Component
 import java.sql.Connection
+import java.sql.Date
+import java.sql.SQLException
+
 
 @Component
 class ConstructionsRepository : ConstructionRepository {
@@ -126,9 +129,35 @@ class ConstructionsRepository : ConstructionRepository {
         startDate: LocalDate,
         endDate: LocalDate?,
         foto: String?,
-        status: String
+        status: String?
     ): Int {
-        TODO("Not yet implemented")
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val generatedColumns = arrayOf("id")
+                val insertStatement = it.prepareStatement(
+                    "INSERT INTO Obra (nome, localização, descrição, data_inicio)\n" +
+                    "VALUES (?,?,?,?) ", generatedColumns
+                )
+                insertStatement.setString(1,name)
+                insertStatement.setString(2,location)
+                insertStatement.setString(3,description)
+                insertStatement.setDate(4,Date.valueOf(startDate.toString()))
+                insertStatement.executeUpdate()
+                insertStatement.generatedKeys.use { generatedKeys ->
+                    if (generatedKeys.next()) {
+                        generatedKeys.getInt(1)
+                    } else {
+                        throw SQLException("Creating Obra failed, no ID obtained.")
+                    }
+                }
+            }  catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
     }
 
 

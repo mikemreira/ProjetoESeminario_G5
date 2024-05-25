@@ -8,10 +8,10 @@ VALUES
     ('Daniel Lee', '123','daniel@example.com', '222 Maple Lane');
 
 -- Inserting data into Obra table
-INSERT INTO Obra (id, nome, localização, descrição, data_inicio, data_fim, status)
+INSERT INTO Obra (nome, localização, descrição, data_inicio, data_fim, status)
 VALUES
-    (1, 'Construction Project', 'City Center', 'Building a new commercial complex', '2024-01-01', '2024-12-31', 'on going'),
-    (2, 'Renovation Project', 'Suburb', 'Renovating an old library', '2024-03-15', '2024-09-30', 'completed');
+    ('Construction Project', 'City Center', 'Building a new commercial complex', '2024-01-01', '2024-12-31', 'on going'),
+    ('Renovation Project', 'Suburb', 'Renovating an old library', '2024-03-15', '2024-09-30', 'completed');
 
 -- Inserting data into Papel table
 INSERT INTO Papel (id_utilizador, id_obra, papel)

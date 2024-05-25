@@ -9,7 +9,6 @@ import isel.pt.ps.projeto.utils.failure
 import isel.pt.ps.projeto.utils.success
 import kotlinx.datetime.LocalDate
 import org.springframework.stereotype.Component
-import kotlin.random.Random
 
 sealed class ConstructionCreationError {
     //object ConstructionAlreadyExists : ConstructionCreationError()
@@ -67,9 +66,9 @@ class ConstructionsService(
         startDate: LocalDate,
         endDate: LocalDate?,
         foto: String?,
-        status: String
+        status: String?
     ): ConstructionCreationResult {
-        if (!constructionsDomain.checkValidConstruction(name, location, description, startDate, endDate, status)) {
+        if (!constructionsDomain.checkValidConstruction(name, location, description, startDate)) {
             return failure(ConstructionCreationError.InvalidConstruction)
         }
         return success(constructionsRepository.createConstruction(userId, name, location, description, startDate, endDate, foto, status))
