@@ -4,6 +4,7 @@ import isel.pt.ps.projeto.domain.users.PasswordValidationInfo
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.repository.ConstructionRepository
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toLocalDate
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.stereotype.Component
@@ -117,9 +118,19 @@ class ConstructionsRepository : ConstructionRepository {
         }
     }
 
-    override fun createConstruction(userId: Int, construction: Construction): Int {
+    override fun createConstruction(
+        userId: Int,
+        name: String,
+        location: String,
+        description: String,
+        startDate: LocalDate,
+        endDate: LocalDate?,
+        foto: String?,
+        status: String
+    ): Int {
         TODO("Not yet implemented")
     }
+
 
     override fun checkConstructionByName(name: String): Boolean {
         TODO("Not yet implemented")

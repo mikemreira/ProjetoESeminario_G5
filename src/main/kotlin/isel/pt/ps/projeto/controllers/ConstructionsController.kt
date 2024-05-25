@@ -2,6 +2,7 @@ package isel.pt.ps.projeto.controllers
 
 import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
 import isel.pt.ps.projeto.models.Problem
+import isel.pt.ps.projeto.models.constructions.ConstructionIdOutputModel
 import isel.pt.ps.projeto.models.constructions.ConstructionInputModel
 import isel.pt.ps.projeto.models.constructions.ConstructionOutputModel
 import isel.pt.ps.projeto.models.constructions.ListOfConstructionsOutputModel
@@ -117,19 +118,10 @@ class ConstructionsController(
         return when (res) {
             is Success ->
                 ResponseEntity.status(201)
-                    .body(ConstructionOutputModel(
-                        res.value,
-                        input.name,
-                        input.location,
-                        input.description,
-                        input.startDate,
-                        input.endDate,
-                        input.foto,
-                        input.status
-                    ))
+                    .body(ConstructionIdOutputModel(res.value))
             is Failure ->
                 when (res.value) {
-                    ConstructionCreationError.ConstructionAlreadyExists -> Problem.response(400, Problem.constructionAlreadyExists)
+                    //ConstructionCreationError.ConstructionAlreadyExists -> Problem.response(400, Problem.constructionAlreadyExists)
                     ConstructionCreationError.InvalidConstruction -> Problem.response(400, Problem.invalidConstruction)
                 }
         }

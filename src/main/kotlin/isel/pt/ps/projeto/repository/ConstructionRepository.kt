@@ -2,6 +2,7 @@ package isel.pt.ps.projeto.repository
 
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.users.User
+import kotlinx.datetime.LocalDate
 
 interface ConstructionRepository {
     fun getConstruction(oid: Int): Construction
@@ -10,7 +11,7 @@ interface ConstructionRepository {
 
     fun getConstructionsOfUser(id: Int): List<Construction>
 
-    fun createConstruction(userId: Int, construction: Construction): Int
+    fun createConstruction(userId: Int, name: String, location: String, description: String, startDate: LocalDate, endDate: LocalDate?, foto: String?, status: String): Int
 
     fun checkConstructionByName(name: String): Boolean
 }

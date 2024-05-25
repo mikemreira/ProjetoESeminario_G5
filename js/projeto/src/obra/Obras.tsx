@@ -53,7 +53,7 @@ export default function Obras() {
     const [cookies] = useCookies(["token"]);
     const [obras, setObras] = useState<ObrasOutputModel>({ obras: [] });
     const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(3);
+    const [rowsPerPage, setRowsPerPage] = React.useState(1);
     const theme = useTheme(); // Access theme using useTheme hook
 
     useEffect(() => {

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 import kotlin.random.Random
 
 sealed class ConstructionCreationError {
-    object ConstructionAlreadyExists : ConstructionCreationError()
+    //object ConstructionAlreadyExists : ConstructionCreationError()
     object InvalidConstruction : ConstructionCreationError()
 }
 
@@ -59,18 +59,21 @@ class ConstructionsService(
         }
     }
 
-    fun createConstruction(userId: Int, name: String, location: String, description: String, startDate: LocalDate, endDate: LocalDate?, foto: String?, status: String): ConstructionCreationResult {
+    fun createConstruction(
+        userId: Int,
+        name: String,
+        location: String,
+        description: String,
+        startDate: LocalDate,
+        endDate: LocalDate?,
+        foto: String?,
+        status: String
+    ): ConstructionCreationResult {
         if (!constructionsDomain.checkValidConstruction(name, location, description, startDate, endDate, status)) {
             return failure(ConstructionCreationError.InvalidConstruction)
         }
-        if (checkConstructionByName(name)) {
-            return failure(ConstructionCreationError.ConstructionAlreadyExists)
-        }
-        // temos de adicionar foto a construcao
-        val obraId = Random(0).nextInt(0, 9999999) // esta assim provisoriamente
-        val construction = Construction(obraId, name, location, description, startDate, endDate, status)
-        return success(constructionsRepository.createConstruction(userId, construction))
+        return success(constructionsRepository.createConstruction(userId, name, location, description, startDate, endDate, foto, status))
     }
 
-    fun checkConstructionByName(name: String): Boolean = constructionsRepository.checkConstructionByName(name)
+    //fun checkConstructionByName(name: String): Boolean = constructionsRepository.checkConstructionByName(name)
 }
