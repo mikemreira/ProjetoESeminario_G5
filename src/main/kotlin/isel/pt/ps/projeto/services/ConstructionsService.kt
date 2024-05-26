@@ -41,6 +41,8 @@ class ConstructionsService(
         }
     }
 
+    //fun getConstructionAndUserRole(userId: Int, oid: Int): Con
+
     fun getConstructionUsers(oid: Int): EmployeesInConstructionResult{
         val users = constructionsRepository.getConstructionsUsers(oid)
         return if (users.isEmpty()) {  // se nao existirem users deviamos de retornar uma lista vazia

@@ -12,6 +12,6 @@ interface ConstructionRepository {
     fun getConstructionsOfUser(id: Int): List<Construction>
 
     fun createConstruction(userId: Int, name: String, location: String, description: String, startDate: LocalDate, endDate: LocalDate?, foto: String?, status: String?): Int
-
+    fun getUserRoleFromConstruction(id: Int, oid: Int) : String
     fun checkConstructionByName(name: String): Boolean
 }

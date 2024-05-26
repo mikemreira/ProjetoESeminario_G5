@@ -28,10 +28,12 @@ class ConstructionsController(
     private val requestTokenProcessor: RequestTokenProcessor,
 ) {
     @GetMapping("/{oid}")
-    fun getConstruction(
+    fun getConstructionAndRole(
+        @RequestHeader("Authorization") userToken: String,
         @PathVariable oid: Int,
     ): ResponseEntity<*> {
         val res = constructionService.getConstruction(oid)
+
         return when (res) {
             is Success ->
                 ResponseEntity.status(200)
@@ -106,7 +108,6 @@ class ConstructionsController(
     ): ResponseEntity<*> {
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        println(input.startDate)
         val res = constructionService.createConstruction(
             authUser.user.id,
             input.name,
@@ -114,7 +115,7 @@ class ConstructionsController(
             input.description,
             input.startDate.toLocalDate(),
             input.endDate?.toLocalDate(),
-            input.foto,
+            input.image,
             input.status
         )
         return when (res) {
