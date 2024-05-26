@@ -32,6 +32,7 @@ class ConstructionsService(
     private val constructionsDomain: ConstructionsDomain
 ) {
     fun getConstruction(oid: Int): ConstructionInfoResult {
+        // val role = constructionsRepository.getRole(uid)
         val construction = constructionsRepository.getConstruction(oid)
         return if (construction == null) { // se nao existir obra deviamos de retornar null
             failure(ConstructionInfoError.ConstructionNotFound)
