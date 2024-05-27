@@ -2,6 +2,7 @@ package isel.pt.ps.projeto.services
 
 import isel.pt.ps.projeto.domain.constructions.ConstructionsDomain
 import isel.pt.ps.projeto.models.constructions.Construction
+import isel.pt.ps.projeto.models.constructions.ConstructionAndRole
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
 import isel.pt.ps.projeto.utils.Either
@@ -19,8 +20,10 @@ sealed class ConstructionInfoError {
     object ConstructionNotFound : ConstructionInfoError()
     object NoConstructions : ConstructionInfoError()
     object EmptyEmployees : ConstructionInfoError()
+    object NoAccessToConstruction: ConstructionInfoError()
 }
 
+typealias ConstructionAndRoleResult = Either<ConstructionInfoError, ConstructionAndRole>
 typealias ConstructionCreationResult = Either<ConstructionCreationError, Int>
 typealias ConstructionInfoResult = Either<ConstructionInfoError, Construction>
 typealias ConstructionsInfoResult = Either<ConstructionInfoError, List<Construction>>
@@ -74,6 +77,17 @@ class ConstructionsService(
             return failure(ConstructionCreationError.InvalidConstruction)
         }
         return success(constructionsRepository.createConstruction(userId, name, location, description, startDate, endDate, foto, status))
+    }
+
+    fun getUserRoleOnConstruction(userId: Int, oid: Int): ConstructionAndRoleResult {
+        val construction = constructionsRepository.getConstruction(oid)
+            ?: return failure(ConstructionInfoError.ConstructionNotFound)
+
+        val role = constructionsRepository.getUserRoleFromConstruction(userId, construction.oid)
+            ?: return failure(ConstructionInfoError.NoAccessToConstruction)
+
+        val constructionAndRole = ConstructionAndRole(construction, role)
+        return success(constructionAndRole)
     }
 
     //fun checkConstructionByName(name: String): Boolean = constructionsRepository.checkConstructionByName(name)

@@ -21,7 +21,7 @@ class ConstructionsRepository : ConstructionRepository {
         return dataSource.connection
     }
 
-    override fun getConstruction(oid: Int): Construction {
+    override fun getConstruction(oid: Int): Construction? {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -32,16 +32,20 @@ class ConstructionsRepository : ConstructionRepository {
                     )
                 pStatement.setInt(1, oid)
                 val result = pStatement.executeQuery()
-                result.next()
-                Construction(
-                    result.getInt("id"),
-                    result.getString("nome"),
-                    result.getString("localização"),
-                    result.getString("descrição"),
-                    result.getDate("data_inicio").toString().toLocalDate(),
-                    result.getDate("data_fim").toString().toLocalDate(),
-                    result.getString("status"),
-                )
+                if (!result.next())
+                    null
+                else {
+                    val dateFim = result.getDate("data_fim")
+                    Construction(
+                        result.getInt("id"),
+                        result.getString("nome"),
+                        result.getString("localização"),
+                        result.getString("descrição"),
+                        result.getDate("data_inicio").toString().toLocalDate(),
+                        if (dateFim == null) dateFim else dateFim.toString().toLocalDate(),
+                        result.getString("status"),
+                    )
+                }
             } catch (e: Exception) {
                 it.rollback()
                 throw e
@@ -168,8 +172,29 @@ class ConstructionsRepository : ConstructionRepository {
         }
     }
 
-    override fun getUserRoleFromConstruction(id: Int, oid: Int): String {
-        TODO("Not yet implemented")
+    override fun getUserRoleFromConstruction(id: Int, oid: Int): String? {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val generatedColumns = arrayOf("id")
+                val pStatement = it.prepareStatement(
+                    "Select * from Papel\n" +
+                        "where id_utilizador = ? and id_obra = ?"
+                )
+                pStatement.setInt(1, id)
+                pStatement.setInt(2, oid)
+                val result = pStatement.executeQuery()
+                if (!result.next())
+                    null
+                else
+                    result.getString("papel")
+            }  catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
     }
 
 

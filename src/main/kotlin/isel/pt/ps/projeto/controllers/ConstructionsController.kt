@@ -2,10 +2,7 @@ package isel.pt.ps.projeto.controllers
 
 import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
 import isel.pt.ps.projeto.models.Problem
-import isel.pt.ps.projeto.models.constructions.ConstructionIdOutputModel
-import isel.pt.ps.projeto.models.constructions.ConstructionInputModel
-import isel.pt.ps.projeto.models.constructions.ConstructionOutputModel
-import isel.pt.ps.projeto.models.constructions.ListOfConstructionsOutputModel
+import isel.pt.ps.projeto.models.constructions.*
 import isel.pt.ps.projeto.services.ConstructionCreationError
 import isel.pt.ps.projeto.services.ConstructionInfoError
 import isel.pt.ps.projeto.services.ConstructionsService
@@ -32,21 +29,26 @@ class ConstructionsController(
         @RequestHeader("Authorization") userToken: String,
         @PathVariable oid: Int,
     ): ResponseEntity<*> {
-        val res = constructionService.getConstruction(oid)
+        // add process to get user by token
+        val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        // TODO(Find a way to return null and then the error maybe ?)
 
+        val res = constructionService.getUserRoleOnConstruction(authUser.user.id, oid)
+
+        // add everything in a new OutputModel with role and construction
         return when (res) {
             is Success ->
                 ResponseEntity.status(200)
                     .body(
-                        ConstructionOutputModel(
-                            res.value.oid,
-                            res.value.nome,
-                            res.value.localizacao,
-                            res.value.descricao,
-                            res.value.data_inicio,
-                            res.value.data_fim,
+                        ConstructionAndRoleOutputModel(
+                            res.value.construction.nome,
+                            res.value.construction.localizacao,
+                            res.value.construction.descricao,
+                            res.value.construction.data_inicio,
+                            res.value.construction.data_fim,
                             null, // res.value.foto
-                            res.value.status
+                            res.value.construction.status,
+                            res.value.role
                         )
                     )
             is Failure ->
@@ -54,6 +56,7 @@ class ConstructionsController(
                     ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
                     ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                     ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
+                    ConstructionInfoError.NoAccessToConstruction -> Problem.response(401, Problem.unauthorizedUser)
                 }
         }
     }
@@ -97,6 +100,7 @@ class ConstructionsController(
                     ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
                     ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                     ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
+                    ConstructionInfoError.NoAccessToConstruction -> TODO()
                 }
         }
     }
@@ -108,6 +112,7 @@ class ConstructionsController(
     ): ResponseEntity<*> {
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+
         val res = constructionService.createConstruction(
             authUser.user.id,
             input.name,
