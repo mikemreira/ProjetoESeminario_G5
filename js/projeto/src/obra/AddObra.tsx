@@ -12,10 +12,10 @@ interface ObraValues {
     name: string;
     location: string;
     description: string;
-    start_date: string;
-    end_date: string;
-    foto: string;
-    status: string;
+    startDate: string;
+    endDate: string | null;
+    foto: string | null
+    status: string | null;
 }
 
 export default function AddObra() {
@@ -24,10 +24,10 @@ export default function AddObra() {
         name: "",
         location: "",
         description: "",
-        start_date: "",
-        end_date: "",
-        foto: "",
-        status: "Ongoing"
+        startDate: "",
+        endDate: null,
+        foto: null,
+        status: null
     });
 
     const VisuallyHiddenInput = styled('input')({
@@ -57,6 +57,8 @@ export default function AddObra() {
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
+
+        console.log("Form values:", values);
 
         fetch("/api/obras", {
             method: "POST",
@@ -123,27 +125,27 @@ export default function AddObra() {
             />
             <TextField
                 required
-                id="start_date"
+                id="startDate"
                 label="Data de Início"
                 type="date"
                 InputLabelProps={{
                     shrink: true,
                 }}
-                value={values.start_date}
+                value={values.startDate}
                 onChange={handleInputChange}
-                name="start_date"
+                name="startDate"
             />
             <TextField
 
-                id="end_date"
+                id="endDate"
                 label="Data de Fim"
                 type="date"
                 InputLabelProps={{
                     shrink: true,
                 }}
-                value={values.end_date}
+                value={values.endDate}
                 onChange={handleInputChange}
-                name="end_date"
+                name="endDate"
             />
             <TextField
                 id="foto"
