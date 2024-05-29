@@ -13,6 +13,22 @@
   padding: 10px;
 }
 
+.form-obras {
+  width: auto;
+  background-color: white;
+  margin: auto;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+  padding: 25px;
+}
+
+.black-text {
+  color: #333333;
+}
+
+.data-input {
+  filter: invert(1);
+}
+
 .register-form {
   display: flex;
   flex-direction: column;

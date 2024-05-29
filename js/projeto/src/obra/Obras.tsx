@@ -19,6 +19,8 @@ import {Box} from "@mui/material";
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
 import {useNavigate} from "react-router-dom";
+import InfoIcon from '@mui/icons-material/Info';
+import ChevronRightSharpIcon from '@mui/icons-material/ChevronRightSharp';
 
 interface DateObject {
     year: number;
@@ -53,7 +55,7 @@ export default function Obras() {
     const [cookies] = useCookies(["token"]);
     const [obras, setObras] = useState<ObrasOutputModel>({ obras: [] });
     const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(1);
+    const [rowsPerPage, setRowsPerPage] = React.useState(3);
     const theme = useTheme(); // Access theme using useTheme hook
 
     useEffect(() => {
@@ -93,15 +95,19 @@ export default function Obras() {
 
     const navigate = useNavigate();
 
+    const handleClickObra = (oid: number) => {
+        navigate(`/obras/${oid}`)
+    }
+
     const handleClickAddObra = () => {
         navigate("/addObra")
     }
 
 
     return (
-        <div>
-            <h1>Obras</h1>
-            <TableContainer component={Paper}>
+        <div className="form-obras">
+            <h1 className="black-text">Obras</h1>
+            <TableContainer component={Paper}  sx={{ border: '1px solid black' }}>
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
                     <TableHead>
                         <TableRow>
@@ -120,13 +126,17 @@ export default function Obras() {
                         ).map((obra) => (
                             <TableRow key={obra.oid}>
                                 <TableCell component="th" scope="row">
-                                    {obra.name}
+                                    <a href="#" className="black-text" onClick={() => handleClickObra(obra.oid)}>{obra.name}</a>
                                 </TableCell>
                                 <TableCell>{obra.location}</TableCell>
                                 <TableCell>{obra.description}</TableCell>
                                 <TableCell>{formatDate(obra.startDate)}</TableCell>
                                 <TableCell>{formatDate(obra.endDate)}</TableCell>
                                 <TableCell>{obra.status}</TableCell>
+                                <TableCell> <IconButton onClick={() => handleClickObra(obra.oid)}>
+                                    <ChevronRightSharpIcon/>
+                                </IconButton>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

@@ -10,6 +10,7 @@ import LogOut from "./user/LogOut.tsx"
 import {AuthnContainer} from "./context/Authn.tsx";
 import Profile from "./user/Profile.tsx";
 import AddObra from "./obra/AddObra.tsx";
+import ObrasInfo from "./obra/ObrasInfo.tsx";
 
 const AppLayout = () => {
   return (
@@ -52,13 +53,17 @@ const router = createBrowserRouter([
         "element": <Obras/>
       },
       {
+        "path": "/obras/:oid",
+        "element": <ObrasInfo/>
+      },
+      {
         "path": "/profile",
         "element": <Profile />
       },
       {
         "path": "/addObra",
         "element": <AddObra/>
-      }
+      },
   ]}
 ])
 

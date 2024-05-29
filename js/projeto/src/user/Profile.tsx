@@ -48,9 +48,9 @@ export default function Profile() {
 
 
     return (
-        <div>
-            <h1>Perfil</h1>
-            <TableContainer component={Paper}>
+        <div className="form-obras">
+            <h1 className="black-text">Perfil</h1>
+            <TableContainer component={Paper}  sx={{ border: '1px solid black' }}>
                 <Table sx={{ minWidth: 650 }} aria-label="user profile table">
                     <TableBody>
                         <TableRow>

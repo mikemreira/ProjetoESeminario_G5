@@ -7,6 +7,8 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import {colors} from "@mui/material";
 
 interface ObraValues {
     name: string;
@@ -86,6 +88,7 @@ export default function AddObra() {
     };
 
     return (
+        <div className="form-obras">
         <Box
             component="form"
             sx={{
@@ -98,7 +101,7 @@ export default function AddObra() {
             autoComplete="off"
             onSubmit={handleSubmit}
         >
-            <h1>Adicionar Obra</h1>
+            <h1 className="black-text">Adicionar Obra</h1>
             <TextField
                 required
                 id="name"
@@ -127,7 +130,7 @@ export default function AddObra() {
                 required
                 id="startDate"
                 label="Data de Início"
-                type="date"
+                type={"date"}
                 InputLabelProps={{
                     shrink: true,
                 }}
@@ -136,7 +139,6 @@ export default function AddObra() {
                 name="startDate"
             />
             <TextField
-
                 id="endDate"
                 label="Data de Fim"
                 type="date"
@@ -170,5 +172,6 @@ export default function AddObra() {
             {submitted && valid && <Alert severity="success" sx={{ m: 1 }}>Obra adicionada com sucesso!</Alert>}
             {submitted && !valid && <Alert severity="error" sx={{ m: 1 }}>{error}</Alert>}
         </Box>
+        </div>
     );
 }
