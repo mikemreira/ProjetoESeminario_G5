@@ -8,3 +8,12 @@ data class RegistoOutputModel(
     val saida: LocalDateTime? = null,
     val nome: String
 )
+
+data class RegistoInputModel(
+    val time: LocalDateTime = LocalDateTime.now(),
+    val obraId: Int
+)
+
+data class RegistoPostOutputModel(
+    val message: String
+)
