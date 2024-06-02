@@ -18,9 +18,10 @@ import { useTheme } from '@mui/material/styles';
 import {Box} from "@mui/material";
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import InfoIcon from '@mui/icons-material/Info';
 import ChevronRightSharpIcon from '@mui/icons-material/ChevronRightSharp';
+import { Snackbar } from "@mui/material";
 
 interface DateObject {
     year: number;
@@ -56,7 +57,17 @@ export default function Obras() {
     const [obras, setObras] = useState<ObrasOutputModel>({ obras: [] });
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(3);
-    const theme = useTheme(); // Access theme using useTheme hook
+    const theme = useTheme();
+    const location = useLocation();
+    const success = location.state?.success;
+    const [open, setOpen] = React.useState(success || false);
+
+    const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setOpen(false);
+    };
 
     useEffect(() => {
         fetch("/api/obras", {
@@ -143,7 +154,7 @@ export default function Obras() {
                 </Table>
             </TableContainer>
             <TablePagination
-                rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+                rowsPerPageOptions={[1, 3, 5]}
                 colSpan={3}
                 count={obras.obras.length}
                 rowsPerPage={rowsPerPage}
@@ -157,6 +168,13 @@ export default function Obras() {
                     <AddIcon />
                 </Fab>
             </Box>
+            <Snackbar
+                open={open}
+                autoHideDuration={5000}
+                onClose={handleClose}
+                message="Obra adicionada com sucesso"
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            />
         </div>
     );
 
