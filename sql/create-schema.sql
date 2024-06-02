@@ -39,11 +39,10 @@ create table if not exists Papel (
 );
 
 create table if not exists Registo (
-                         id int,
+                         id serial,
                          id_utilizador int references Utilizador(id),
                          id_obra int references Obra(id),
-                         entrada time not null default current_time,
-                         saida time default null,
-                         data_entrada date not null default current_date,
+                         entrada timestamp not null default current_timestamp,
+                         saida timestamp default null,
                          primary key (id, id_utilizador, id_obra)
 );
