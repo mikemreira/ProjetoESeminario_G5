@@ -61,7 +61,7 @@ export default function ObrasInfo() {
     }
 
     return (
-        <div >
+        <div className="form-obras-info">
             <h2>Informações da Obra:</h2>
             <ul>
                 {Object.entries(obra).map(([key, value]) => (

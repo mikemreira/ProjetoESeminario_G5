@@ -7,8 +7,8 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import {colors} from "@mui/material";
+import {colors, Snackbar} from "@mui/material";
+import {Navigate} from "react-router-dom"
 
 interface ObraValues {
     name: string;
@@ -48,6 +48,8 @@ export default function AddObra() {
     const [submitted, setSubmitted] = useState(false);
     const [valid, setValid] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
+    const [redirect, setRedirect] = useState(null);
+    const [open, setOpen] = React.useState(false);
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -73,6 +75,8 @@ export default function AddObra() {
             setSubmitted(true);
             if (res.status === 201) {
                 setValid(true);
+                // setRedirect(<Navigate to="/obras" replace={true} />)
+                setRedirect(<Navigate to="/obras" state={{ success: true }} replace={true} />);
             } else {
                 setValid(false);
             }
@@ -81,14 +85,29 @@ export default function AddObra() {
             if (!valid) {
                 setError(body.error);
                 console.log(body.error);
+            } else {
+                setRedirect(<Navigate to="/obras" replace={true} />)
             }
         }).catch(error => {
             setError(error.message);
         });
     };
 
+    const handleClick = () => {
+        setOpen(true);
+    };
+
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setOpen(false);
+    }
+
     return (
         <div className="form-obras">
+            {redirect}
         <Box
             component="form"
             sx={{
@@ -169,9 +188,19 @@ export default function AddObra() {
             <Button type="submit" variant="contained" color="primary" sx={{ m: 1 }}>
                 Adicionar
             </Button>
-            {submitted && valid && <Alert severity="success" sx={{ m: 1 }}>Obra adicionada com sucesso!</Alert>}
             {submitted && !valid && <Alert severity="error" sx={{ m: 1 }}>{error}</Alert>}
         </Box>
         </div>
     );
 }
+
+/*
+{submitted && valid && <Alert severity="success" sx={{ m: 1 }}>Obra adicionada com sucesso!</Alert>}
+<TextField
+    id="foto"
+    label="Foto"
+    value={values.foto}
+    onChange={handleInputChange}
+    name="foto"
+/>
+ */

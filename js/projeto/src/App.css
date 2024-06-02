@@ -21,6 +21,14 @@
   padding: 25px;
 }
 
+.form-obras-info {
+  width: auto;
+  background-color: dimgray;
+  margin: auto;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+  padding: 25px;
+}
+
 .black-text {
   color: #333333;
 }

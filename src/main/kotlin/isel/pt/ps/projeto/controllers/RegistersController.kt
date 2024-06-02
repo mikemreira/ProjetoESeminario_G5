@@ -2,9 +2,15 @@ package isel.pt.ps.projeto.controllers
 
 import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
 import isel.pt.ps.projeto.models.Problem
+import isel.pt.ps.projeto.models.registers.RegisterInfoModel
+import isel.pt.ps.projeto.models.registers.RegisterInputModel
+import isel.pt.ps.projeto.models.registers.RegisterOutputModel
+import isel.pt.ps.projeto.models.registers.UserRegistersOutputModel
+import isel.pt.ps.projeto.services.RegistersInfoError
 import isel.pt.ps.projeto.services.RegistersService
 import isel.pt.ps.projeto.utils.Failure
 import isel.pt.ps.projeto.utils.Success
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -15,37 +21,71 @@ class RegistersController(
     private val registersService: RegistersService,
     private val requestTokenProcessor: RequestTokenProcessor,
 ) {
-/*
-    @GetMapping("/users")
-    fun getRegistersOfUser(
+
+    @GetMapping("")
+    fun getUserRegisters(
         @RequestHeader("Authorization") userToken: String,
-        //@PathVariable uid: Int,
+        response: HttpServletResponse
     ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        val res = registersService.getRegistersOfUser(authUser.user.id)
+        val res = registersService.getUserRegisters(authUser.user.id)
         return when (res) {
             is Success ->
                 ResponseEntity.status(200)
-                    .body(res.value.map {
-                        // model to output
-                        // TODO
-                    })
+                    .body(
+                        UserRegistersOutputModel(
+                            res.value.map {
+                                RegisterOutputModel(
+                                    it.entrada,
+                                    it.saida,
+                                    it.nome,
+                                )
+                            }
+                        )
+                    )
             is Failure ->
                 when (res.value) {
-                    // TODO
+                    RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                    RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 }
         }
     }
 
-    @GetMapping("/users/{uid}/obras/{oid}")
-    fun getRegistersOfUserAndConstruction(
+    @PostMapping("")
+    fun addUsersRegisterEntry(
         @RequestHeader("Authorization") userToken: String,
-        @PathVariable uid: Int,
-        @PathVariable oid: Int,
-    ) : ResponseEntity<*>{
+        @RequestBody register: RegisterInputModel
+    ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        // TODO
+        val res = registersService.addUserRegisterEntry(authUser.user.id, register.obraId, register.time)
+        return when (res) {
+            is Success ->
+                ResponseEntity.status(201)
+                    .body(RegisterInfoModel("Successful"))
+            is Failure ->
+                when (res.value) {
+                    RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                    RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                }
+        }
     }
 
- */
+    @PutMapping("")
+    fun addUsersRegisterExit(
+        @RequestHeader("Authorization") userToken: String,
+        @RequestBody register: RegisterInputModel
+    ): ResponseEntity<*> {
+        val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        val res = registersService.addUserRegisterExit(authUser.user.id, register.obraId, register.time)
+        return when (res) {
+            is Success ->
+                ResponseEntity.status(201)
+                    .body(RegisterInfoModel("Successful"))
+            is Failure ->
+                when (res.value) {
+                    RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                    RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                }
+        }
+    }
 }

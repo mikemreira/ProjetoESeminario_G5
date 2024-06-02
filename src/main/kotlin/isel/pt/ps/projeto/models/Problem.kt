@@ -42,5 +42,9 @@ class Problem(
         val invalidConstruction = Problem("Invalid construction")
 
         val emptyEmployees = Problem("No employees in construction")
+
+        val noRegisters = Problem("No registers")
+
+        val invalidRegister = Problem("Invalid register")
     }
 }
