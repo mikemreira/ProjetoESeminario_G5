@@ -1,5 +1,5 @@
 import "./styles.css";
-import { Link } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import { useCurrentUser } from "./context/Authn.tsx";
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
@@ -29,13 +29,18 @@ function NavBar() {
         setAnchorElUser(null);
     };
 
+    const navigate = useNavigate();
+
+    const handleClickHome = () => {
+        navigate(`/`)
+    }
+
     return (
         <AppBar position="fixed" >
             <Container maxWidth="xl">
                 <Toolbar disableGutters>
-                    <Typography
-                        variant="h6"
-                        noWrap
+                    <Button
+                        onClick={handleClickHome}
                         sx={{
                             mr: 3,
                             display: { xs: 'none', md: 'flex' },
@@ -44,10 +49,11 @@ function NavBar() {
                             letterSpacing: '.3rem',
                             color: 'inherit',
                             textDecoration: 'none',
+                            fontSize: '1.5rem',
                         }}
                     >
                         Registo de acessos
-                    </Typography>
+                    </Button>
                     {currentUser ? (
                         <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                             <Button

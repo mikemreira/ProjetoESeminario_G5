@@ -5,16 +5,13 @@ import NavBar from './NavBar'
 export default function Home() {
     return (
         <>
-            <NavBar/>
+            <NavBar />
+            <div className="form-home">
+                <h1>Bem vindo ao Registo de Acessos</h1>
+                <p>
+                    Aqui poderás registar os teus acessos e visualizar o histórico dos mesmos.
+                </p>
+            </div>
         </>
     )
 }
-
-/*
-    <div>
-                <Link to="/login">Login</Link>
-            </div>
-            <div>
-                <Link to="/signup">Sign Up</Link>
-            </div>
-*/

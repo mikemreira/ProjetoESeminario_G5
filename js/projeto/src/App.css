@@ -29,6 +29,15 @@
   padding: 25px;
 }
 
+.form-home {
+  background-color: white;
+  color: black;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: auto;
+  text-align: center;
+}
+
 .black-text {
   color: #333333;
 }
