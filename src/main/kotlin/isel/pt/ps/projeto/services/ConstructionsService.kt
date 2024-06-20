@@ -3,12 +3,16 @@ package isel.pt.ps.projeto.services
 import isel.pt.ps.projeto.domain.constructions.ConstructionsDomain
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.constructions.ConstructionAndRole
+import isel.pt.ps.projeto.models.registers.Register
+import isel.pt.ps.projeto.models.registers.RegisterAndUser
+import isel.pt.ps.projeto.models.registers.RegisterFilters
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
 import isel.pt.ps.projeto.utils.Either
 import isel.pt.ps.projeto.utils.failure
 import isel.pt.ps.projeto.utils.success
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import org.springframework.stereotype.Component
 
 sealed class ConstructionCreationError {
@@ -21,12 +25,20 @@ sealed class ConstructionInfoError {
     object NoConstructions : ConstructionInfoError()
     object EmptyEmployees : ConstructionInfoError()
     object NoAccessToConstruction: ConstructionInfoError()
+    object InvalidRegister: ConstructionInfoError()
+
+    object NoPermission: ConstructionInfoError()
+
 }
 
 typealias ConstructionAndRoleResult = Either<ConstructionInfoError, ConstructionAndRole>
 typealias ConstructionCreationResult = Either<ConstructionCreationError, Int>
 typealias ConstructionInfoResult = Either<ConstructionInfoError, Construction>
 typealias ConstructionsInfoResult = Either<ConstructionInfoError, List<Construction>>
+
+typealias RegisterInfoResult = Either<ConstructionInfoError, Boolean>
+typealias ListOfRegisterInfoResult = Either<ConstructionInfoError, List<RegisterAndUser>>
+
 typealias EmployeesInConstructionResult = Either<ConstructionInfoError, List<User>>
 
 @Component
@@ -46,13 +58,22 @@ class ConstructionsService(
 
     //fun getConstructionAndUserRole(userId: Int, oid: Int): Con
 
-    fun getConstructionUsers(oid: Int): EmployeesInConstructionResult{
-        val users = constructionsRepository.getConstructionsUsers(oid)
-        return if (users.isEmpty()) {  // se nao existirem users deviamos de retornar uma lista vazia
-            failure(ConstructionInfoError.EmptyEmployees)
-        } else {
-            success(users)
+    fun getConstructionUsers(userId: Int, oid: Int): EmployeesInConstructionResult{
+        val construction = constructionsRepository.getConstruction(oid)
+            ?: return failure(ConstructionInfoError.ConstructionNotFound)
+
+        val role = constructionsRepository.getUserRoleFromConstruction(userId, construction.oid)
+            ?: return failure(ConstructionInfoError.NoAccessToConstruction)
+
+        if (role == "admin") {
+            val users = constructionsRepository.getConstructionsUsers(oid)
+            return if (users.isEmpty()) {  // se nao existirem users deviamos de retornar uma lista vazia
+                failure(ConstructionInfoError.EmptyEmployees)
+            } else {
+                success(users)
+            }
         }
+        return failure(ConstructionInfoError.NoPermission)
     }
 
     fun getConstructionsOfUser(uid: Int): ConstructionsInfoResult {
@@ -89,6 +110,28 @@ class ConstructionsService(
 
         val constructionAndRole = ConstructionAndRole(construction, role)
         return success(constructionAndRole)
+    }
+
+    fun getRegisters(userId: Int, oid: Int, filters: RegisterFilters): ListOfRegisterInfoResult {
+        val construction = constructionsRepository.getConstruction(oid)
+            ?: return failure(ConstructionInfoError.ConstructionNotFound)
+
+        val role = constructionsRepository.getUserRoleFromConstruction(userId, construction.oid)
+            ?: return failure(ConstructionInfoError.NoAccessToConstruction)
+
+        val registers = constructionsRepository.getRegisters(userId, oid, role, filters)
+
+        return success(registers)
+    }
+    fun registerIntoConstruction(userId: Int, oid: Int, startTime: LocalDateTime, endTime: LocalDateTime): RegisterInfoResult {
+        val construction = constructionsRepository.getConstruction(oid)
+            ?: return failure(ConstructionInfoError.ConstructionNotFound)
+
+        val role = constructionsRepository.getUserRoleFromConstruction(userId, construction.oid)
+            ?: return failure(ConstructionInfoError.NoAccessToConstruction)
+        // Could be changed to return regist
+        constructionsRepository.registerIntoConstruction(userId, oid, startTime, endTime, role)
+        return success(true)
     }
 
     //fun checkConstructionByName(name: String): Boolean = constructionsRepository.checkConstructionByName(name)

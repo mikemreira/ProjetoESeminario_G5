@@ -8,7 +8,7 @@ data class ConstructionOutputModel(
     val location: String,
     val description: String,
     val startDate: LocalDate,
-    val endDate: LocalDate? = null,
+    val endDate: LocalDate?,
     val image: String? = null,
     val status: String
 )

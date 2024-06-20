@@ -44,5 +44,6 @@ create table if not exists Registo (
                          id_obra int references Obra(id),
                          entrada timestamp not null default current_timestamp,
                          saida timestamp default null,
+                         status varchar(64) check (status in ('pending', 'completed')),
                          primary key (id, id_utilizador, id_obra)
 );

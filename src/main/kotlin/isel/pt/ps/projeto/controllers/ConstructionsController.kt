@@ -3,6 +3,8 @@ package isel.pt.ps.projeto.controllers
 import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
 import isel.pt.ps.projeto.models.Problem
 import isel.pt.ps.projeto.models.constructions.*
+import isel.pt.ps.projeto.models.registers.RegisterFilters
+import isel.pt.ps.projeto.models.registers.RegisterInputModelWeb
 import isel.pt.ps.projeto.services.ConstructionCreationError
 import isel.pt.ps.projeto.services.ConstructionInfoError
 import isel.pt.ps.projeto.services.ConstructionsService
@@ -57,15 +59,21 @@ class ConstructionsController(
                     ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                     ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
                     ConstructionInfoError.NoAccessToConstruction -> Problem.response(401, Problem.unauthorizedUser)
+                    ConstructionInfoError.InvalidRegister -> TODO()
+                    ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                 }
         }
     }
 
     @GetMapping("/{oid}/users")
     fun getConstructionsUsers(
+        @RequestHeader("Authorization") userToken: String,
         @PathVariable oid: Int,
     ): ResponseEntity<*> {
-        val users = constructionService.getConstructionUsers(oid)
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+
+        val users = constructionService.getConstructionUsers(authUser.user.id, oid)
         return ResponseEntity.status(200).body(users)
     }
 
@@ -101,6 +109,8 @@ class ConstructionsController(
                     ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                     ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
                     ConstructionInfoError.NoAccessToConstruction -> TODO()
+                    ConstructionInfoError.InvalidRegister -> TODO()
+                    ConstructionInfoError.NoPermission -> TODO()
                 }
         }
     }
@@ -132,6 +142,56 @@ class ConstructionsController(
                     //ConstructionCreationError.ConstructionAlreadyExists -> Problem.response(400, Problem.constructionAlreadyExists)
                     ConstructionCreationError.InvalidConstruction -> Problem.response(400, Problem.invalidConstruction)
                 }
+        }
+    }
+
+    // TODO Adicionar filtros
+    @GetMapping("{oid}/registers")
+    fun getRegistersOfUserFromConstruction(
+        @PathVariable oid: Int,
+        @RequestBody filters: RegisterFilters,
+        @RequestHeader("Authorization") userToken: String,
+    ): ResponseEntity<*>{
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+
+        return when (val res = constructionService.getRegisters(authUser.user.id, oid, filters)) {
+            is Success -> ResponseEntity.status(200).body(res.value)
+            is Failure -> when (res.value) {
+                ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
+                ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
+                ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
+                ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
+                ConstructionInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+            }
+        }
+    }
+
+    @PostMapping("{oid}/register")
+    fun registerInConstruction(
+        @RequestBody input: RegisterInputModelWeb,
+        @PathVariable oid: Int,
+        @RequestHeader("Authorization") userToken: String,
+    ): ResponseEntity<*> {
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        val res = constructionService.registerIntoConstruction(
+            authUser.user.id,
+            oid,
+            input.startTime,
+            input.endTime
+        )
+        return when(res) {
+            is Success -> ResponseEntity.status(201).body("Registered")
+            is Failure -> when (res.value) {
+                ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
+                ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
+                ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
+                ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
+                ConstructionInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+            }
         }
     }
 }

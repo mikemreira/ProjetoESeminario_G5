@@ -2,15 +2,21 @@ package isel.pt.ps.projeto.repository.jdbc
 
 import isel.pt.ps.projeto.domain.users.PasswordValidationInfo
 import isel.pt.ps.projeto.models.constructions.Construction
+import isel.pt.ps.projeto.models.registers.Register
+import isel.pt.ps.projeto.models.registers.RegisterAndUser
+import isel.pt.ps.projeto.models.registers.RegisterFilters
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.repository.ConstructionRepository
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toLocalDate
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.stereotype.Component
 import java.sql.Connection
 import java.sql.Date
 import java.sql.SQLException
+import java.sql.Timestamp
 
 
 @Component
@@ -109,7 +115,7 @@ class ConstructionsRepository : ConstructionRepository {
                             result.getString("localização"),
                             result.getString("descrição"),
                             result.getDate("data_inicio").toString().toLocalDate(),
-                            null,
+                            result.getDate("data_fim").toString().toLocalDate(),
                             result.getString("status"),
                         ),
                     )
@@ -139,13 +145,14 @@ class ConstructionsRepository : ConstructionRepository {
             return try {
                 val generatedColumns = arrayOf("id")
                 val insertStatement = it.prepareStatement(
-                    "INSERT INTO Obra (nome, localização, descrição, data_inicio)\n" +
-                    "VALUES (?,?,?,?) ", generatedColumns
+                    "INSERT INTO Obra (nome, localização, descrição, data_inicio, data_fim)\n" +
+                    "VALUES (?,?,?,?,?) ", generatedColumns
                 )
                 insertStatement.setString(1,name)
                 insertStatement.setString(2,location)
                 insertStatement.setString(3,description)
                 insertStatement.setDate(4,Date.valueOf(startDate.toString()))
+                insertStatement.setDate(5,Date.valueOf(endDate.toString()))
                 insertStatement.executeUpdate()
                 insertStatement.generatedKeys.use { generatedKeys ->
                     if (generatedKeys.next()) {
@@ -197,6 +204,89 @@ class ConstructionsRepository : ConstructionRepository {
         }
     }
 
+    override fun registerIntoConstruction(userId: Int, oid: Int, startTime: LocalDateTime, endTime: LocalDateTime, role: String) {
+        initializeConnection().use {
+            it.autoCommit = false
+            try {
+                val pStatement = it.prepareStatement("Insert into Registo values (?,?,?,?,?)")
+                pStatement.setInt(1, userId)
+                pStatement.setInt(2, oid)
+                pStatement.setTimestamp(3, Timestamp.valueOf(startTime.toJavaLocalDateTime()))
+                pStatement.setTimestamp(4, Timestamp.valueOf(endTime.toJavaLocalDateTime()))
+                if (role == "admin")
+                    pStatement.setString(5, "completed")
+                else
+                    pStatement.setString(5, "pending")
+                pStatement.executeUpdate()
+            }  catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun getRegisters(userId: Int, oid: Int, role: String, filters: RegisterFilters): List<RegisterAndUser> {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement(
+                    "SELECT r.id as rid, u.nome as nome, u.id as uid, r.entrada as entrada, r.saida as saida, r.status as status \n" +
+                        "FROM Utilizador u\n" +
+                        "INNER JOIN Registo r ON r.id_utilizador = u.id\n" +
+                        "WHERE 1=1\n" +
+                        "  AND (r.id_obra = COALESCE(?, r.id_obra) OR r.id_obra IS NULL)\n" +
+                        "  AND (u.id = COALESCE(?, u.id) OR u.id IS NULL)\n" +
+                        "  AND (u.nome = COALESCE(?, u.nome) OR u.nome IS NULL)\n" +
+                        "  AND (r.entrada = COALESCE(?::timestamp, r.entrada) OR r.entrada IS NULL)\n" +
+                        "  AND (r.saida = COALESCE(?::timestamp, r.saida) OR r.saida IS NULL)\n" +
+                        "  AND (r.status = COALESCE(?, r.status) OR r.status IS NULL)"
+                )
+                pStatement.setInt(1, oid)
+                if (role == "admin") {
+                    if (filters.userId != null)
+                        if (filters.mine)
+                            pStatement.setInt(2, userId)
+                        else
+                            pStatement.setInt(2, filters.userId)
+                    else pStatement.setNull(2, java.sql.Types.INTEGER)
+                    pStatement.setString(3, filters.name)
+                    pStatement.setTimestamp(4, if (filters.startDate == null) null else Timestamp.valueOf( filters.startDate.atStartOfDay()))
+                    pStatement.setTimestamp(5, if (filters.endDate == null) null else Timestamp.valueOf( filters.endDate.atStartOfDay()))
+                    pStatement.setString(6, filters.status)
+                } else {
+                    pStatement.setInt(2, userId)
+                    pStatement.setString(3, filters.name)
+                    pStatement.setTimestamp(4, if (filters.startDate == null) null else Timestamp.valueOf( filters.startDate.atStartOfDay()))
+                    pStatement.setTimestamp(5, if (filters.endDate == null) null else Timestamp.valueOf( filters.endDate.atStartOfDay()))
+                    pStatement.setString(6, filters.status)
+                }
+                val result = pStatement.executeQuery()
+                val registers = mutableListOf<RegisterAndUser>()
+                while (result.next()){
+                    val saida = result.getTimestamp("saida")
+                    registers.add(
+                        RegisterAndUser(
+                            result.getString("nome"),
+                            result.getInt("rid"),
+                            oid,
+                            result.getInt("uid"),
+                            result.getTimestamp("entrada").toLocalDateTime(),
+                            if (saida == null) null else saida.toLocalDateTime(),
+                            result.getString("status")
+                        )
+                    )
+                }
+                registers
+            }  catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
 
     override fun checkConstructionByName(name: String): Boolean {
         TODO("Not yet implemented")
