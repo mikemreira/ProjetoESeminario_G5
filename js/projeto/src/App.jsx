@@ -11,6 +11,7 @@ import {AuthnContainer} from "./context/Authn.tsx";
 import Profile from "./user/Profile.tsx";
 import AddObra from "./obra/AddObra.tsx";
 import ObrasInfo from "./obra/ObrasInfo.tsx";
+import Registos from "./registos/Registos.tsx";
 
 const AppLayout = () => {
   return (
@@ -64,6 +65,10 @@ const router = createBrowserRouter([
         "path": "/addObra",
         "element": <AddObra/>
       },
+      {
+        "path": "/registos",
+        "element": <Registos/>
+      }
   ]}
 ])
 

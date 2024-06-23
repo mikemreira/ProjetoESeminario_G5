@@ -36,9 +36,13 @@ class RegistersController(
                         UserRegistersOutputModel(
                             res.value.map {
                                 RegisterOutputModel(
+                                    it.id,
+                                    it.id_utilizador,
+                                    it.id_obra,
+                                    it.nome,
                                     it.entrada,
                                     it.saida,
-                                    it.nome,
+                                    it.status
                                 )
                             }
                         )

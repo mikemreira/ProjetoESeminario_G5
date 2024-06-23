@@ -30,17 +30,25 @@ class RegistersRepository : RegistersRepository {
                     if (res2.getTimestamp("saida") != null)
                         list.add(
                             RegisterOutputModel(
+                                res2.getInt("id"),
+                                res2.getInt("id_utilizador"),
+                                res2.getInt("id_obra"),
+                                res2.getString("nome"),
                             res2.getTimestamp("entrada").toLocalDateTime(),
                             res2.getTimestamp("saida").toLocalDateTime(),
-                            res2.getString("nome")
+                                res2.getString("status"),
                         )
                         )
                     else {
                         list.add(
                             RegisterOutputModel(
+                                res2.getInt("id"),
+                                res2.getInt("id_utilizador"),
+                                res2.getInt("id_obra"),
+                                res2.getString("nome"),
                             res2.getTimestamp("entrada").toLocalDateTime(),
                             null,
-                            res2.getString("nome")
+                            res2.getString("status")
                         )
                         )
                     }
