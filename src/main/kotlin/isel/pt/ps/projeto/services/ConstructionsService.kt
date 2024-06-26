@@ -1,13 +1,16 @@
 package isel.pt.ps.projeto.services
 
 import isel.pt.ps.projeto.domain.constructions.ConstructionsDomain
+import isel.pt.ps.projeto.domain.invite.Invite
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.constructions.ConstructionAndRole
 import isel.pt.ps.projeto.models.registers.Register
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterFilters
+import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
+import isel.pt.ps.projeto.repository.jdbc.UsersRepository
 import isel.pt.ps.projeto.utils.Either
 import isel.pt.ps.projeto.utils.failure
 import isel.pt.ps.projeto.utils.success
@@ -26,8 +29,8 @@ sealed class ConstructionInfoError {
     object EmptyEmployees : ConstructionInfoError()
     object NoAccessToConstruction: ConstructionInfoError()
     object InvalidRegister: ConstructionInfoError()
-
     object NoPermission: ConstructionInfoError()
+    object AlreadyInConstruction: ConstructionInfoError()
 
 }
 
@@ -36,14 +39,16 @@ typealias ConstructionCreationResult = Either<ConstructionCreationError, Int>
 typealias ConstructionInfoResult = Either<ConstructionInfoError, Construction>
 typealias ConstructionsInfoResult = Either<ConstructionInfoError, List<Construction>>
 
+typealias InviteInfoResult = Either<ConstructionInfoError, Boolean>
 typealias RegisterInfoResult = Either<ConstructionInfoError, Boolean>
 typealias ListOfRegisterInfoResult = Either<ConstructionInfoError, List<RegisterAndUser>>
 
-typealias EmployeesInConstructionResult = Either<ConstructionInfoError, List<User>>
+typealias EmployeesInConstructionResult = Either<ConstructionInfoError, List<SimpleUser>>
 
 @Component
 class ConstructionsService(
     private val constructionsRepository: ConstructionsRepository,
+    private val usersRepository: UsersRepository,
     private val constructionsDomain: ConstructionsDomain
 ) {
     fun getConstruction(oid: Int): ConstructionInfoResult {
@@ -112,11 +117,35 @@ class ConstructionsService(
         return success(constructionAndRole)
     }
 
-    fun getRegisters(userId: Int, oid: Int, filters: RegisterFilters): ListOfRegisterInfoResult {
+    fun inviteToConstruction(userId: Int, oid: Int, invite: Invite): InviteInfoResult {
         val construction = constructionsRepository.getConstruction(oid)
             ?: return failure(ConstructionInfoError.ConstructionNotFound)
 
         val role = constructionsRepository.getUserRoleFromConstruction(userId, construction.oid)
+            ?: return failure(ConstructionInfoError.NoAccessToConstruction)
+
+        if (role != "admin")
+            return failure(ConstructionInfoError.NoPermission)
+
+        val user = constructionsRepository.getUserByEmailFromConstructions(oid, invite.email)
+
+        if (user != null)
+            return failure(ConstructionInfoError.AlreadyInConstruction)
+
+        // TODO(SEND MAIL)
+
+        val res = constructionsRepository.inviteToConstruction(oid, invite.email)
+        return success(res)
+    }
+
+    fun getRegisters(userId: Int, oid: Int, filters: RegisterFilters): ListOfRegisterInfoResult {
+        val construction = constructionsRepository.getConstruction(oid)
+            ?: return failure(ConstructionInfoError.ConstructionNotFound)
+
+        println("ID : $userId")
+        println("OID : $oid")
+
+        val role = constructionsRepository.getUserRoleFromConstruction(userId, construction.oid).also { println("ROLE : $it") }
             ?: return failure(ConstructionInfoError.NoAccessToConstruction)
 
         val registers = constructionsRepository.getRegisters(userId, oid, role, filters)

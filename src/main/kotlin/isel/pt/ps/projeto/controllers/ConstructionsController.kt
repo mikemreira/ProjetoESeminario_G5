@@ -1,6 +1,7 @@
 package isel.pt.ps.projeto.controllers
 
 import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
+import isel.pt.ps.projeto.domain.invite.Invite
 import isel.pt.ps.projeto.models.Problem
 import isel.pt.ps.projeto.models.constructions.*
 import isel.pt.ps.projeto.models.registers.RegisterFilters
@@ -11,6 +12,7 @@ import isel.pt.ps.projeto.services.ConstructionsService
 import isel.pt.ps.projeto.utils.Failure
 import isel.pt.ps.projeto.utils.Success
 import kotlinx.datetime.toLocalDate
+import kotlinx.datetime.toLocalDateTime
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -61,6 +63,7 @@ class ConstructionsController(
                     ConstructionInfoError.NoAccessToConstruction -> Problem.response(401, Problem.unauthorizedUser)
                     ConstructionInfoError.InvalidRegister -> TODO()
                     ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                    ConstructionInfoError.AlreadyInConstruction -> TODO()
                 }
         }
     }
@@ -111,6 +114,7 @@ class ConstructionsController(
                     ConstructionInfoError.NoAccessToConstruction -> TODO()
                     ConstructionInfoError.InvalidRegister -> TODO()
                     ConstructionInfoError.NoPermission -> TODO()
+                    ConstructionInfoError.AlreadyInConstruction -> TODO()
                 }
         }
     }
@@ -144,8 +148,21 @@ class ConstructionsController(
                 }
         }
     }
+/*
+    @PostMapping("{oid}/invite")
+    fun inviteUserToConstruction(
+        @PathVariable oid: Int,
+        @RequestBody invite: Invite,
+        @RequestHeader("Authorization") userToken: String
+    ): ResponseEntity<*>{
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        val res = constructionService.inviteToConstruction(authUser.user.id, oid, invite)
+        // TODO(ERROR)
+    }
 
-    // TODO Adicionar filtros
+ */
+
     @GetMapping("{oid}/registers")
     fun getRegistersOfUserFromConstruction(
         @PathVariable oid: Int,
@@ -164,6 +181,7 @@ class ConstructionsController(
                 ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                 ConstructionInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                ConstructionInfoError.AlreadyInConstruction -> TODO()
             }
         }
     }
@@ -179,8 +197,8 @@ class ConstructionsController(
         val res = constructionService.registerIntoConstruction(
             authUser.user.id,
             oid,
-            input.startTime,
-            input.endTime
+            input.startTime.toLocalDateTime(),
+            input.endTime.toLocalDateTime()
         )
         return when(res) {
             is Success -> ResponseEntity.status(201).body("Registered")
@@ -191,7 +209,9 @@ class ConstructionsController(
                 ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                 ConstructionInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                ConstructionInfoError.AlreadyInConstruction -> TODO()
             }
         }
     }
+
 }

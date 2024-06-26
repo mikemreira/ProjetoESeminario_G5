@@ -2,9 +2,9 @@ package isel.pt.ps.projeto.repository.jdbc
 
 import isel.pt.ps.projeto.domain.users.PasswordValidationInfo
 import isel.pt.ps.projeto.models.constructions.Construction
-import isel.pt.ps.projeto.models.registers.Register
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterFilters
+import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.repository.ConstructionRepository
 import kotlinx.datetime.LocalDate
@@ -61,7 +61,7 @@ class ConstructionsRepository : ConstructionRepository {
         }
     }
 
-    override fun getConstructionsUsers(oid: Int): List<User> {
+    override fun getConstructionsUsers(oid: Int): List<SimpleUser> {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -74,13 +74,12 @@ class ConstructionsRepository : ConstructionRepository {
                     )
                 pStatement.setInt(1, oid)
                 val result = pStatement.executeQuery()
-                val list = mutableListOf<User>()
+                val list = mutableListOf<SimpleUser>()
                 while (result.next()) {
-                    list.add(User(
+                    list.add(SimpleUser(
                         result.getInt("id"),
                         result.getString("nome"),
                         result.getString("email"),
-                        PasswordValidationInfo(result.getString("pass")),
                         result.getString("morada")))
                 }
                 list
@@ -152,7 +151,7 @@ class ConstructionsRepository : ConstructionRepository {
                 insertStatement.setString(2,location)
                 insertStatement.setString(3,description)
                 insertStatement.setDate(4,Date.valueOf(startDate.toString()))
-                insertStatement.setDate(5,Date.valueOf(endDate.toString()))
+                insertStatement.setDate(5, if (endDate !=null) Date.valueOf(endDate.toString()) else null)
                 insertStatement.executeUpdate()
                 insertStatement.generatedKeys.use { generatedKeys ->
                     if (generatedKeys.next()) {
@@ -204,11 +203,62 @@ class ConstructionsRepository : ConstructionRepository {
         }
     }
 
+    override fun getUserByEmailFromConstructions(oid: Int, email: String): SimpleUser? {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement("select u.id, u.nome, u.email, u.morada from utilizador u\n" +
+                    "inner join papel p on p.id_utilizador = u.id\n" +
+                    "inner join obra o on o.id = p.id_obra\n" +
+                    "where u.email = ?")
+                pStatement.setString(1, email)
+                val result = pStatement.executeQuery()
+                if (!result.next())
+                    null
+                else
+                    SimpleUser(
+                        result.getInt("id"),
+                        result.getString("nome"),
+                        result.getString("email"),
+                        result.getString("morada")
+                    )
+            }  catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+
+    }
+
+    override fun inviteToConstruction(oid: Int, email: String): Boolean {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement("insert into Convite (email, obra) values (?,?)")
+                pStatement.setString(1, email)
+                pStatement.setInt(2, oid)
+                pStatement.executeUpdate()
+                true
+            }  catch (e: SQLException) {
+                if (e.sqlState == "23505") { // SQL state for unique violation
+                    println("Duplicate entry: $email, $oid")
+                    false
+                } else {
+                    throw e
+                }
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
     override fun registerIntoConstruction(userId: Int, oid: Int, startTime: LocalDateTime, endTime: LocalDateTime, role: String) {
         initializeConnection().use {
             it.autoCommit = false
             try {
-                val pStatement = it.prepareStatement("Insert into Registo values (?,?,?,?,?)")
+                val pStatement = it.prepareStatement("Insert into Registo (id_utilizador, id_obra, entrada, saida, status) values (?,?,?,?,?)")
                 pStatement.setInt(1, userId)
                 pStatement.setInt(2, oid)
                 pStatement.setTimestamp(3, Timestamp.valueOf(startTime.toJavaLocalDateTime()))

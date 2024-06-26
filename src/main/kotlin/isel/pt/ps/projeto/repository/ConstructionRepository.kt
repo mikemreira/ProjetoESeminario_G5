@@ -4,6 +4,7 @@ import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.registers.Register
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterFilters
+import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.models.users.User
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -15,13 +16,17 @@ interface ConstructionRepository {
      */
     fun getConstruction(oid: Int): Construction?
 
-    fun getConstructionsUsers(oid: Int): List<User>
+    fun getConstructionsUsers(oid: Int): List<SimpleUser>
 
     fun getConstructionsOfUser(id: Int): List<Construction>
 
     fun createConstruction(userId: Int, name: String, location: String, description: String, startDate: LocalDate, endDate: LocalDate?, foto: String?, status: String?): Int
 
     fun getUserRoleFromConstruction(id: Int, oid: Int): String?
+
+    fun getUserByEmailFromConstructions(oid: Int, email: String): SimpleUser?
+
+    fun inviteToConstruction(oid: Int, email: String): Boolean
 
     fun checkConstructionByName(name: String): Boolean
 

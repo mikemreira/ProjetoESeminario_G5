@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RegisterInputModelWeb(
-    val startTime: LocalDateTime,
-    val endTime: LocalDateTime
+    val startTime: String,
+    val endTime: String
 )
