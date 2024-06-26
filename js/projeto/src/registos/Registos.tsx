@@ -22,6 +22,9 @@ import { useCookies } from "react-cookie";
 import * as React from "react";
 import {Delete, Edit} from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
+import RegistoForm from "./RegistoForm"
+import Button from "@mui/material/Button";
+import AddIcon from "@mui/icons-material/Add";
 
 const columns = [
     {
@@ -87,6 +90,7 @@ const Registos = () => {
     const [cookies] = useCookies(["token"]);
     const [registos, setRegistos] = useState<Registo[]>([])
     const [loading, setLoading] = useState(true);
+    const [open, setOpen] = useState(false);
 
     useEffect(() => {
         fetch("/api/registos", {
@@ -109,9 +113,13 @@ const Registos = () => {
         })
     }, [cookies.token])
 
-    useEffect(() => {
-        console.log("Current registos: ", registos);
-    }, [registos]);
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
 
     const table = useMaterialReactTable({
         columns,
@@ -146,6 +154,17 @@ const Registos = () => {
                  */}
                 <MRT_GlobalFilterTextField table={table} />
                 <MRT_TablePagination table={table} />
+                <IconButton onClick={handleClickOpen} color="primary" sx={{
+                                bgcolor: 'primary.main',
+                                borderRadius: '40%',
+                                width: '40px',
+                                height: '40px',
+                                '&:hover': {
+                                    bgcolor: 'primary.dark',
+                                },
+                            }}>
+                    <AddIcon sx={{ fontSize: 32, color: 'white' }}/>
+                </IconButton>
             </Box>
             {/* Using Vanilla Material-UI Table components here */}
             <TableContainer sx={{ backgroundColor: '#cccccc',  }}>
@@ -197,6 +216,8 @@ const Registos = () => {
                 </Table>
             </TableContainer>
             <MRT_ToolbarAlertBanner stackAlertBanner table={table} />
+
+            <RegistoForm open={open} onHandleClose={handleClose} onHandleOpen={handleClickOpen}/>
         </Stack>
     );
 };
