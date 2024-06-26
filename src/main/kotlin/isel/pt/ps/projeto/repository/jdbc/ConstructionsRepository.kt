@@ -107,6 +107,7 @@ class ConstructionsRepository : ConstructionRepository {
                 val result = pStatement.executeQuery()
                 val list = mutableListOf<Construction>()
                 while (result.next()) {
+                    val dataF = result.getDate("data_fim")
                     list.add(
                         Construction(
                             result.getInt("id"),
@@ -114,7 +115,7 @@ class ConstructionsRepository : ConstructionRepository {
                             result.getString("localização"),
                             result.getString("descrição"),
                             result.getDate("data_inicio").toString().toLocalDate(),
-                            result.getDate("data_fim").toString().toLocalDate(),
+                            if (dataF != null) dataF.toString().toLocalDate() else null,
                             result.getString("status"),
                         ),
                     )
