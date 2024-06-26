@@ -38,6 +38,15 @@
   text-align: center;
 }
 
+.form-profile{
+  width: 1000px;
+  background-color: white;
+  margin: auto;
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
+  padding: 25px;
+}
+
+
 .black-text {
   color: #333333;
 }

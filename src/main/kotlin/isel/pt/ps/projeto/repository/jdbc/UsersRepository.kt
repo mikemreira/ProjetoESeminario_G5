@@ -345,11 +345,7 @@ class UsersRepository : UserRepository {
         }
     }
 
-    override fun editUser(
-        nome: String,
-        email: String,
-        morada: String,
-    ): User {
+    override fun editUser(id: Int, nome: String, morada: String?, foto: String?): User {
         TODO("Not yet implemented")
     }
 

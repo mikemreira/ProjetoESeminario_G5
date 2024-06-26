@@ -79,9 +79,9 @@ function NavBar() {
 
                     { currentUser ? (
                         <Box sx={{ flexGrow: 0 }}>
-                            <Tooltip title="Open settings">
+                            <Tooltip title="Abrir defnições">
                                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                    <Avatar alt="User Avatar" src="https://yt3.googleusercontent.com/VRA217M9QJ55sa5yE7TwNOxomQKvCwZ48I6WCiQ5DEEpD7jSYQVS5DuSVv8Kw6KGmoe-27d-mg=s900-c-k-c0x00ffffff-no-rj" />
+                                    <Avatar alt="User Avatar" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" />
                                 </IconButton>
                             </Tooltip>
                             <Menu
@@ -105,7 +105,7 @@ function NavBar() {
                                     to="/profile"
                                     onClick={handleCloseUserMenu}
                                 >
-                                    Profile
+                                    Perfil
                                 </MenuItem>
                                 <MenuItem
                                     component={Link}

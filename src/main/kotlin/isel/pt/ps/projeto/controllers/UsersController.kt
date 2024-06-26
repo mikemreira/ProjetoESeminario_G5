@@ -36,6 +36,26 @@ class UsersController(
                 )
     }
 
+    @PutMapping("/me")
+    fun editUserByToken(
+        @RequestHeader("Authorization") token : String,
+        @RequestBody input: UserEditInputModel
+    ): ResponseEntity<*> {
+        val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
+        val res = usersService.editUser(authUser.user.id, input.nome, input.morada, input.foto)
+        return when (res) {
+            is Success ->
+                ResponseEntity.status(201)
+                    .body(UserOutputModel(res.value.id, res.value.nome, res.value.email, res.value.morada))
+            is Failure ->
+               when (res.value) {
+                   UserError.UserAlreadyExists -> Problem.response(400, Problem.userAlreadyExists)
+                   UserError.InvalidEmail -> Problem.response(400, Problem.emailAlreadyExists)
+                   UserError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
+               }
+        }
+    }
+
     @GetMapping
     fun getUsers(): ResponseEntity<*> {
         println(usersService.getUsers())

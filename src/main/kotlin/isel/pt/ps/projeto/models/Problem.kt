@@ -46,5 +46,7 @@ class Problem(
         val noRegisters = Problem("No registers")
 
         val invalidRegister = Problem("Invalid register")
+
+        val userNotFound = Problem("User not found")
     }
 }

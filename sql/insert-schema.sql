@@ -1,6 +1,7 @@
 -- Inserting data into Utilizador table
 INSERT INTO Utilizador (nome, pass, email, morada)
 VALUES
+
     ('John Doe', '123','john@example.com', '123 Main Street'),
     ('Jane Smith', '123','jane@example.com', '456 Elm Street'),
     ('Michael Brown', '123','michael@example.com', '789 Oak Avenue'),

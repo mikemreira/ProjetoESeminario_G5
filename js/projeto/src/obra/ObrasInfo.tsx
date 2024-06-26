@@ -3,6 +3,21 @@ import { useCookies } from "react-cookie";
 import * as React from "react";
 import {useTheme} from "@mui/material/styles";
 import { useParams } from "react-router-dom";
+import {
+    Card,
+    CardContent,
+    Typography,
+    List,
+    ListItem,
+    ListItemText,
+    CircularProgress,
+    Grid,
+    Avatar,
+    Button,
+    Box,
+    Divider,
+} from "@mui/material";
+
 
 interface DateObject {
     year: number;
@@ -22,6 +37,8 @@ interface Obra {
     startDate: DateObject | null;
     endDate: DateObject | null;
     status: string;
+    role: string;
+    image: string;
 }
 
 const formatDate = (dateObj: DateObject | null): string => {
@@ -49,6 +66,7 @@ export default function ObrasInfo() {
                 }
             })
             .then((body) => {
+                console.log("Obra fetched:", body);
                 setObra(body);
             })
             .catch((error) => {
@@ -56,20 +74,66 @@ export default function ObrasInfo() {
             });
     }, [cookies.token, oid]);
 
+    const handleClickRegistos = (oid: number) => {  };
+
     if (!obra) {
-        return <div>Loading...</div>;
+        return <CircularProgress />;
     }
 
     return (
-        <div className="form-obras-info">
-            <h2>Informações da Obra:</h2>
-            <ul>
-                {Object.entries(obra).map(([key, value]) => (
-                    <li key={key}>
-                        <strong>{key}:</strong> {typeof value === "object" ? formatDate(value) : value}
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <Card>
+            <CardContent>
+                <Typography variant="h4" component="h2" gutterBottom>
+                    Informações da Obra
+                </Typography>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={4}>
+                        <Avatar
+                            alt={obra.name}
+                            src={"https://t-obra.com/wp-content/uploads/2019/09/graca16.jpg"} // adicionar obra.foto
+                            variant="rounded"
+                            sx={{ width: "100%", height: "auto" }}
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={8}>
+                        <List>
+                            <ListItem>
+                                <ListItemText primary="Nome" secondary={obra.name} primaryTypographyProps={{ style: { color: '#0000FF' } }} />
+                            </ListItem>
+                            <Divider />
+                            <ListItem>
+                                <ListItemText primary="Localização" secondary={obra.location} primaryTypographyProps={{ style: { color: '#0000FF' } }} />
+                            </ListItem>
+                            <Divider />
+                            <ListItem>
+                                <ListItemText primary="Descrição" secondary={obra.description} primaryTypographyProps={{ style: { color: '#0000FF' } }} />
+                            </ListItem>
+                            <Divider />
+                            <ListItem>
+                                <ListItemText primary="Data de Início" secondary={formatDate(obra.startDate)} primaryTypographyProps={{ style: { color: '#0000FF' } }}/>
+                            </ListItem>
+                            <Divider />
+                            <ListItem>
+                                <ListItemText primary="Data de Fim" secondary={formatDate(obra.endDate)} primaryTypographyProps={{ style: { color: '#0000FF' } }}/>
+                            </ListItem>
+                            <Divider />
+                            <ListItem>
+                                <ListItemText primary="Status" secondary={obra.status} primaryTypographyProps={{ style: { color: '#0000FF' } }}/>
+                            </ListItem>
+                        </List>
+                        <Box mt={2}>
+                            <Button variant="contained" color="primary" sx={{ mr: 2 }} onClick={() => handleClickRegistos(obra.oid)}>
+                                Ver Registos
+                            </Button>
+                            {obra.role === "admin" && (
+                                <Button variant="contained" color="secondary">
+                                    Ver Registos dos Funcionários
+                                </Button>
+                            )}
+                        </Box>
+                    </Grid>
+                </Grid>
+            </CardContent>
+        </Card>
     );
 }

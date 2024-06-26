@@ -49,9 +49,10 @@ interface UserRepository {
      * Put
      */
     fun editUser(
+        id: Int,
         nome: String,
-        email: String,
-        morada: String,
+        morada: String?,
+        foto: String?,
     ): User
 
     /**
