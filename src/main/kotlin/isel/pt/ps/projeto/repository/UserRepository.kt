@@ -3,6 +3,7 @@ package isel.pt.ps.projeto.repository
 import isel.pt.ps.projeto.domain.users.PasswordValidationInfo
 import isel.pt.ps.projeto.domain.users.Token
 import isel.pt.ps.projeto.domain.users.TokenValidationInfo
+import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.models.users.UserAndToken
 import kotlinx.datetime.Instant
@@ -53,7 +54,7 @@ interface UserRepository {
         nome: String,
         morada: String?,
         foto: String?,
-    ): User
+    ): SimpleUser
 
     /**
      * Delete

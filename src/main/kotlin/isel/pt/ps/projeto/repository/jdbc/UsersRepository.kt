@@ -3,6 +3,7 @@ package isel.pt.ps.projeto.repository.jdbc
 import isel.pt.ps.projeto.domain.users.PasswordValidationInfo
 import isel.pt.ps.projeto.domain.users.Token
 import isel.pt.ps.projeto.domain.users.TokenValidationInfo
+import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.models.users.UserAndToken
 import isel.pt.ps.projeto.repository.UserRepository
@@ -345,8 +346,44 @@ class UsersRepository : UserRepository {
         }
     }
 
-    override fun editUser(id: Int, nome: String, morada: String?, foto: String?): User {
-        TODO("Not yet implemented")
+    override fun editUser(id: Int, nome: String, morada: String?, foto: String?): SimpleUser {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement(
+                    "UPDATE Utilizador\n" +
+                        "SET nome = ?,\n" +
+                        "    morada = ?\n" +
+                        "WHERE id = ?;\n"
+                )
+                // TODO("MISSING FOTO UPDATE")
+                pStatement.setString(1, nome)
+                pStatement.setString(2, morada)
+                pStatement.setInt(3, id)
+                pStatement.executeUpdate()
+
+                // TODO("MISSING FOTO IN SELECT")
+                val selectStatement = it.prepareStatement(
+                    "SELECT id, nome, email, morada FROM Utilizador WHERE id = ?"
+                )
+                selectStatement.setInt(1, id)
+
+                val resultSet = selectStatement.executeQuery()
+                resultSet.next()
+                SimpleUser(
+                        id = resultSet.getInt("id"),
+                        nome = resultSet.getString("nome"),
+                        email = resultSet.getString("email"),
+                        morada = resultSet.getString("morada")
+                )
+
+            } catch (e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
     }
 
     override fun deleteUser(id: Int): User {

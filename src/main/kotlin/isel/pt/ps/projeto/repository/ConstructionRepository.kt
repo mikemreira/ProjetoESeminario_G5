@@ -1,11 +1,9 @@
 package isel.pt.ps.projeto.repository
 
 import isel.pt.ps.projeto.models.constructions.Construction
-import isel.pt.ps.projeto.models.registers.Register
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
-import isel.pt.ps.projeto.models.registers.RegisterFilters
+import isel.pt.ps.projeto.models.registers.RegisterQuery
 import isel.pt.ps.projeto.models.users.SimpleUser
-import isel.pt.ps.projeto.models.users.User
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 
@@ -32,6 +30,6 @@ interface ConstructionRepository {
 
     fun registerIntoConstruction(userId: Int, oid: Int, startTime: LocalDateTime, endTime: LocalDateTime, role: String)
 
-    fun getRegisters(userId: Int, oid: Int, role: String, filters: RegisterFilters): List<RegisterAndUser>
+    fun getRegisters(userId: Int, oid: Int, role: String, filters: RegisterQuery): List<RegisterAndUser>
 
 }

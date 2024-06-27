@@ -2,6 +2,7 @@ package isel.pt.ps.projeto.services
 
 import isel.pt.ps.projeto.domain.users.Token
 import isel.pt.ps.projeto.domain.users.UsersDomain
+import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.models.users.UserAndToken
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
@@ -28,6 +29,7 @@ sealed class TokenError {
 }
 
 typealias UserResult = Either<UserError, User>
+typealias SimpleUserResult = Either<UserError, SimpleUser>
 
 typealias TokenResult = Either<TokenError, TokenExternalInfo>
 
@@ -106,11 +108,8 @@ class UsersService(
     }
 
 
-    fun editUser(id: Int, nome: String, morada: String?, foto: String?): UserResult {
+    fun editUser(id: Int, nome: String, morada: String?, foto: String?): SimpleUserResult {
         val res = usersRepository.editUser(id, nome, morada, foto)
-        if (res == null) {
-            return failure(UserError.UserAlreadyExists)
-        }
         return success(res)
     }
 

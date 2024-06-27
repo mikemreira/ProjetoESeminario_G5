@@ -1,11 +1,9 @@
 package isel.pt.ps.projeto.repository.jdbc
 
-import isel.pt.ps.projeto.domain.users.PasswordValidationInfo
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
-import isel.pt.ps.projeto.models.registers.RegisterFilters
+import isel.pt.ps.projeto.models.registers.RegisterQuery
 import isel.pt.ps.projeto.models.users.SimpleUser
-import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.repository.ConstructionRepository
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -278,10 +276,11 @@ class ConstructionsRepository : ConstructionRepository {
         }
     }
 
-    override fun getRegisters(userId: Int, oid: Int, role: String, filters: RegisterFilters): List<RegisterAndUser> {
+    override fun getRegisters(userId: Int, oid: Int, role: String, filters: RegisterQuery): List<RegisterAndUser> {
         initializeConnection().use {
             it.autoCommit = false
             return try {
+                /*
                 val pStatement = it.prepareStatement(
                     "SELECT r.id as rid, u.nome as nome, u.id as uid, r.entrada as entrada, r.saida as saida, r.status as status \n" +
                         "FROM Utilizador u\n" +
@@ -294,7 +293,26 @@ class ConstructionsRepository : ConstructionRepository {
                         "  AND (r.saida = COALESCE(?::timestamp, r.saida) OR r.saida IS NULL)\n" +
                         "  AND (r.status = COALESCE(?, r.status) OR r.status IS NULL)"
                 )
+
+                 */
+                val pStatement = it.prepareStatement(
+                    "SELECT r.id as rid, u.nome as nome, u.id as uid, r.entrada as entrada, r.saida as saida, r.status as status\n" +
+                        "FROM Utilizador u \n" +
+                        "INNER JOIN Registo r ON r.id_utilizador = u.id\n" +
+                        "WHERE 1=1\n" +
+                        "\tAND (r.id_obra = COALESCE(?, r.id_obra) OR r.id_obra IS NULL)\n" +
+                        "\tAND (u.id = COALESCE(?, u.id) OR u.id IS NULL)\n" +
+                        "LIMIT 10 offset ?"
+                )
                 pStatement.setInt(1, oid)
+                if (role == "admin") {
+                    pStatement.setNull(2, java.sql.Types.INTEGER)
+                } else
+                    pStatement.setInt(2, userId)
+
+                pStatement.setInt(3, filters.page*10)
+
+                /*
                 if (role == "admin") {
                     if (filters.userId != null)
                         if (filters.mine)
@@ -313,6 +331,8 @@ class ConstructionsRepository : ConstructionRepository {
                     pStatement.setTimestamp(5, if (filters.endDate == null) null else Timestamp.valueOf( filters.endDate.atStartOfDay()))
                     pStatement.setString(6, filters.status)
                 }
+
+                 */
                 val result = pStatement.executeQuery()
                 val registers = mutableListOf<RegisterAndUser>()
                 while (result.next()){

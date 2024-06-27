@@ -1,10 +1,9 @@
 package isel.pt.ps.projeto.controllers
 
 import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
-import isel.pt.ps.projeto.domain.invite.Invite
 import isel.pt.ps.projeto.models.Problem
 import isel.pt.ps.projeto.models.constructions.*
-import isel.pt.ps.projeto.models.registers.RegisterFilters
+import isel.pt.ps.projeto.models.registers.RegisterQuery
 import isel.pt.ps.projeto.models.registers.RegisterInputModelWeb
 import isel.pt.ps.projeto.services.ConstructionCreationError
 import isel.pt.ps.projeto.services.ConstructionInfoError
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -166,13 +166,13 @@ class ConstructionsController(
     @GetMapping("{oid}/registers")
     fun getRegistersOfUserFromConstruction(
         @PathVariable oid: Int,
-        @RequestBody filters: RegisterFilters,
+        @RequestParam page: RegisterQuery,
         @RequestHeader("Authorization") userToken: String,
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
 
-        return when (val res = constructionService.getRegisters(authUser.user.id, oid, filters)) {
+        return when (val res = constructionService.getRegisters(authUser.user.id, oid, page)) {
             is Success -> ResponseEntity.status(200).body(res.value)
             is Failure -> when (res.value) {
                 ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)

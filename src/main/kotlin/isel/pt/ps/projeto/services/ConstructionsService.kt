@@ -4,11 +4,9 @@ import isel.pt.ps.projeto.domain.constructions.ConstructionsDomain
 import isel.pt.ps.projeto.domain.invite.Invite
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.constructions.ConstructionAndRole
-import isel.pt.ps.projeto.models.registers.Register
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
-import isel.pt.ps.projeto.models.registers.RegisterFilters
+import isel.pt.ps.projeto.models.registers.RegisterQuery
 import isel.pt.ps.projeto.models.users.SimpleUser
-import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
 import isel.pt.ps.projeto.utils.Either
@@ -138,15 +136,15 @@ class ConstructionsService(
         return success(res)
     }
 
-    fun getRegisters(userId: Int, oid: Int, filters: RegisterFilters): ListOfRegisterInfoResult {
+    fun getRegisters(userId: Int, oid: Int, filters: RegisterQuery): ListOfRegisterInfoResult {
         val construction = constructionsRepository.getConstruction(oid)
             ?: return failure(ConstructionInfoError.ConstructionNotFound)
 
-        println("ID : $userId")
-        println("OID : $oid")
-
         val role = constructionsRepository.getUserRoleFromConstruction(userId, construction.oid).also { println("ROLE : $it") }
             ?: return failure(ConstructionInfoError.NoAccessToConstruction)
+
+        if (filters.page < 0)
+            return TODO("NO DOMAIN")
 
         val registers = constructionsRepository.getRegisters(userId, oid, role, filters)
 
