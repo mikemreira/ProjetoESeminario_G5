@@ -166,13 +166,14 @@ class ConstructionsController(
     @GetMapping("{oid}/registers")
     fun getRegistersOfUserFromConstruction(
         @PathVariable oid: Int,
-        @RequestParam page: RegisterQuery,
+        @RequestBody filters: RegisterQuery,
+        @RequestParam page: Int,
         @RequestHeader("Authorization") userToken: String,
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-
-        return when (val res = constructionService.getRegisters(authUser.user.id, oid, page)) {
+        filters.page = page
+        return when (val res = constructionService.getRegisters(authUser.user.id, oid, filters)) {
             is Success -> ResponseEntity.status(200).body(res.value)
             is Failure -> when (res.value) {
                 ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
