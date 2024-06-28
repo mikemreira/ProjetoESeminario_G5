@@ -35,6 +35,7 @@ create table if not exists Papel (
                        id_utilizador int references Utilizador (id),
                        id_obra int references Obra (id),
                        papel varchar(64) check (papel in ('admin', 'funcionario')),
+                       funcao varchar(64), check (funcao in ('Ajudante', 'Apontador', 'Armador de ferro', 'Arvorado', 'Calceteiro', 'Canalisador', 'Carpinteiro', 'Chefe de equipa', 'Condutor Manobrador', 'Diretor de serviços', 'Eletricista', 'Encarregado', 'Escriturário', 'Estucador',  'Ferramenteiro', 'Gruista', 'Impermiabilizador', 'Ladrilhador', 'Marteleiro', 'Montador de andaimes', 'Pedreiro', 'Pintor', 'Serralheiro', 'Servente', 'Soldador', 'Técnico de manutenção', 'Tubista', 'Outro')),
                        primary key (id_utilizador, id_obra)
 );
 

@@ -41,6 +41,7 @@ interface Obra {
     startDate: DateObject | null;
     endDate: DateObject | null;
     status: string;
+    foto: string | null;
 }
 
 interface ObrasOutputModel {
@@ -87,7 +88,6 @@ export default function Obras() {
             .then((body) => {
                 if (body) {
                     setObras(body);
-                    console.log(body);
                 }
             })
             .catch((error) => {

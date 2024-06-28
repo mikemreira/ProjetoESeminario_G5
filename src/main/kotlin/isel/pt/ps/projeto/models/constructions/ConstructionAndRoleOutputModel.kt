@@ -8,7 +8,7 @@ data class ConstructionAndRoleOutputModel(
     val description: String,
     val startDate: LocalDate,
     val endDate: LocalDate?,
-    val image: String?,
+    val foto: String?,
     val status: String?,
     val role: String
 )

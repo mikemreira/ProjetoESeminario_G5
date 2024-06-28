@@ -15,10 +15,13 @@ import java.sql.Connection
 import java.sql.Date
 import java.sql.SQLException
 import java.sql.Timestamp
+import java.util.*
 
 
 @Component
-class ConstructionsRepository : ConstructionRepository {
+class ConstructionsRepository(
+    private val utils: UtlisRepository,
+) : ConstructionRepository {
     private fun initializeConnection(): Connection {
         val dataSource = PGSimpleDataSource()
         dataSource.setURL(jdbcDatabaseUrl)
@@ -48,6 +51,7 @@ class ConstructionsRepository : ConstructionRepository {
                         result.getDate("data_inicio").toString().toLocalDate(),
                         if (dateFim == null) dateFim else dateFim.toString().toLocalDate(),
                         result.getString("status"),
+                        result.getBytes("foto")
                     )
                 }
             } catch (e: Exception) {
@@ -65,7 +69,7 @@ class ConstructionsRepository : ConstructionRepository {
             return try {
                 val pStatement =
                     it.prepareStatement(
-                        "select ut.id, ut.nome, ut.email, ut.morada from utilizador ut\n" +
+                        "select ut.id, ut.nome, ut.email, ut.morada, ut.foto from utilizador ut\n" +
                             "inner join papel pa on pa.id_utilizador = ut.id\n" +
                             "inner join obra o on o.id = pa.id_obra\n" +
                             "where o.id = ?",
@@ -78,7 +82,9 @@ class ConstructionsRepository : ConstructionRepository {
                         result.getInt("id"),
                         result.getString("nome"),
                         result.getString("email"),
-                        result.getString("morada")))
+                        result.getString("morada"),
+                        result.getString("foto")
+                    ))
                 }
                 list
             } catch (e: Exception) {
@@ -96,7 +102,7 @@ class ConstructionsRepository : ConstructionRepository {
             return try {
                 val pStatement =
                     it.prepareStatement(
-                        "select o.id, o.nome, o.localização, o.descrição, o.data_inicio, o.data_fim, o.status from utilizador u\n" +
+                        "select o.id, o.nome, o.localização, o.descrição, o.data_inicio, o.data_fim, o.status, o.foto from utilizador u\n" +
                             "inner join papel p on p.id_utilizador = u.id\n" +
                             "inner join obra o on o.id = p.id_obra\n" +
                             "where u.id = ?",
@@ -115,6 +121,7 @@ class ConstructionsRepository : ConstructionRepository {
                             result.getDate("data_inicio").toString().toLocalDate(),
                             if (dataF != null) dataF.toString().toLocalDate() else null,
                             result.getString("status"),
+                            result.getBytes("foto")
                         ),
                     )
                 }
@@ -136,31 +143,36 @@ class ConstructionsRepository : ConstructionRepository {
         startDate: LocalDate,
         endDate: LocalDate?,
         foto: String?,
-        status: String?
+        status: String?,
+        function: String
     ): Int {
         initializeConnection().use {
             it.autoCommit = false
             return try {
+                println("foto: $foto")
+                val fotoBytes = utils.base64ToByteArray(foto!!)
                 val generatedColumns = arrayOf("id")
                 val insertStatement = it.prepareStatement(
-                    "INSERT INTO Obra (nome, localização, descrição, data_inicio, data_fim)\n" +
-                    "VALUES (?,?,?,?,?) ", generatedColumns
+                    "INSERT INTO Obra (nome, localização, descrição, data_inicio, data_fim, foto)\n" +
+                    "VALUES (?,?,?,?,?,?) ", generatedColumns
                 )
                 insertStatement.setString(1,name)
                 insertStatement.setString(2,location)
                 insertStatement.setString(3,description)
                 insertStatement.setDate(4,Date.valueOf(startDate.toString()))
                 insertStatement.setDate(5, if (endDate !=null) Date.valueOf(endDate.toString()) else null)
+                insertStatement.setBytes(6, fotoBytes)
                 insertStatement.executeUpdate()
                 insertStatement.generatedKeys.use { generatedKeys ->
                     if (generatedKeys.next()) {
                         val oid = generatedKeys.getInt(1)
                         val insertStatementRole = it.prepareStatement(
-                            "INSERT INTO Papel (id_utilizador, id_obra, papel)\n" +
+                            "INSERT INTO Papel (id_utilizador, id_obra, papel, funcao)\n" +
                             "VALUES\n" +
-                            " (?, ?, 'admin')")
+                            " (?, ?, 'admin',?)")
                         insertStatementRole.setInt(1, userId)
                         insertStatementRole.setInt(2, oid)
+                        insertStatementRole.setString(3, function)
                         insertStatementRole.executeUpdate()
                         oid
                     } else {
@@ -206,7 +218,7 @@ class ConstructionsRepository : ConstructionRepository {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pStatement = it.prepareStatement("select u.id, u.nome, u.email, u.morada from utilizador u\n" +
+                val pStatement = it.prepareStatement("select u.id, u.nome, u.email, u.morada, u.foto from utilizador u\n" +
                     "inner join papel p on p.id_utilizador = u.id\n" +
                     "inner join obra o on o.id = p.id_obra\n" +
                     "where u.email = ?")
@@ -219,7 +231,8 @@ class ConstructionsRepository : ConstructionRepository {
                         result.getInt("id"),
                         result.getString("nome"),
                         result.getString("email"),
-                        result.getString("morada")
+                        result.getString("morada"),
+                        result.getString("foto")
                     )
             }  catch (e: Exception) {
                 it.rollback()
@@ -280,21 +293,7 @@ class ConstructionsRepository : ConstructionRepository {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                /*
-                val pStatement = it.prepareStatement(
-                    "SELECT r.id as rid, u.nome as nome, u.id as uid, r.entrada as entrada, r.saida as saida, r.status as status \n" +
-                        "FROM Utilizador u\n" +
-                        "INNER JOIN Registo r ON r.id_utilizador = u.id\n" +
-                        "WHERE 1=1\n" +
-                        "  AND (r.id_obra = COALESCE(?, r.id_obra) OR r.id_obra IS NULL)\n" +
-                        "  AND (u.id = COALESCE(?, u.id) OR u.id IS NULL)\n" +
-                        "  AND (u.nome = COALESCE(?, u.nome) OR u.nome IS NULL)\n" +
-                        "  AND (r.entrada = COALESCE(?::timestamp, r.entrada) OR r.entrada IS NULL)\n" +
-                        "  AND (r.saida = COALESCE(?::timestamp, r.saida) OR r.saida IS NULL)\n" +
-                        "  AND (r.status = COALESCE(?, r.status) OR r.status IS NULL)"
-                )
 
-                 */
                 val pStatement = it.prepareStatement(
                     "SELECT r.id as rid, u.nome as nome, u.id as uid, r.entrada as entrada, r.saida as saida, r.status as status\n" +
                         "FROM Utilizador u \n" +
@@ -306,33 +305,17 @@ class ConstructionsRepository : ConstructionRepository {
                 )
                 pStatement.setInt(1, oid)
                 if (role == "admin") {
-                    pStatement.setNull(2, java.sql.Types.INTEGER)
+                    if (filters.me)
+                        pStatement.setInt(2, userId)
+                    else if (filters.userId == null)
+                        pStatement.setNull(2, java.sql.Types.INTEGER)
+                    else
+                        pStatement.setInt(2, filters.userId)
                 } else
                     pStatement.setInt(2, userId)
 
                 pStatement.setInt(3, filters.page*10)
 
-                /*
-                if (role == "admin") {
-                    if (filters.userId != null)
-                        if (filters.mine)
-                            pStatement.setInt(2, userId)
-                        else
-                            pStatement.setInt(2, filters.userId)
-                    else pStatement.setNull(2, java.sql.Types.INTEGER)
-                    pStatement.setString(3, filters.name)
-                    pStatement.setTimestamp(4, if (filters.startDate == null) null else Timestamp.valueOf( filters.startDate.atStartOfDay()))
-                    pStatement.setTimestamp(5, if (filters.endDate == null) null else Timestamp.valueOf( filters.endDate.atStartOfDay()))
-                    pStatement.setString(6, filters.status)
-                } else {
-                    pStatement.setInt(2, userId)
-                    pStatement.setString(3, filters.name)
-                    pStatement.setTimestamp(4, if (filters.startDate == null) null else Timestamp.valueOf( filters.startDate.atStartOfDay()))
-                    pStatement.setTimestamp(5, if (filters.endDate == null) null else Timestamp.valueOf( filters.endDate.atStartOfDay()))
-                    pStatement.setString(6, filters.status)
-                }
-
-                 */
                 val result = pStatement.executeQuery()
                 val registers = mutableListOf<RegisterAndUser>()
                 while (result.next()){

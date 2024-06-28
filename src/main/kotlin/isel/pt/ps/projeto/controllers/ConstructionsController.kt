@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController
 class ConstructionsController(
     private val constructionService: ConstructionsService,
     private val requestTokenProcessor: RequestTokenProcessor,
+    private val utils: UtilsController
 ) {
     @GetMapping("/{oid}")
     fun getConstructionAndRole(
@@ -41,7 +42,8 @@ class ConstructionsController(
 
         // add everything in a new OutputModel with role and construction
         return when (res) {
-            is Success ->
+            is Success -> {
+                val fotoString = if (res.value.construction.foto != null) utils.byteArrayToBase64(res.value.construction.foto) else null
                 ResponseEntity.status(200)
                     .body(
                         ConstructionAndRoleOutputModel(
@@ -50,11 +52,12 @@ class ConstructionsController(
                             res.value.construction.descricao,
                             res.value.construction.data_inicio,
                             res.value.construction.data_fim,
-                            null, // res.value.foto
+                            fotoString,
                             res.value.construction.status,
                             res.value.role
                         )
                     )
+            }
             is Failure ->
                 when (res.value) {
                     ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
@@ -93,6 +96,7 @@ class ConstructionsController(
                     .body(
                         ListOfConstructionsOutputModel(
                             res.value.map {
+                                val fotoString = if (it.foto != null) utils.byteArrayToBase64(it.foto) else null
                                 ConstructionOutputModel(
                                     it.oid,
                                     it.nome,
@@ -100,7 +104,7 @@ class ConstructionsController(
                                     it.descricao,
                                     it.data_inicio,
                                     it.data_fim,
-                                    null, // it.foto
+                                    fotoString,
                                     it.status
                                 )
                             }
@@ -134,8 +138,9 @@ class ConstructionsController(
             input.description,
             input.startDate.toLocalDate(),
             input.endDate?.toLocalDate(),
-            input.image,
-            input.status
+            input.foto,
+            input.status,
+            input.function
         )
         return when (res) {
             is Success ->
@@ -166,13 +171,14 @@ class ConstructionsController(
     @GetMapping("{oid}/registers")
     fun getRegistersOfUserFromConstruction(
         @PathVariable oid: Int,
-        @RequestParam page: RegisterQuery,
+        @RequestBody filters: RegisterQuery,
+        @RequestParam page: Int,
         @RequestHeader("Authorization") userToken: String,
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-
-        return when (val res = constructionService.getRegisters(authUser.user.id, oid, page)) {
+        filters.page = page
+        return when (val res = constructionService.getRegisters(authUser.user.id, oid, filters)) {
             is Success -> ResponseEntity.status(200).body(res.value)
             is Failure -> when (res.value) {
                 ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)

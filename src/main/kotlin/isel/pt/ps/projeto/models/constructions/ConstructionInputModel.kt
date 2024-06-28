@@ -6,6 +6,7 @@ data class ConstructionInputModel (
     val description: String,
     val startDate: String,
     val endDate: String?,
-    val image: String?,
-    val status: String?
+    val foto: String?,
+    val status: String?,
+    val function: String,
 )

@@ -38,7 +38,7 @@ interface Obra {
     endDate: DateObject | null;
     status: string;
     role: string;
-    image: string;
+    foto: string | null;
 }
 
 const formatDate = (dateObj: DateObject | null): string => {
@@ -66,7 +66,6 @@ export default function ObrasInfo() {
                 }
             })
             .then((body) => {
-                console.log("Obra fetched:", body);
                 setObra(body);
             })
             .catch((error) => {
@@ -90,7 +89,7 @@ export default function ObrasInfo() {
                     <Grid item xs={12} md={4}>
                         <Avatar
                             alt={obra.name}
-                            src={"https://t-obra.com/wp-content/uploads/2019/09/graca16.jpg"} // adicionar obra.foto
+                            src={obra.foto || "https://t-obra.com/wp-content/uploads/2019/09/graca16.jpg"}
                             variant="rounded"
                             sx={{ width: "100%", height: "auto" }}
                         />

@@ -7,18 +7,23 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import {colors, Snackbar} from "@mui/material";
+import {colors, FormControl, InputLabel, MenuItem, Select, Snackbar} from "@mui/material";
 import {Navigate} from "react-router-dom"
 
 interface ObraValues {
-    name: string;
-    location: string;
-    description: string;
-    startDate: string;
-    endDate: string | null;
+    name: string
+    location: string
+    description: string
+    startDate: string
+    endDate: string | null
     foto: string | null
-    status: string | null;
+    status: string | null
+    function: string
 }
+
+const roles = [
+    'Ajudante', 'Apontador', 'Armador de ferro', 'Arvorado', 'Calceteiro', 'Canalisador', 'Carpinteiro', 'Chefe de equipa', 'Condutor Manobrador', 'Diretor de serviços', 'Eletricista', 'Encarregado', 'Escriturário', 'Estucador',  'Ferramenteiro', 'Gruista', 'Impermiabilizador', 'Ladrilhador', 'Marteleiro', 'Montador de andaimes', 'Pedreiro', 'Pintor', 'Serralheiro', 'Servente', 'Soldador', 'Técnico de manutenção', 'Tubista', 'Outro'
+];
 
 export default function AddObra() {
     const [cookies] = useCookies(["token"]);
@@ -29,7 +34,8 @@ export default function AddObra() {
         startDate: "",
         endDate: null,
         foto: null,
-        status: null
+        status: null,
+        function: ""
     });
 
     const VisuallyHiddenInput = styled('input')({
@@ -48,7 +54,7 @@ export default function AddObra() {
     const [submitted, setSubmitted] = useState(false);
     const [valid, setValid] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
-    const [redirect, setRedirect] = useState(null);
+    const [redirect, setRedirect] = useState<JSX.Element | null>(null);
     const [open, setOpen] = React.useState(false);
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -56,6 +62,27 @@ export default function AddObra() {
         setValues((values) => ({
             ...values,
             [name]: value
+        }));
+    };
+
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setValues((values) => ({
+                    ...values,
+                    foto: reader.result as string
+                }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSelectChange = (event: ChangeEvent<{ value: unknown }>) => {
+        setValues((values) => ({
+            ...values,
+            function: event.target.value as string
         }));
     };
 
@@ -97,13 +124,15 @@ export default function AddObra() {
         setOpen(true);
     };
 
-
+/*
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
             return;
         }
         setOpen(false);
     }
+
+ */
 
     return (
         <div className="form-obras">
@@ -168,13 +197,23 @@ export default function AddObra() {
                 onChange={handleInputChange}
                 name="endDate"
             />
-            <TextField
-                id="foto"
-                label="Foto"
-                value={values.foto}
-                onChange={handleInputChange}
-                name="foto"
-            />
+            <FormControl sx={{ m: 1, width: '25ch' }}>
+                <InputLabel id="function-label">Função</InputLabel>
+                <Select
+                    labelId="function-label"
+                    id="function"
+                    value={values.function}
+                    onChange={handleSelectChange}
+                    label="Função"
+                    name="function"
+                >
+                    {roles.map((role) => (
+                        <MenuItem key={role} value={role}>
+                            {role}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
             <Button
                 component="label"
                 role={undefined}
@@ -182,8 +221,11 @@ export default function AddObra() {
                 tabIndex={-1}
                 startIcon={<CloudUploadIcon sx={{ color: 'white' }} />}
             >
-                Add Foto
-                <VisuallyHiddenInput type="file" />
+                Adicionar Foto
+                <VisuallyHiddenInput
+                    type="file"
+                    onChange={handleFileChange}
+                />
             </Button>
             <Button type="submit" variant="contained" color="primary" sx={{ m: 1 }}>
                 Adicionar

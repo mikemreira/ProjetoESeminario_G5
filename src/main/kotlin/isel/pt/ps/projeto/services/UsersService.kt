@@ -1,5 +1,6 @@
 package isel.pt.ps.projeto.services
 
+import isel.pt.ps.projeto.controllers.UtilsController
 import isel.pt.ps.projeto.domain.users.Token
 import isel.pt.ps.projeto.domain.users.UsersDomain
 import isel.pt.ps.projeto.models.users.SimpleUser
@@ -15,7 +16,8 @@ import org.springframework.stereotype.Component
 
 data class TokenExternalInfo(
     val tokenValue: String,
-    val tokenExpiration: Instant
+    val tokenExpiration: Instant,
+    val user: SimpleUser
 )
 
 sealed class UserError {
@@ -38,6 +40,7 @@ class UsersService(
     private val usersRepository: UsersRepository,
     private val usersDomain: UsersDomain,
     private val clock: Clock,
+    private val utils: UtilsController
 ) {
     fun getUsers(): List<User> = usersRepository.getUsers()
 
@@ -78,10 +81,14 @@ class UsersService(
         println("2 :"+newToken.tokenValidationInfo.validationInfo)
 
         usersRepository.createToken(newToken, usersDomain.maxNumberOfTokensPerUser)
+
+        val fotoString = if (user.foto != null ) utils.byteArrayToBase64(user.foto) else null
+        val simpleUser = SimpleUser(user.id, user.nome, user.email, user.morada, fotoString)
         return Either.Right(
             TokenExternalInfo(
                 tokenValue,
-                usersDomain.getTokenExpiration(newToken)
+                usersDomain.getTokenExpiration(newToken),
+                simpleUser
             )
         )
     }
