@@ -37,7 +37,7 @@ class ConstructionsController(
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         // TODO(Find a way to return null and then the error maybe ?)
 
-        val res = constructionService.getUserRoleOnConstruction(authUser.user.id, oid)
+        val res = constructionService.getUserRoleOnConstruction(authUser.token, oid)
 
         // add everything in a new OutputModel with role and construction
         return when (res) {

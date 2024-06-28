@@ -1,0 +1,2 @@
+p, admin, /constructions/:oid/register, GET
+p, admin, /constructions/:oid/users, GET

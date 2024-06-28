@@ -4,5 +4,6 @@ import kotlinx.datetime.LocalDate
 
 data class ConstructionAndRole(
     val construction: Construction,
-    val role: String
+    val role: String,
+    val email: String
 )

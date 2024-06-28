@@ -1,0 +1,5 @@
+p, user, /users/me, GET
+p, user, /registos, GET
+p, user, /obras, GET
+
+g, mike@mike.com, user

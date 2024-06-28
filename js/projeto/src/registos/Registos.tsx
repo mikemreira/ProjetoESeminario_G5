@@ -111,7 +111,7 @@ const Registos = () => {
         }).catch(error => {
             console.error("Error fetching registos: ", error)
         })
-    }, [cookies.token])
+    }, [cookies.token, open])
 
     const handleClickOpen = () => {
         setOpen(true);

@@ -7,6 +7,7 @@ import isel.pt.ps.projeto.models.constructions.ConstructionAndRole
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterQuery
 import isel.pt.ps.projeto.models.users.SimpleUser
+import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
 import isel.pt.ps.projeto.utils.Either
@@ -104,14 +105,16 @@ class ConstructionsService(
         return success(constructionsRepository.createConstruction(userId, name, location, description, startDate, endDate, foto, status))
     }
 
-    fun getUserRoleOnConstruction(userId: Int, oid: Int): ConstructionAndRoleResult {
+    fun getUserRoleOnConstruction(token: String, oid: Int): ConstructionAndRoleResult {
+        val user = usersRepository.getUserByToken(token)
+            ?: return failure(ConstructionInfoError.NoPermission)
         val construction = constructionsRepository.getConstruction(oid)
             ?: return failure(ConstructionInfoError.ConstructionNotFound)
 
-        val role = constructionsRepository.getUserRoleFromConstruction(userId, construction.oid)
+        val role = constructionsRepository.getUserRoleFromConstruction(user.id, construction.oid)
             ?: return failure(ConstructionInfoError.NoAccessToConstruction)
 
-        val constructionAndRole = ConstructionAndRole(construction, role)
+        val constructionAndRole = ConstructionAndRole(construction, role, user.email)
         return success(constructionAndRole)
     }
 
