@@ -96,12 +96,13 @@ class ConstructionsService(
         startDate: LocalDate,
         endDate: LocalDate?,
         foto: String?,
-        status: String?
+        status: String?,
+        function: String
     ): ConstructionCreationResult {
         if (!constructionsDomain.checkValidConstruction(name, location, description, startDate)) {
             return failure(ConstructionCreationError.InvalidConstruction)
         }
-        return success(constructionsRepository.createConstruction(userId, name, location, description, startDate, endDate, foto, status))
+        return success(constructionsRepository.createConstruction(userId, name, location, description, startDate, endDate, foto, status, function))
     }
 
     fun getUserRoleOnConstruction(userId: Int, oid: Int): ConstructionAndRoleResult {

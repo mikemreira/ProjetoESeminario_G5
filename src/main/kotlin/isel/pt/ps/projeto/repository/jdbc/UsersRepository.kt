@@ -19,7 +19,9 @@ const val JDBC_URL = "jdbc:postgresql://localhost:5432/postgres"
 const val jdbcDatabaseUrl = "jdbc:postgresql://localhost/postgres?user=postgres&password=postgres"
 
 @Component
-class UsersRepository : UserRepository {
+class UsersRepository(
+    private val utils: UtlisRepository
+) : UserRepository {
     private fun initializeConnection(): Connection {
         val dataSource = PGSimpleDataSource()
         dataSource.setURL(jdbcDatabaseUrl)
@@ -352,23 +354,11 @@ class UsersRepository : UserRepository {
         }
     }
 
-    fun base64ToByteArray(base64String: String): ByteArray {
-        // Remover o cabeçalho 'data:image/jpeg;base64,' se presente
-        var base64Image = base64String
-
-        if (base64String.startsWith("data:image/jpeg;base64,")) {
-            base64Image = base64String.substringAfter("data:image/jpeg;base64,")
-        }
-
-        // Decodificar base64 para ByteArray
-        return Base64.getDecoder().decode(base64Image)
-    }
-
     override fun editUser(id: Int, nome: String, morada: String?, foto: String?): SimpleUser {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val fotoBytes = base64ToByteArray(foto!!)
+                val fotoBytes = utils.base64ToByteArray(foto!!)
                 val pStatement = it.prepareStatement(
                     "UPDATE Utilizador\n" +
                         "SET nome = ?,\n" +
@@ -417,7 +407,7 @@ class UsersRepository : UserRepository {
         val nome: String,
         val email: String,
         val passwordValidation: PasswordValidationInfo,
-        val morada: String,
+        val morada: String?,
         val foto: ByteArray?,
         val tokenValidation: TokenValidationInfo,
         val createdAt: Long,

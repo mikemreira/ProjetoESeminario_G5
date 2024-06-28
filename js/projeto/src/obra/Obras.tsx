@@ -41,6 +41,7 @@ interface Obra {
     startDate: DateObject | null;
     endDate: DateObject | null;
     status: string;
+    foto: string | null;
 }
 
 interface ObrasOutputModel {

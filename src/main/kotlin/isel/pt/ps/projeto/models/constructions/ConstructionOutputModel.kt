@@ -9,6 +9,6 @@ data class ConstructionOutputModel(
     val description: String,
     val startDate: LocalDate,
     val endDate: LocalDate?,
-    val image: String? = null,
+    val foto: String?,
     val status: String
 )

@@ -29,7 +29,7 @@ class UsersController(
     @GetMapping("/me")
     fun getUserByToken(@RequestHeader("Authorization") token : String): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
-        val fotoString = utils.byteArrayToBase64(authUser.user.foto)
+        val fotoString = if (authUser.user.foto != null) utils.byteArrayToBase64(authUser.user.foto) else null
                 return ResponseEntity.status(200).body(
                     UserOutputModel(
                         authUser.user.id,

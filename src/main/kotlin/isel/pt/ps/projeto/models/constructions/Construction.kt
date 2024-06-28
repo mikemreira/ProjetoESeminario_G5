@@ -21,4 +21,5 @@ data class Construction(
     val data_inicio: LocalDate,
     val data_fim: LocalDate? = null,
     val status: String,
+    val foto: ByteArray?
 )

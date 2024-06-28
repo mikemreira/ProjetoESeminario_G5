@@ -19,7 +19,9 @@ import java.util.*
 
 
 @Component
-class ConstructionsRepository : ConstructionRepository {
+class ConstructionsRepository(
+    private val utils: UtlisRepository,
+) : ConstructionRepository {
     private fun initializeConnection(): Connection {
         val dataSource = PGSimpleDataSource()
         dataSource.setURL(jdbcDatabaseUrl)
@@ -49,6 +51,7 @@ class ConstructionsRepository : ConstructionRepository {
                         result.getDate("data_inicio").toString().toLocalDate(),
                         if (dateFim == null) dateFim else dateFim.toString().toLocalDate(),
                         result.getString("status"),
+                        result.getBytes("foto")
                     )
                 }
             } catch (e: Exception) {
@@ -99,7 +102,7 @@ class ConstructionsRepository : ConstructionRepository {
             return try {
                 val pStatement =
                     it.prepareStatement(
-                        "select o.id, o.nome, o.localização, o.descrição, o.data_inicio, o.data_fim, o.status from utilizador u\n" +
+                        "select o.id, o.nome, o.localização, o.descrição, o.data_inicio, o.data_fim, o.status, o.foto from utilizador u\n" +
                             "inner join papel p on p.id_utilizador = u.id\n" +
                             "inner join obra o on o.id = p.id_obra\n" +
                             "where u.id = ?",
@@ -118,6 +121,7 @@ class ConstructionsRepository : ConstructionRepository {
                             result.getDate("data_inicio").toString().toLocalDate(),
                             if (dataF != null) dataF.toString().toLocalDate() else null,
                             result.getString("status"),
+                            result.getBytes("foto")
                         ),
                     )
                 }
@@ -139,31 +143,36 @@ class ConstructionsRepository : ConstructionRepository {
         startDate: LocalDate,
         endDate: LocalDate?,
         foto: String?,
-        status: String?
+        status: String?,
+        function: String
     ): Int {
         initializeConnection().use {
             it.autoCommit = false
             return try {
+                println("foto: $foto")
+                val fotoBytes = utils.base64ToByteArray(foto!!)
                 val generatedColumns = arrayOf("id")
                 val insertStatement = it.prepareStatement(
-                    "INSERT INTO Obra (nome, localização, descrição, data_inicio, data_fim)\n" +
-                    "VALUES (?,?,?,?,?) ", generatedColumns
+                    "INSERT INTO Obra (nome, localização, descrição, data_inicio, data_fim, foto)\n" +
+                    "VALUES (?,?,?,?,?,?) ", generatedColumns
                 )
                 insertStatement.setString(1,name)
                 insertStatement.setString(2,location)
                 insertStatement.setString(3,description)
                 insertStatement.setDate(4,Date.valueOf(startDate.toString()))
                 insertStatement.setDate(5, if (endDate !=null) Date.valueOf(endDate.toString()) else null)
+                insertStatement.setBytes(6, fotoBytes)
                 insertStatement.executeUpdate()
                 insertStatement.generatedKeys.use { generatedKeys ->
                     if (generatedKeys.next()) {
                         val oid = generatedKeys.getInt(1)
                         val insertStatementRole = it.prepareStatement(
-                            "INSERT INTO Papel (id_utilizador, id_obra, papel)\n" +
+                            "INSERT INTO Papel (id_utilizador, id_obra, papel, funcao)\n" +
                             "VALUES\n" +
-                            " (?, ?, 'admin')")
+                            " (?, ?, 'admin',?)")
                         insertStatementRole.setInt(1, userId)
                         insertStatementRole.setInt(2, oid)
+                        insertStatementRole.setString(3, function)
                         insertStatementRole.executeUpdate()
                         oid
                     } else {

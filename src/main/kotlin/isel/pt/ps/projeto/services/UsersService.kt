@@ -82,7 +82,7 @@ class UsersService(
 
         usersRepository.createToken(newToken, usersDomain.maxNumberOfTokensPerUser)
 
-        val fotoString = utils.byteArrayToBase64(user.foto)
+        val fotoString = if (user.foto != null ) utils.byteArrayToBase64(user.foto) else null
         val simpleUser = SimpleUser(user.id, user.nome, user.email, user.morada, fotoString)
         return Either.Right(
             TokenExternalInfo(

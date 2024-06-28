@@ -34,16 +34,6 @@ export default function Profile() {
     const [isEditing, setIsEditing] = useState(false)
     const [editedUser, setEditedUser] = useState<UserModel | null>(null)
 
-    function byteArrayToBase64(byteArray: Uint8Array): string {
-        let binary = "";
-        const len = byteArray.byteLength;
-        console.log("len: "+ len)
-        for (let i = 0; i < len; i++) {
-            binary += String.fromCharCode(byteArray[i]);
-        }
-        return `data:image/jpeg;base64,${btoa(binary)}`;
-    }
-
     useEffect(() => {
         fetch("/api/users/me", {
             method: "GET",
