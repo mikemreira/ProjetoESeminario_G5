@@ -6,5 +6,6 @@ data class SimpleUser(
     val id: Int,
     val nome: String,
     val email: String,
-    val morada: String
+    val morada: String,
+    val foto: String?
 )

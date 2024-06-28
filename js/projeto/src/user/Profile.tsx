@@ -16,6 +16,7 @@ import {
     Divider,
 } from "@mui/material";
 import TextField from "@mui/material/TextField";
+import {useSetAvatar} from "../context/Authn";
 
 interface UserModel {
     id: number
@@ -27,10 +28,21 @@ interface UserModel {
 
 
 export default function Profile() {
+    const setAvatar = useSetAvatar()
     const [cookies] = useCookies(["token"])
     const [user, setUser] = useState<UserModel>()
     const [isEditing, setIsEditing] = useState(false)
     const [editedUser, setEditedUser] = useState<UserModel | null>(null)
+
+    function byteArrayToBase64(byteArray: Uint8Array): string {
+        let binary = "";
+        const len = byteArray.byteLength;
+        console.log("len: "+ len)
+        for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(byteArray[i]);
+        }
+        return `data:image/jpeg;base64,${btoa(binary)}`;
+    }
 
     useEffect(() => {
         fetch("/api/users/me", {
@@ -49,21 +61,21 @@ export default function Profile() {
             })
             .then((body) => {
                 if (body) {
-                    setUser(body)
-                    setEditedUser(body)
-                    console.log(body)
+                    setUser(body);
+                    setEditedUser(body);
                 }
             })
             .catch((error) => {
-                console.error("Error fetching obras:", error)
+                console.error("Error fetching profile:", error)
             })
-    }, [cookies.token])
+    }, [cookies.token, user?.foto])
 
     const handleEditProfile = () => {
         setIsEditing(true)
     }
 
     const handleSaveProfile = () => {
+        console.log(JSON.stringify(editedUser))
         if (editedUser) {
             fetch("/api/users/me", {
                 method: "PUT",
@@ -76,6 +88,10 @@ export default function Profile() {
                 .then((res) => {
                     if (res.ok) {
                         setUser(editedUser)
+                        if (editedUser.foto != null) {
+                            setAvatar(editedUser.foto)
+                            sessionStorage.setItem('avatar', editedUser.foto)
+                        }
                         setIsEditing(false)
                     } else {
                         console.error("Failed to update profile")
@@ -108,7 +124,7 @@ export default function Profile() {
             reader.onloadend = () => {
                 setEditedUser((prevUser) => ({
                     ...prevUser!,
-                    foto: reader.result as string,
+                    foto: reader.result as string | null,
                 }))
             }
             reader.readAsDataURL(file)
@@ -131,7 +147,7 @@ export default function Profile() {
                                     variant="rounded"
                                     sx={{
                                         width: "100%",
-                                        height: "auto",
+                                        height: "100%",
                                         cursor: isEditing ? "pointer" : "default",
                                     }}
                                     onClick={isEditing ? () => document.getElementById('contained-button-file')?.click() : undefined}

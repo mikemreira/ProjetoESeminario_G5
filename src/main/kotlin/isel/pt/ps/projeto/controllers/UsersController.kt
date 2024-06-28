@@ -14,24 +14,29 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.util.*
+
 
 @RestController
 @RequestMapping("/users")
 class UsersController(
     private val usersService: UsersService,
-    private val requestTokenProcessor: RequestTokenProcessor
+    private val requestTokenProcessor: RequestTokenProcessor,
+    private val utils: UtilsController
 ) {
     private val logger: Logger = LoggerFactory.getLogger(UsersController::class.java)
 
     @GetMapping("/me")
     fun getUserByToken(@RequestHeader("Authorization") token : String): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
+        val fotoString = utils.byteArrayToBase64(authUser.user.foto)
                 return ResponseEntity.status(200).body(
                     UserOutputModel(
                         authUser.user.id,
                         authUser.user.nome,
                         authUser.user.email,
-                        authUser.user.morada
+                        authUser.user.morada,
+                        fotoString
                     )
                 )
     }
@@ -42,11 +47,13 @@ class UsersController(
         @RequestBody input: UserEditInputModel
     ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
+        println("entrou 1")
         val res = usersService.editUser(authUser.user.id, input.nome, input.morada, input.foto)
+        println("entrou 2")
         return when (res) {
             is Success ->
                 ResponseEntity.status(201)
-                    .body(UserOutputModel(res.value.id, res.value.nome, res.value.email, res.value.morada))
+                    .body(UserOutputModel(res.value.id, res.value.nome, res.value.email, res.value.morada, res.value.foto))
             is Failure ->
                when (res.value) {
                    UserError.UserAlreadyExists -> Problem.response(400, Problem.userAlreadyExists)
@@ -89,7 +96,7 @@ class UsersController(
         val res = usersService.signIn(input.email, input.password)
         return when (res) {
             is Success ->
-                ResponseEntity.status(201).body(UserTokenCreateOutputModel(res.value.tokenValue))
+                ResponseEntity.status(201).body(UserTokenCreateOutputModel(res.value.tokenValue, res.value.user.foto))
             is Failure ->
                 when (res.value) {
                     TokenError.UserOrPasswordAreInvalid -> Problem.response(400, Problem.userOrPasswordAreInvalid)

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useCookies } from "react-cookie"
-import {useSetUser} from "../context/Authn.tsx";
+import {useSetAvatar, useSetUser} from "../context/Authn.tsx";
 import Button from '@mui/material/Button';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from "@mui/material/Alert";
@@ -24,11 +24,12 @@ export default function LogIn() {
     }));
   };
 
-  const [submitted, setSubmitted] = useState(false);
-  const [valid, setValid] = useState(false);
+  const [submitted, setSubmitted] = useState(false)
+  const [valid, setValid] = useState(false)
   const [error, setError] = useState(undefined)
-  const setUser = useSetUser();
-  const [open, setOpen] = React.useState(false);
+  const setUser = useSetUser()
+  const setAvatar = useSetAvatar()
+  const [open, setOpen] = React.useState(false)
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -52,7 +53,9 @@ export default function LogIn() {
             setValid(true)
             setCookies("token", body.token, { path: '/' })
             setUser(body.token)
+            setAvatar(body.foto)
             sessionStorage.setItem("token", body.token)
+            sessionStorage.setItem("avatar", body.foto)
         }
     }).catch(error => {
         setError(error.message)

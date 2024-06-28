@@ -87,7 +87,6 @@ export default function Obras() {
             .then((body) => {
                 if (body) {
                     setObras(body);
-                    console.log(body);
                 }
             })
             .catch((error) => {

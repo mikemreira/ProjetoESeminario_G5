@@ -66,7 +66,6 @@ export default function ObrasInfo() {
                 }
             })
             .then((body) => {
-                console.log("Obra fetched:", body);
                 setObra(body);
             })
             .catch((error) => {

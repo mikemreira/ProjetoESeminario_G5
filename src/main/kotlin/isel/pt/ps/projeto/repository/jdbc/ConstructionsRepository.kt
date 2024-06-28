@@ -15,6 +15,7 @@ import java.sql.Connection
 import java.sql.Date
 import java.sql.SQLException
 import java.sql.Timestamp
+import java.util.*
 
 
 @Component
@@ -65,7 +66,7 @@ class ConstructionsRepository : ConstructionRepository {
             return try {
                 val pStatement =
                     it.prepareStatement(
-                        "select ut.id, ut.nome, ut.email, ut.morada from utilizador ut\n" +
+                        "select ut.id, ut.nome, ut.email, ut.morada, ut.foto from utilizador ut\n" +
                             "inner join papel pa on pa.id_utilizador = ut.id\n" +
                             "inner join obra o on o.id = pa.id_obra\n" +
                             "where o.id = ?",
@@ -78,7 +79,9 @@ class ConstructionsRepository : ConstructionRepository {
                         result.getInt("id"),
                         result.getString("nome"),
                         result.getString("email"),
-                        result.getString("morada")))
+                        result.getString("morada"),
+                        result.getString("foto")
+                    ))
                 }
                 list
             } catch (e: Exception) {
@@ -206,7 +209,7 @@ class ConstructionsRepository : ConstructionRepository {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pStatement = it.prepareStatement("select u.id, u.nome, u.email, u.morada from utilizador u\n" +
+                val pStatement = it.prepareStatement("select u.id, u.nome, u.email, u.morada, u.foto from utilizador u\n" +
                     "inner join papel p on p.id_utilizador = u.id\n" +
                     "inner join obra o on o.id = p.id_obra\n" +
                     "where u.email = ?")
@@ -219,7 +222,8 @@ class ConstructionsRepository : ConstructionRepository {
                         result.getInt("id"),
                         result.getString("nome"),
                         result.getString("email"),
-                        result.getString("morada")
+                        result.getString("morada"),
+                        result.getString("foto")
                     )
             }  catch (e: Exception) {
                 it.rollback()

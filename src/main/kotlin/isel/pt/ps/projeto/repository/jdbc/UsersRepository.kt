@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException
-import java.util.UUID
+import java.util.*
 
 const val JDBC_URL = "jdbc:postgresql://localhost:5432/postgres"
 const val jdbcDatabaseUrl = "jdbc:postgresql://localhost/postgres?user=postgres&password=postgres"
@@ -39,6 +39,7 @@ class UsersRepository : UserRepository {
                     result.getString("email"),
                     PasswordValidationInfo(result.getString("password")),
                     result.getString("morada"),
+                    result.getBytes("foto")
                 )
             )
         }
@@ -70,6 +71,7 @@ class UsersRepository : UserRepository {
                         result.getString("email"),
                         PasswordValidationInfo(result.getString("password")),
                         "",
+                        result.getBytes("foto")
                     )
                 }
             } catch (e: SQLException) {
@@ -104,7 +106,7 @@ class UsersRepository : UserRepository {
             it.autoCommit = false
             return try {
                 val pStatement = it.prepareStatement(
-                    "select id, nome, email, password, morada, token_validation, created_at, last_used_at\n" +
+                    "select id, nome, email, password, morada, foto, token_validation, created_at, last_used_at\n" +
                         "    from utilizador u \n" +
                         "    inner join Token t\n" +
                         "    on u.id = t.id_utilizador\n" +
@@ -118,7 +120,8 @@ class UsersRepository : UserRepository {
                     result.getString("nome"),
                     result.getString("email"),
                     PasswordValidationInfo(result.getString("password")),
-                    "",
+                    result.getString("morada"),
+                    result.getBytes("foto"),
                     TokenValidationInfo(result.getString("token_validation")),
                     result.getLong("created_at"),
                     result.getLong("last_used_at")
@@ -181,6 +184,7 @@ class UsersRepository : UserRepository {
                         result.getString("email"),
                         PasswordValidationInfo(result.getString("password")),
                         "",
+                        result.getBytes("foto")
                     )
                 }
             } catch (e: SQLException) {
@@ -241,7 +245,8 @@ class UsersRepository : UserRepository {
                     result.getString("nome"),
                     result.getString("email"),
                     PasswordValidationInfo(result.getString("password")),
-                    ""
+                    "",
+                    result.getBytes("foto")
                 )
             } catch (e: SQLException) {
                 it.rollback()
@@ -277,6 +282,7 @@ class UsersRepository : UserRepository {
                     result.getString("email"),
                     PasswordValidationInfo(result.getString("password")),
                     "",
+                    result.getBytes("foto")
                 )
                 UserAndToken(user, token.toString())
             } catch (e: SQLException) {
@@ -346,25 +352,40 @@ class UsersRepository : UserRepository {
         }
     }
 
+    fun base64ToByteArray(base64String: String): ByteArray {
+        // Remover o cabeçalho 'data:image/jpeg;base64,' se presente
+        var base64Image = base64String
+
+        if (base64String.startsWith("data:image/jpeg;base64,")) {
+            base64Image = base64String.substringAfter("data:image/jpeg;base64,")
+        }
+
+        // Decodificar base64 para ByteArray
+        return Base64.getDecoder().decode(base64Image)
+    }
+
     override fun editUser(id: Int, nome: String, morada: String?, foto: String?): SimpleUser {
         initializeConnection().use {
             it.autoCommit = false
             return try {
+                val fotoBytes = base64ToByteArray(foto!!)
                 val pStatement = it.prepareStatement(
                     "UPDATE Utilizador\n" +
                         "SET nome = ?,\n" +
-                        "    morada = ?\n" +
+                        "    morada = ?,\n" +
+                        "    foto = ?\n" +
                         "WHERE id = ?;\n"
                 )
                 // TODO("MISSING FOTO UPDATE")
                 pStatement.setString(1, nome)
                 pStatement.setString(2, morada)
-                pStatement.setInt(3, id)
+                pStatement.setBytes(3, fotoBytes)
+                pStatement.setInt(4, id)
                 pStatement.executeUpdate()
 
                 // TODO("MISSING FOTO IN SELECT")
                 val selectStatement = it.prepareStatement(
-                    "SELECT id, nome, email, morada FROM Utilizador WHERE id = ?"
+                    "SELECT id, nome, email, morada, foto FROM Utilizador WHERE id = ?"
                 )
                 selectStatement.setInt(1, id)
 
@@ -374,7 +395,8 @@ class UsersRepository : UserRepository {
                         id = resultSet.getInt("id"),
                         nome = resultSet.getString("nome"),
                         email = resultSet.getString("email"),
-                        morada = resultSet.getString("morada")
+                        morada = resultSet.getString("morada"),
+                        foto = resultSet.getString("foto")
                 )
 
             } catch (e: SQLException) {
@@ -396,13 +418,14 @@ class UsersRepository : UserRepository {
         val email: String,
         val passwordValidation: PasswordValidationInfo,
         val morada: String,
+        val foto: ByteArray?,
         val tokenValidation: TokenValidationInfo,
         val createdAt: Long,
         val lastUsedAt: Long
     ) {
         val userAndToken: Pair<User, Token>
             get() = Pair(
-                User(id, nome, email, passwordValidation, morada),
+                User(id, nome, email, passwordValidation, morada, foto),
                 Token(
                     tokenValidation,
                     id,

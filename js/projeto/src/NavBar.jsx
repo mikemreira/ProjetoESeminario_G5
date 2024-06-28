@@ -1,6 +1,6 @@
 import "./styles.css";
 import {Link, useNavigate} from "react-router-dom";
-import { useCurrentUser } from "./context/Authn.tsx";
+import {useAvatar, useCurrentUser} from "./context/Authn.tsx";
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -14,10 +14,9 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 
-
-
 function NavBar() {
     const currentUser = useCurrentUser();
+    const currentUserAvatar = useAvatar();
     const [anchorElUser, setAnchorElUser] = React.useState(null);
 
     const handleOpenUserMenu = (event) => {
@@ -34,6 +33,9 @@ function NavBar() {
     const handleClickHome = () => {
         navigate(`/`)
     }
+
+    console.log(currentUser)
+    console.log(currentUserAvatar)
 
     return (
         <AppBar position="fixed" >
@@ -81,7 +83,7 @@ function NavBar() {
                         <Box sx={{ flexGrow: 0 }}>
                             <Tooltip title="Abrir defnições">
                                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                    <Avatar alt="User Avatar" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" />
+                                    <Avatar alt="User Avatar" src={currentUserAvatar ? currentUserAvatar : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"} />
                                 </IconButton>
                             </Tooltip>
                             <Menu

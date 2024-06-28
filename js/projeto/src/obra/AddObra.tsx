@@ -48,7 +48,7 @@ export default function AddObra() {
     const [submitted, setSubmitted] = useState(false);
     const [valid, setValid] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
-    const [redirect, setRedirect] = useState(null);
+    const [redirect, setRedirect] = useState<JSX.Element | null>(null);
     const [open, setOpen] = React.useState(false);
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -97,13 +97,15 @@ export default function AddObra() {
         setOpen(true);
     };
 
-
+/*
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
             return;
         }
         setOpen(false);
     }
+
+ */
 
     return (
         <div className="form-obras">
