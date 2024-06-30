@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import * as React from "react";
 import {useTheme} from "@mui/material/styles";
-import { useParams } from "react-router-dom";
+import {Navigate, useNavigate, useParams} from "react-router-dom";
 import {
     Card,
     CardContent,
@@ -49,6 +49,7 @@ export default function ObrasInfo() {
     const [cookies] = useCookies(["token"]);
     const [obra, setObra] = useState<Obra | null>(null);
     const { oid } = useParams<{ oid: string }>();
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetch(`/api/obras/${oid}`, {
@@ -73,7 +74,13 @@ export default function ObrasInfo() {
             });
     }, [cookies.token, oid]);
 
-    const handleClickRegistos = (oid: number) => {  };
+    const handleClickRegistos = () => {
+        navigate(`/obras/${oid}/registers`)
+    }
+
+    const handleClickFuncionarios = () => {
+        navigate(`/obras/${oid}/funcionarios`)
+    }
 
     if (!obra) {
         return <CircularProgress />;
@@ -121,12 +128,12 @@ export default function ObrasInfo() {
                             </ListItem>
                         </List>
                         <Box mt={2}>
-                            <Button variant="contained" color="primary" sx={{ mr: 2 }} onClick={() => handleClickRegistos(obra.oid)}>
+                            <Button variant="contained" color="primary" sx={{ mr: 2 }} onClick={() => handleClickRegistos()}>
                                 Ver Registos
                             </Button>
                             {obra.role === "admin" && (
-                                <Button variant="contained" color="secondary">
-                                    Ver Registos dos Funcionários
+                                <Button variant="contained" color="secondary" onClick={() => handleClickFuncionarios()}>
+                                    Ver Funcionários
                                 </Button>
                             )}
                         </Box>

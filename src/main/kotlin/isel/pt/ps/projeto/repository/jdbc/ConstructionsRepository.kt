@@ -4,6 +4,7 @@ import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterQuery
 import isel.pt.ps.projeto.models.users.SimpleUser
+import isel.pt.ps.projeto.models.users.SimpleUserAndFunc
 import isel.pt.ps.projeto.repository.ConstructionRepository
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -63,27 +64,28 @@ class ConstructionsRepository(
         }
     }
 
-    override fun getConstructionsUsers(oid: Int): List<SimpleUser> {
+    override fun getConstructionsUsers(oid: Int): List<SimpleUserAndFunc> {
         initializeConnection().use {
             it.autoCommit = false
             return try {
                 val pStatement =
                     it.prepareStatement(
-                        "select ut.id, ut.nome, ut.email, ut.morada, ut.foto from utilizador ut\n" +
+                        "select ut.id, ut.nome, ut.email, ut.morada, ut.foto, pa.funcao from utilizador ut\n" +
                             "inner join papel pa on pa.id_utilizador = ut.id\n" +
                             "inner join obra o on o.id = pa.id_obra\n" +
                             "where o.id = ?",
                     )
                 pStatement.setInt(1, oid)
                 val result = pStatement.executeQuery()
-                val list = mutableListOf<SimpleUser>()
+                val list = mutableListOf<SimpleUserAndFunc>()
                 while (result.next()) {
-                    list.add(SimpleUser(
+                    list.add(SimpleUserAndFunc(
                         result.getInt("id"),
                         result.getString("nome"),
                         result.getString("email"),
                         result.getString("morada"),
-                        result.getString("foto")
+                        result.getString("funcao"),
+                        result.getBytes("foto")
                     ))
                 }
                 list
@@ -95,6 +97,41 @@ class ConstructionsRepository(
             }
         }
     }
+
+    override fun getConstructionUser(oid: Int, uid: Int): SimpleUserAndFunc? {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement =
+                    it.prepareStatement(
+                        "select ut.id, ut.nome, ut.email, ut.morada, ut.foto, pa.funcao from utilizador ut\n" +
+                            "inner join papel pa on pa.id_utilizador = ut.id\n" +
+                            "inner join obra o on o.id = pa.id_obra\n" +
+                            "where o.id = ? and ut.id = ?",
+                    )
+                pStatement.setInt(1, oid)
+                pStatement.setInt(2, uid)
+                val result = pStatement.executeQuery()
+                if (!result.next())
+                    null
+                else
+                    SimpleUserAndFunc(
+                        result.getInt("id"),
+                        result.getString("nome"),
+                        result.getString("email"),
+                        result.getString("morada"),
+                        result.getString("funcao"),
+                        result.getBytes("foto")
+                    )
+            } catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
 
     override fun getConstructionsOfUser(id: Int): List<Construction> {
         initializeConnection().use {

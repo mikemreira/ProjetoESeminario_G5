@@ -34,9 +34,6 @@ function NavBar() {
         navigate(`/`)
     }
 
-    console.log(currentUser)
-    console.log(currentUserAvatar)
-
     return (
         <AppBar position="fixed" >
             <Container maxWidth="xl">

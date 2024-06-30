@@ -1,5 +1,5 @@
 package isel.pt.ps.projeto.casbin
-
+/*
 import org.casbin.jcasbin.main.Enforcer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -70,3 +70,5 @@ class SecurityConfiguration {
         return InMemoryUserDetailsManager(user)
     }
 }
+
+ */

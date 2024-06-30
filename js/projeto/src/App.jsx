@@ -12,6 +12,9 @@ import Profile from "./user/Profile.tsx";
 import AddObra from "./obra/AddObra.tsx";
 import ObrasInfo from "./obra/ObrasInfo.tsx";
 import Registos from "./registos/Registos.tsx";
+import ObraRegistos from "./obra/ObraRegistos.tsx";
+import ObraFuncionarios from "./obra/ObraFuncionarios.tsx";
+import ObraFuncionarioInfo from "./obra/ObraFuncionarioInfo.tsx";
 
 const AppLayout = () => {
   return (
@@ -56,6 +59,18 @@ const router = createBrowserRouter([
       {
         "path": "/obras/:oid",
         "element": <ObrasInfo/>
+      },
+      {
+        "path": "/obras/:oid/registers",
+        "element": <ObraRegistos/>
+      },
+      {
+        "path": "/obras/:oid/funcionarios",
+        "element": <ObraFuncionarios/>
+      },
+      {
+        "path": "/obras/:oid/funcionarios/:uid",
+        "element": <ObraFuncionarioInfo/>
       },
       {
         "path": "/profile",
