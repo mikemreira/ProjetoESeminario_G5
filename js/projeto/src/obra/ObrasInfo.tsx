@@ -42,7 +42,7 @@ interface Obra {
 }
 
 const formatDate = (dateObj: DateObject | null): string => {
-    return dateObj ? dateObj.value$kotlinx_datetime : "N/A";
+    return dateObj ? dateObj.value$kotlinx_datetime : "Não definido";
 }
 
 export default function ObrasInfo() {
@@ -80,6 +80,10 @@ export default function ObrasInfo() {
 
     const handleClickFuncionarios = () => {
         navigate(`/obras/${oid}/funcionarios`)
+    }
+
+    const handleClickAddFuncionario = () => {
+        navigate(`/obras/${oid}/funcionario/invite`)
     }
 
     if (!obra) {
@@ -132,8 +136,13 @@ export default function ObrasInfo() {
                                 Ver Registos
                             </Button>
                             {obra.role === "admin" && (
-                                <Button variant="contained" color="secondary" onClick={() => handleClickFuncionarios()}>
+                                <Button variant="contained" color="secondary" sx={{ mr: 2 }} onClick={() => handleClickFuncionarios()}>
                                     Ver Funcionários
+                                </Button>
+                            )}
+                            {obra.role === "admin" && (
+                                <Button variant="contained" color="secondary" onClick={() => handleClickAddFuncionario()}>
+                                    Adicionar Funcionário
                                 </Button>
                             )}
                         </Box>

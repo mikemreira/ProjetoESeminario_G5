@@ -81,7 +81,7 @@ interface Registo {
 }
 
 
-export default function ObraRegistos() {
+export default function ObraRegistosOfAllUsers() {
     const [cookies] = useCookies(["token"]);
     const [registos, setRegistos] = useState<Registo[]>([])
     const [loading, setLoading] = useState(true);
@@ -91,7 +91,7 @@ export default function ObraRegistos() {
 
     useEffect(() => {
         const page = searchParams.get('page') || '0'
-        fetch(`/api/obras/${oid}/registos/me?page=${page}`, {
+        fetch(`/api/obras/${oid}/registos?page=${page}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -146,6 +146,7 @@ export default function ObraRegistos() {
                     alignItems: 'center',
                 }}
             >
+                <Typography variant="h5" color={"black"}>Registos da obra</Typography>
                 {/**
                  * Use MRT components along side your own markup.
                  * They just need the `table` instance passed as a prop to work!

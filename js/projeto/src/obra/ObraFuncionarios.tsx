@@ -17,6 +17,7 @@ import * as React from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import { useParams, useNavigate } from "react-router-dom";
+import {MRT_GlobalFilterTextField, MRT_TablePagination} from "material-react-table";
 
 interface UserModel {
     id: number
@@ -51,7 +52,7 @@ export default function ObraFuncionarios() {
             else return null
         }).then((body) => {
             if (body) {
-                console.log(JSON.stringify(body))
+               // console.log(JSON.stringify(body))
                 setUsers(body)
                 setLoading(false)
             }
@@ -64,9 +65,12 @@ export default function ObraFuncionarios() {
         navigate(`/obras/${oid}/funcionarios/${uid}`)
     }
 
+    const handleViewUserRecords = (uid: number) => {
+        navigate(`/obras/${oid}/registers/${uid}`)
+    }
 
-    const handleViewRecords = (uid: number) => {
-
+    const handleViewAllRecords = () => {
+        navigate(`/obras/${oid}/registers/all`)
     }
 
     if (loading) return <CircularProgress />
@@ -80,6 +84,17 @@ export default function ObraFuncionarios() {
                 }}
             >
                 <Typography variant="h4" color={"black"}>Funcionários da Obra</Typography>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        handleViewAllRecords()
+                    }}
+                >
+                    Ver todos os Registos
+                </Button>
+
             </Box>
             <TableContainer sx={{ backgroundColor: '#cccccc', mt: 2 }}>
                 <Table sx={{ tableLayout: 'fixed' }}>
@@ -110,7 +125,7 @@ export default function ObraFuncionarios() {
                                         color="primary"
                                         onClick={(e) => {
                                             e.stopPropagation()
-                                            handleViewRecords(user.id)
+                                            handleViewUserRecords(user.id)
                                         }}
                                     >
                                         Ver Registos

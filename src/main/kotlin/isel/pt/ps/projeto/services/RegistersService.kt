@@ -69,16 +69,16 @@ class RegistersService(
         if (page <= 0)
             pg = 1
 
-        val registers = registersRepository.getUsersRegistersFromConstruction(oid, page)
+        val registers = registersRepository.getUsersRegistersFromConstruction(oid, pg)
 
         return success(registers)
     }
 
-    fun getRegistersFromUserInConstruction(userId: Int, oid: Int, page: Int, me: Boolean): ListOfUsersRegistersInfoResult {
+    fun getRegistersFromUserInConstruction(authId:Int, userId: Int, oid: Int, page: Int, me: Boolean): ListOfUsersRegistersInfoResult {
         val construction = constructionRepository.getConstruction(oid)
             ?: return failure(RegistersInfoError.NoConstruction)
 
-        val role = constructionRepository.getUserRoleFromConstruction(userId, construction.oid).also { println("ROLE : $it") }
+        val role = constructionRepository.getUserRoleFromConstruction(authId, construction.oid).also { println("ROLE : $it") }
             ?: return failure(RegistersInfoError.NoAccessToConstruction)
 
         if (role.role != "admin" && !me)

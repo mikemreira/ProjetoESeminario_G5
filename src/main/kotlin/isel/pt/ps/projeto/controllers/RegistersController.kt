@@ -2,10 +2,7 @@ package isel.pt.ps.projeto.controllers
 
 import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
 import isel.pt.ps.projeto.models.Problem
-import isel.pt.ps.projeto.models.registers.RegisterInfoModel
-import isel.pt.ps.projeto.models.registers.RegisterInputModel
-import isel.pt.ps.projeto.models.registers.RegisterOutputModel
-import isel.pt.ps.projeto.models.registers.UserRegistersOutputModel
+import isel.pt.ps.projeto.models.registers.*
 import isel.pt.ps.projeto.services.RegistersInfoError
 import isel.pt.ps.projeto.services.RegistersService
 import isel.pt.ps.projeto.utils.Failure
@@ -102,16 +99,30 @@ class RegistersController(
         }
     }
 
+    // ver registos de uma obra, apenas admin
     @GetMapping("/obras/{oid}/registos")
     fun getRegistersOfUsersFromConstruction(
         @PathVariable oid: Int,
-        @RequestParam page: Int,
+        @RequestParam(defaultValue = "0") page: Int,
         @RequestHeader("Authorization") userToken: String,
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         return when (val res = registersService.getRegistersFromUsersInConstruction(authUser.user.id, oid, page)) {
-            is Success -> ResponseEntity.status(200).body(res.value)
+            is Success -> ResponseEntity.status(200).body(
+                UserRegistersAndObraOutputModel(
+                res.value.map {
+                    RegisterAndUser(
+                        it.userName,
+                        it.id,
+                        it.oid,
+                        it.uid,
+                        it.startTime,
+                        it.endTime,
+                        it.status
+                    )
+                })
+            )
             is Failure -> when (res.value) {
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
@@ -122,17 +133,30 @@ class RegistersController(
         }
     }
 
+    // ver registos de um utilizador numa obra, apenas admin
     @GetMapping("/obras/{oid}/registos/{userId}")
     fun getRegistersOfUserFromConstruction(
         @PathVariable oid: Int,
         @PathVariable userId: Int,
-        @RequestParam page: Int,
+        @RequestParam(defaultValue = "0") page: Int,
         @RequestHeader("Authorization") userToken: String,
     ): ResponseEntity<*>{
-        val authUser =
-            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        return when (val res = registersService.getRegistersFromUserInConstruction(userId, oid, page, false)) {
-            is Success -> ResponseEntity.status(200).body(res.value)
+        val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        return when (val res = registersService.getRegistersFromUserInConstruction(authUser.user.id, userId, oid, page,false)) {
+            is Success -> ResponseEntity.status(200).body(
+                UserRegistersAndObraOutputModel(
+                res.value.map {
+                    RegisterAndUser(
+                        it.userName,
+                        it.id,
+                        it.oid,
+                        it.uid,
+                        it.startTime,
+                        it.endTime,
+                        it.status
+                    )
+                })
+            )
             is Failure -> when (res.value) {
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
@@ -143,16 +167,30 @@ class RegistersController(
         }
     }
 
+    // ver os meus registos numa obra
     @GetMapping("/obras/{oid}/registos/me")
     fun getRegistersMyRegistersFromConstruction(
         @PathVariable oid: Int,
-        @RequestParam page: Int,
+        @RequestParam(defaultValue = "0") page: Int,
         @RequestHeader("Authorization") userToken: String,
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        return when (val res = registersService.getRegistersFromUserInConstruction(authUser.user.id, oid, page, true)) {
-            is Success -> ResponseEntity.status(200).body(res.value)
+        return when (val res = registersService.getRegistersFromUserInConstruction(authUser.user.id, authUser.user.id, oid, page, true)) {
+            is Success -> ResponseEntity.status(200).body(
+                UserRegistersAndObraOutputModel(
+                res.value.map {
+                    RegisterAndUser(
+                        it.userName,
+                        it.id,
+                        it.oid,
+                        it.uid,
+                        it.startTime,
+                        it.endTime,
+                        it.status
+                    )
+                }
+            ))
             is Failure -> when (res.value) {
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)

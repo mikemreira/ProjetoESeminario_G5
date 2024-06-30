@@ -30,7 +30,7 @@ class InviteController(
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         return when(val res = inviteService.inviteToConstruction(authUser.user.id, oid, invite)) {
-            is Success -> ResponseEntity.status(200)
+            is Success -> ResponseEntity.status(201)
                 .body(res.value)
             is Failure -> when (res.value) {
                 InviteInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)

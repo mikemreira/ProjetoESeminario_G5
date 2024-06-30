@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS Papel;
 DROP TABLE IF EXISTS Obra;
 DROP TABLE IF EXISTS Token;
 DROP TABLE IF EXISTS Utilizador;
+DROP TABLE IF EXISTS Convite;
 
 create table if not exists Utilizador (
                             id int generated always as identity primary key,
@@ -47,4 +48,19 @@ create table if not exists Registo (
                          saida timestamp default null,
                          status varchar(64) check (status in ('pending', 'completed')),
                          primary key (id, id_utilizador, id_obra)
+);
+
+CREATE TABLE if not exists Convite (
+    id_utilizador INT NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    funcao VARCHAR(255),
+    status VARCHAR(10) NOT NULL DEFAULT 'pending' CHECK (status IN ('rejected', 'pending', 'accepted')),
+    id_obra INT NOT NULL,
+    PRIMARY KEY (id_utilizador, id_obra),
+    CONSTRAINT fk_obra
+    FOREIGN KEY (id_obra)
+    REFERENCES Obra(id),
+    CONSTRAINT fk_utilizador
+    FOREIGN KEY (id_utilizador)
+    REFERENCES Utilizador(id)
 );

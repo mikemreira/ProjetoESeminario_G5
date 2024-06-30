@@ -81,17 +81,19 @@ interface Registo {
 }
 
 
-export default function ObraRegistos() {
+export default function ObraRegistosOfUser() {
     const [cookies] = useCookies(["token"]);
     const [registos, setRegistos] = useState<Registo[]>([])
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
     const { oid } = useParams<{ oid: string }>();
+    const { uid } = useParams<{ uid: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
+    const [username, setUsername] = useState<string>("")
 
     useEffect(() => {
         const page = searchParams.get('page') || '0'
-        fetch(`/api/obras/${oid}/registos/me?page=${page}`, {
+        fetch(`/api/obras/${oid}/registos/${uid}?page=${page}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -104,6 +106,7 @@ export default function ObraRegistos() {
             if (body) {
                 setRegistos(body.registers)
                 setLoading(false)
+                setUsername(body.registers[0].userName)
                 console.log(JSON.stringify(body))
             }
         }).catch(error => {
@@ -146,6 +149,7 @@ export default function ObraRegistos() {
                     alignItems: 'center',
                 }}
             >
+                <Typography variant="h5" color={"black"}>Registos de {username}</Typography>
                 {/**
                  * Use MRT components along side your own markup.
                  * They just need the `table` instance passed as a prop to work!

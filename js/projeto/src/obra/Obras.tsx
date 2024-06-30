@@ -15,13 +15,15 @@ import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import LastPageIcon from '@mui/icons-material/LastPage';
 import { useTheme } from '@mui/material/styles';
-import {Box} from "@mui/material";
+import {Avatar, Box, Button, CircularProgress, Stack, Typography} from "@mui/material";
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
 import InfoIcon from '@mui/icons-material/Info';
 import ChevronRightSharpIcon from '@mui/icons-material/ChevronRightSharp';
 import {useLocation, useNavigate} from "react-router-dom";
 import { Snackbar } from "@mui/material";
+import RegistoForm from "../registos/RegistoForm";
+import AddObrasForm from "./AddObraForm";
 
 interface DateObject {
     year: number;
@@ -53,6 +55,7 @@ const formatDate = (dateObj: DateObject | null): string => {
     return dateObj ? dateObj.value$kotlinx_datetime : "N/A";
 }
 
+
 export default function Obras() {
     const [cookies] = useCookies(["token"]);
     const [obras, setObras] = useState<ObrasOutputModel>({ obras: [] });
@@ -62,13 +65,8 @@ export default function Obras() {
     const location = useLocation();
     const success = location.state?.success;
     const [open, setOpen] = React.useState(success || false);
+    const [loading, setLoading] = useState(true);
 
-    const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpen(false);
-    };
 
     useEffect(() => {
         fetch("/api/obras", {
@@ -88,6 +86,7 @@ export default function Obras() {
             .then((body) => {
                 if (body) {
                     setObras(body);
+                    setLoading(false)
                 }
             })
             .catch((error) => {
@@ -95,14 +94,6 @@ export default function Obras() {
             });
     }, [cookies.token]);
 
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-    };
 
     const navigate = useNavigate();
 
@@ -114,123 +105,78 @@ export default function Obras() {
         navigate("/addObra")
     }
 
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
 
-    return (
-        <div className="form-obras">
-            <h1 className="black-text">Obras</h1>
-            <TableContainer component={Paper}  sx={{ border: '1px solid black' }}>
-                <Table sx={{ minWidth: 650 }} aria-label="simple table">
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+
+    if (loading) return <CircularProgress />
+    else return (
+        <Stack sx={{ m: '5rem 0' }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                }}
+            >
+                <Typography variant="h4" color={"black"}>Obras</Typography>
+                <IconButton onClick={handleClickAddObra} color="primary" sx={{
+                    bgcolor: 'primary.main',
+                    borderRadius: '40%',
+                    width: '40px',
+                    height: '40px',
+                    '&:hover': {
+                        bgcolor: 'primary.dark',
+                    },
+                }}>
+                    <AddIcon sx={{ fontSize: 32, color: 'white' }}/>
+                </IconButton>
+
+            </Box>
+            <TableContainer sx={{ backgroundColor: '#cccccc', mt: 2 }}>
+                <Table sx={{ tableLayout: 'fixed' }}>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Nome</TableCell>
-                            <TableCell>Localização</TableCell>
-                            <TableCell>Descrição</TableCell>
-                            <TableCell>Data de Início</TableCell>
-                            <TableCell>Data de Fim</TableCell>
-                            <TableCell>Status</TableCell>
+                            <TableCell align="center"></TableCell>
+                            <TableCell align="left" sx={{ fontSize: '1.1rem' }}>Nome</TableCell>
+                            <TableCell align="left" sx={{ fontSize: '1.1rem' }}>Localização</TableCell>
+                            <TableCell align="center" sx={{ fontSize: '1.1rem' }}>Info</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {(rowsPerPage > 0
-                                ? obras.obras.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                : obras.obras
-                        ).map((obra) => (
+                        {obras.obras.map((obra) => (
                             <TableRow key={obra.oid}>
-                                <TableCell component="th" scope="row">
-                                    <a href="#" className="black-text" onClick={() => handleClickObra(obra.oid)}>{obra.name}</a>
+                                <TableCell align="center">
+                                    <Avatar
+                                        alt={obra.name}
+                                        src={obra.foto || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"}
+                                        variant="rounded"
+                                        sx={{ width: "40%", height: "40%" }}
+                                    />
                                 </TableCell>
-                                <TableCell>{obra.location}</TableCell>
-                                <TableCell>{obra.description}</TableCell>
-                                <TableCell>{formatDate(obra.startDate)}</TableCell>
-                                <TableCell>{formatDate(obra.endDate)}</TableCell>
-                                <TableCell>{obra.status}</TableCell>
-                                <TableCell> <IconButton onClick={() => handleClickObra(obra.oid)}>
-                                    <ChevronRightSharpIcon/>
-                                </IconButton>
+                                <TableCell align="left" sx={{ fontSize: '1.1rem' }}>{obra.name}</TableCell>
+                                <TableCell align="left" sx={{ fontSize: '1.1rem' }}>{obra.location}</TableCell>
+                                <TableCell align="center">
+                                    <IconButton onClick={() => handleClickObra(obra.oid)}>
+                                        <InfoIcon/>
+                                    </IconButton>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </TableContainer>
-            <TablePagination
-                rowsPerPageOptions={[1, 3, 5]}
-                colSpan={3}
-                count={obras.obras.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                ActionsComponent={(props) => <TablePaginationActions {...props} />}
-            />
-            <Box sx={{ display: 'flex',justifyContent: 'flex-end','& > :not(style)': { m: 1 } }}>
-                <Fab color="primary" aria-label="add" onClick={handleClickAddObra}>
-                    <AddIcon />
-                </Fab>
-            </Box>
-            <Snackbar
-                open={open}
-                autoHideDuration={5000}
-                onClose={handleClose}
-                message="Obra adicionada com sucesso"
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            />
-        </div>
+        </Stack>
     );
 
-    // Custom TablePaginationActions component
-    function TablePaginationActions(props) {
-        const { count, page, rowsPerPage, onPageChange } = props;
-
-        const handleFirstPageButtonClick = (event) => {
-            onPageChange(event, 0);
-        };
-
-        const handleBackButtonClick = (event) => {
-            onPageChange(event, page - 1);
-        };
-
-        const handleNextButtonClick = (event) => {
-            onPageChange(event, page + 1);
-        };
-
-        const handleLastPageButtonClick = (event) => {
-            onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1));
-        };
-
-        return (
-            <Box sx={{ flexShrink: 0, ml: 2.5 }}>
-                <IconButton
-                    onClick={handleFirstPageButtonClick}
-                    disabled={page === 0}
-                    aria-label="first page"
-                >
-                    {theme.direction === 'rtl' ? <LastPageIcon /> : <FirstPageIcon />}
-                </IconButton>
-                <IconButton
-                    onClick={handleBackButtonClick}
-                    disabled={page === 0}
-                    aria-label="previous page"
-                >
-                    {theme.direction === 'rtl' ? <KeyboardArrowRight /> : <KeyboardArrowLeft />}
-                </IconButton>
-                <IconButton
-                    onClick={handleNextButtonClick}
-                    disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-                    aria-label="next page"
-                >
-                    {theme.direction === 'rtl' ? <KeyboardArrowLeft /> : <KeyboardArrowRight />}
-                </IconButton>
-                <IconButton
-                    onClick={handleLastPageButtonClick}
-                    disabled={page >= Math.ceil(count / rowsPerPage) - 1}
-                    aria-label="last page"
-                >
-                    {theme.direction === 'rtl' ? <FirstPageIcon /> : <LastPageIcon />}
-                </IconButton>
-            </Box>
-        );
-    }
 }
 
 
+/*
+ <AddObrasForm open={open} onHandleClose={handleClose} onHandleOpen={handleClickOpen}/>
+ */

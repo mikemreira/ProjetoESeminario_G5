@@ -15,6 +15,9 @@ import Registos from "./registos/Registos.tsx";
 import ObraRegistos from "./obra/ObraRegistos.tsx";
 import ObraFuncionarios from "./obra/ObraFuncionarios.tsx";
 import ObraFuncionarioInfo from "./obra/ObraFuncionarioInfo.tsx";
+import ObraRegistosOfUser from "./obra/ObraRegistosOfUser.tsx";
+import ObraRegistosOfAllUsers from "./obra/ObraRegistosOfAllUsers.tsx";
+import InviteToObra from "./obra/InviteToObra.tsx";
 
 const AppLayout = () => {
   return (
@@ -65,12 +68,24 @@ const router = createBrowserRouter([
         "element": <ObraRegistos/>
       },
       {
+        "path": "/obras/:oid/registers/:uid",
+        "element": <ObraRegistosOfUser/>
+      },
+      {
+        "path": "/obras/:oid/registers/all",
+        "element": <ObraRegistosOfAllUsers/>
+      },
+      {
         "path": "/obras/:oid/funcionarios",
         "element": <ObraFuncionarios/>
       },
       {
         "path": "/obras/:oid/funcionarios/:uid",
         "element": <ObraFuncionarioInfo/>
+      },
+      {
+        "path": "/obras/:oid/funcionario/invite",
+        "element": <InviteToObra/>
       },
       {
         "path": "/profile",
