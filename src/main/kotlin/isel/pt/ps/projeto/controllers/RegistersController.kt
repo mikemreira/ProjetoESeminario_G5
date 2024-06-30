@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.*
 
 
 @RestController
-@RequestMapping("/registos")
+@RequestMapping()
 class RegistersController(
     private val registersService: RegistersService,
     private val requestTokenProcessor: RequestTokenProcessor,
 ) {
 
-    @GetMapping("")
+    @GetMapping("/registos")
     fun getUserRegisters(
         @RequestHeader("Authorization") userToken: String,
         response: HttpServletResponse
@@ -51,11 +51,14 @@ class RegistersController(
                 when (res.value) {
                     RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                     RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                    RegistersInfoError.NoAccessToConstruction -> TODO()
+                    RegistersInfoError.NoConstruction -> TODO()
+                    RegistersInfoError.NoPermission -> TODO()
                 }
         }
     }
 
-    @PostMapping("")
+    @PostMapping("/registos")
     fun addUsersRegisterEntry(
         @RequestHeader("Authorization") userToken: String,
         @RequestBody register: RegisterInputModel
@@ -70,11 +73,14 @@ class RegistersController(
                 when (res.value) {
                     RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                     RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                    RegistersInfoError.NoAccessToConstruction -> TODO()
+                    RegistersInfoError.NoConstruction -> TODO()
+                    RegistersInfoError.NoPermission -> TODO()
                 }
         }
     }
 
-    @PutMapping("")
+    @PutMapping("/registos")
     fun addUsersRegisterExit(
         @RequestHeader("Authorization") userToken: String,
         @RequestBody register: RegisterInputModel
@@ -89,7 +95,71 @@ class RegistersController(
                 when (res.value) {
                     RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                     RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                    RegistersInfoError.NoAccessToConstruction -> TODO()
+                    RegistersInfoError.NoConstruction -> TODO()
+                    RegistersInfoError.NoPermission -> TODO()
                 }
+        }
+    }
+
+    @GetMapping("/obras/{oid}/registos")
+    fun getRegistersOfUsersFromConstruction(
+        @PathVariable oid: Int,
+        @RequestParam page: Int,
+        @RequestHeader("Authorization") userToken: String,
+    ): ResponseEntity<*>{
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        return when (val res = registersService.getRegistersFromUsersInConstruction(authUser.user.id, oid, page)) {
+            is Success -> ResponseEntity.status(200).body(res.value)
+            is Failure -> when (res.value) {
+                RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
+                RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                RegistersInfoError.InvalidRegister -> TODO()
+                RegistersInfoError.NoRegisters -> TODO()
+            }
+        }
+    }
+
+    @GetMapping("/obras/{oid}/registos/{userId}")
+    fun getRegistersOfUserFromConstruction(
+        @PathVariable oid: Int,
+        @PathVariable userId: Int,
+        @RequestParam page: Int,
+        @RequestHeader("Authorization") userToken: String,
+    ): ResponseEntity<*>{
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        return when (val res = registersService.getRegistersFromUserInConstruction(userId, oid, page, false)) {
+            is Success -> ResponseEntity.status(200).body(res.value)
+            is Failure -> when (res.value) {
+                RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
+                RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                RegistersInfoError.InvalidRegister -> TODO()
+                RegistersInfoError.NoRegisters -> TODO()
+            }
+        }
+    }
+
+    @GetMapping("/obras/{oid}/registos/me")
+    fun getRegistersMyRegistersFromConstruction(
+        @PathVariable oid: Int,
+        @RequestParam page: Int,
+        @RequestHeader("Authorization") userToken: String,
+    ): ResponseEntity<*>{
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        return when (val res = registersService.getRegistersFromUserInConstruction(authUser.user.id, oid, page, true)) {
+            is Success -> ResponseEntity.status(200).body(res.value)
+            is Failure -> when (res.value) {
+                RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
+                RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                RegistersInfoError.InvalidRegister -> TODO()
+                RegistersInfoError.NoRegisters -> TODO()
+            }
         }
     }
 }

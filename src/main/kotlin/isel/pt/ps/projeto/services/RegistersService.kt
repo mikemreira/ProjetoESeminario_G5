@@ -1,6 +1,8 @@
 package isel.pt.ps.projeto.services
 
+import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterOutputModel
+import isel.pt.ps.projeto.repository.ConstructionRepository
 import isel.pt.ps.projeto.repository.jdbc.RegistersRepository
 import isel.pt.ps.projeto.utils.Either
 import isel.pt.ps.projeto.utils.failure
@@ -13,15 +15,19 @@ import java.time.LocalDateTime
 sealed class RegistersInfoError {
     object NoRegisters : RegistersInfoError()
     object InvalidRegister : RegistersInfoError()
+    object NoConstruction : RegistersInfoError()
+    object NoPermission : RegistersInfoError()
+    object NoAccessToConstruction : RegistersInfoError()
 }
 typealias RegistersInfoResult = Either<RegistersInfoError, List<RegisterOutputModel>>
+typealias ListOfUsersRegistersInfoResult = Either<RegistersInfoError, List<RegisterAndUser>>
 typealias EntryRegisterResult = Either<RegistersInfoError, Boolean>
 
 @Component
 class RegistersService(
     private val registersRepository: RegistersRepository,
-
-    ) {
+    private val constructionRepository: ConstructionRepository
+) {
 
     fun getUserRegisters(uid: Int): RegistersInfoResult {
         val register = registersRepository.getUserRegisters(uid)
@@ -50,5 +56,40 @@ class RegistersService(
         }
     }
 
+    fun getRegistersFromUsersInConstruction(userId: Int, oid: Int, page: Int): ListOfUsersRegistersInfoResult {
+        val construction = constructionRepository.getConstruction(oid)
+            ?: return failure(RegistersInfoError.NoConstruction)
+
+        val role = constructionRepository.getUserRoleFromConstruction(userId, construction.oid).also { println("ROLE : $it") }
+            ?: return failure(RegistersInfoError.NoAccessToConstruction)
+
+        if (role.role != "admin")
+            return failure(RegistersInfoError.NoPermission)
+        var pg = page
+        if (page <= 0)
+            pg = 1
+
+        val registers = registersRepository.getUsersRegistersFromConstruction(oid, page)
+
+        return success(registers)
+    }
+
+    fun getRegistersFromUserInConstruction(userId: Int, oid: Int, page: Int, me: Boolean): ListOfUsersRegistersInfoResult {
+        val construction = constructionRepository.getConstruction(oid)
+            ?: return failure(RegistersInfoError.NoConstruction)
+
+        val role = constructionRepository.getUserRoleFromConstruction(userId, construction.oid).also { println("ROLE : $it") }
+            ?: return failure(RegistersInfoError.NoAccessToConstruction)
+
+        if (role.role != "admin" && !me)
+            return failure(RegistersInfoError.NoPermission)
+
+        var pg = page
+        if (page <= 0)
+            pg = 1
+
+        val registers = registersRepository.getUserRegisterFromConstruction(userId, oid, pg)
+        return success(registers)
+    }
 
 }

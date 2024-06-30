@@ -48,17 +48,18 @@ class ConstructionsController(
         return when (res) {
             is Success -> {
                 val fotoString = if (res.value.construction.foto != null) utils.byteArrayToBase64(res.value.construction.foto) else null
+                val result = res.value
                 ResponseEntity.status(200)
                     .body(
                         ConstructionAndRoleOutputModel(
-                            res.value.construction.nome,
-                            res.value.construction.localizacao,
-                            res.value.construction.descricao,
-                            res.value.construction.data_inicio,
-                            res.value.construction.data_fim,
+                            result.construction.nome,
+                            result.construction.localizacao,
+                            result.construction.descricao,
+                            result.construction.data_inicio,
+                            result.construction.data_fim,
                             fotoString,
-                            res.value.construction.status,
-                            res.value.role
+                            result.construction.status,
+                            result.role.role
                         )
                     )
             }
@@ -222,45 +223,6 @@ class ConstructionsController(
                 }
         }
     }
-/*
-    @PostMapping("{oid}/invite")
-    fun inviteUserToConstruction(
-        @PathVariable oid: Int,
-        @RequestBody invite: Invite,
-        @RequestHeader("Authorization") userToken: String
-    ): ResponseEntity<*>{
-        val authUser =
-            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        val res = constructionService.inviteToConstruction(authUser.user.id, oid, invite)
-        // TODO(ERROR)
-    }
-
- */
-
-    @GetMapping("{oid}/registers")
-    fun getRegistersOfUserFromConstruction(
-        @PathVariable oid: Int,
-        @RequestBody filters: RegisterQuery,
-        @RequestParam page: Int,
-        @RequestHeader("Authorization") userToken: String,
-    ): ResponseEntity<*>{
-        val authUser =
-            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        filters.page = page
-        return when (val res = constructionService.getRegisters(authUser.user.id, oid, filters)) {
-            is Success -> ResponseEntity.status(200).body(res.value)
-            is Failure -> when (res.value) {
-                ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
-                ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
-                ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
-                ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
-                ConstructionInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
-                ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                ConstructionInfoError.AlreadyInConstruction -> TODO()
-            }
-        }
-    }
-
 
     @PostMapping("{oid}/register")
     fun registerInConstruction(

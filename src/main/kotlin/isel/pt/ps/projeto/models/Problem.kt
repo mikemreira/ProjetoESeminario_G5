@@ -37,6 +37,8 @@ class Problem(
 
         val noConstructions = Problem("No constructions")
 
+        val noAccessToConstruction = Problem("You dont have access to that construction")
+
         val constructionAlreadyExists = Problem("Construction with that name already exists")
 
         val invalidConstruction = Problem("Invalid construction")
@@ -48,5 +50,7 @@ class Problem(
         val invalidRegister = Problem("Invalid register")
 
         val userNotFound = Problem("User not found")
+
+        val alreadyExists = Problem("Already Exists")
     }
 }

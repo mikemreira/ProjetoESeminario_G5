@@ -3,6 +3,7 @@ package isel.pt.ps.projeto.repository.jdbc
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterQuery
+import isel.pt.ps.projeto.models.role.Role
 import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.models.users.SimpleUserAndFunc
 import isel.pt.ps.projeto.repository.ConstructionRepository
@@ -226,7 +227,7 @@ class ConstructionsRepository(
         }
     }
 
-    override fun getUserRoleFromConstruction(id: Int, oid: Int): String? {
+    override fun getUserRoleFromConstruction(id: Int, oid: Int): Role? {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -240,8 +241,12 @@ class ConstructionsRepository(
                 val result = pStatement.executeQuery()
                 if (!result.next())
                     null
-                else
-                    result.getString("papel")
+                else {
+                    Role (
+                        result.getString("papel"),
+                        result.getString("funcao")
+                    )
+                }
             }  catch (e: Exception) {
                 it.rollback()
                 throw e
