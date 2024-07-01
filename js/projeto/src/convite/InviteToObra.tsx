@@ -42,7 +42,6 @@ export default function InviteToObra() {
         }));
     };
 
-
     const handleSelectChange = (event: ChangeEvent<{ value: unknown }>) => {
         setValues((values) => ({
             ...values,

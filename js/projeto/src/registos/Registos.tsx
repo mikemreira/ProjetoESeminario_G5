@@ -130,6 +130,7 @@ const Registos = () => {
                     alignItems: 'center',
                 }}
             >
+                <Typography variant="h4" color={"black"}>Registos</Typography>
                 <MRT_GlobalFilterTextField table={table} />
                 <MRT_TablePagination table={table} />
                 <IconButton onClick={handleClickOpenForm} color="primary" sx={{

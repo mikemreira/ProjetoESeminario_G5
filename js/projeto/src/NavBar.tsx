@@ -112,8 +112,9 @@ function NavBar() {
             body: JSON.stringify({ oid: oid, response: response })
         })
             .then((res) => {
-                if (res.ok) return res.json();
-                throw new Error('Falha ao aceitar o convite.');
+                if (res.ok) return res;
+
+                else return null;
             })
             .then(() => {
                 setInvites(prevInvites => ({
@@ -121,8 +122,8 @@ function NavBar() {
                     obrasAndRole: prevInvites.obrasAndRole.filter(invite => invite.oid !== oid)
                 }));
             })
-            .catch(() => {
-                navigate(`/obras`)
+            .catch(error => {
+                console.error("Error fetching: ", error);
             });
     };
 
