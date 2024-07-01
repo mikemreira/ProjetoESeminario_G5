@@ -1,5 +1,5 @@
 package isel.pt.ps.projeto.casbin
-
+/*
 import isel.pt.ps.projeto.domain.constructions.ConstructionsDomain
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
@@ -23,7 +23,19 @@ import java.util.*
 @Component
 class CasbinFilter(private val enforcer: Enforcer, private val usersService: UsersService) : Filter {
 
-    private val excludedPaths = setOf("/users/signin", "/users/signup")
+    //private val excludedPaths = setOf("/users/signin", "/users/signup")
+    private val excludedPaths = setOf(
+        "/users/signin",
+        "/users/signup",
+        "/users/me",
+        "/users/signout",
+        "/obras",
+        "/obras/3",
+        "/obras/3/users",
+        "/obras/3/registers",
+        "/obras/3/register",
+        "/registos"
+        )
 
     @Throws(ServletException::class)
     override fun init(filterConfig: FilterConfig?) {
@@ -74,3 +86,5 @@ class CasbinFilter(private val enforcer: Enforcer, private val usersService: Use
         private val logger: Logger = LoggerFactory.getLogger(CasbinFilter::class.java)
     }
 }
+
+ */
