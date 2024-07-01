@@ -54,8 +54,9 @@ export default function InviteToObra() {
         e.preventDefault();
 
         console.log("Form values:", values);
+        console.log("id obra:", oid);
 
-        fetch(`/api/obras/${oid}/invite`, {
+        fetch(`/api/obras/${oid}/convite`, {
             method: "POST",
             headers: {
                 'Content-type': 'application/json',

@@ -6,7 +6,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import {Box, InputLabel, MenuItem, Select} from "@mui/material";
+import {Box, InputLabel, MenuItem, Select, Typography} from "@mui/material";
 import {useEffect, useState} from "react";
 import {useCookies} from "react-cookie";
 
@@ -32,7 +32,7 @@ interface ObrasOptionsOutputModel {
 
 export default function RegistoForm(props: RegistoFormProps) {
     const [cookies] = useCookies(["token"]);
-    const [obras, setObras] = useState<ObrasOptionsOutputModel>({ obras: [] });
+    const [obras, setObras] = useState<ObrasOptionsOutputModel | null>(null);
     const [selectedObras, setSelectedObras] = useState<number | undefined>(undefined);
     const [requiredDateTime, setRequiredDateTime] = useState<string>('');
     const [optionalDateTime, setOptionalDateTime] = useState<string>('');
@@ -45,9 +45,31 @@ export default function RegistoForm(props: RegistoFormProps) {
                 "Authorization": `Bearer ${cookies.token}`,
             },
         })
-            .then(res => res.json())
-            .then(body => setObras(body))
-    }, [])
+            .then(res => {
+                if (res.ok) {
+                    return res.json();
+                } else if (res.status == 404) {
+                   console.log("No obras found")
+                    //setObras({ obras: [] })
+                    //return null;
+                    return { obras: []}
+                } else {
+                    return null;
+                }
+
+            })
+            .then(body => {
+                if (body) {
+                    setObras(body);
+                } else {
+                    setObras({ obras: [] });
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching obras: ", error);
+                setObras({ obras: [] }); // Handle error by setting obras to an empty array
+            });
+    }, [cookies.token, props.open])
 
     return (
         <React.Fragment>
@@ -88,17 +110,29 @@ export default function RegistoForm(props: RegistoFormProps) {
                     </DialogContentText>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         <InputLabel id="obra">Select obra</InputLabel>
-                        <Select
-                            value={selectedObras || ''}
-                            onChange={(e) => setSelectedObras(e.target.value as number)}
-                            label="Select Option 1"
-                        >
-                            {obras.obras.map((obra) =>
-                                <MenuItem key={obra.oid} value={obra.oid}>
-                                    {obra.name}
-                                </MenuItem>
+                        {obras ? (
+                                obras.obras.length > 0 ? (
+                                    <Select
+                                        value={selectedObras || ''}
+                                        onChange={(e) => setSelectedObras(e.target.value as number)}
+                                        label="Select Option 1"
+                                    >
+                                        {obras.obras.map((obra) =>
+                                            <MenuItem key={obra.oid} value={obra.oid}>
+                                                {obra.name}
+                                            </MenuItem>
+                                        )}
+                                    </Select>
+                                ) : (
+                                    <Typography variant="body2" color="error">
+                                        Sem obras disponíveis.
+                                    </Typography>
+                                )
+                            ) : (
+                                <Typography variant="body2" color="error">
+                                    Erro ao carregar obras.
+                                </Typography>
                             )}
-                        </Select>
 
                         <TextField
                             id="entrada"

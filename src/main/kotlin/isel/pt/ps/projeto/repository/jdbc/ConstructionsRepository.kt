@@ -286,6 +286,36 @@ class ConstructionsRepository(
 
     }
 
+    override fun isUserAssociatedWithConstructionByEmail(oid: Int, email: String): Boolean {
+        initializeConnection().use { conn ->
+            conn.autoCommit = false
+            return try {
+                val query = """
+                SELECT COUNT(*) AS count 
+                FROM utilizador u
+                INNER JOIN papel p ON p.id_utilizador = u.id
+                INNER JOIN obra o ON o.id = p.id_obra
+                WHERE u.email = ? AND o.id = ?
+            """
+                val pstmt = conn.prepareStatement(query)
+                pstmt.setString(1, email)
+                pstmt.setInt(2, oid)
+                val result = pstmt.executeQuery()
+                if (result.next()) {
+                    val count = result.getInt("count")
+                    count > 0 // Retorna true se o contador for maior que zero
+                } else {
+                    false // Retorna false se não houver nenhum resultado
+                }
+            } catch (e: Exception) {
+                conn.rollback()
+                throw e
+            } finally {
+                conn.commit()
+            }
+        }
+    }
+
     override fun inviteToConstruction(oid: Int, email: String): Boolean {
         initializeConnection().use {
             it.autoCommit = false

@@ -15,8 +15,43 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import { Badge } from "@mui/material";
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import {useEffect} from "react";
-import {useCookies} from "react-cookie";
+import { useEffect, useState } from "react";
+import { useCookies } from "react-cookie";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CheckIcon from '@mui/icons-material/Check';
+import DoDisturbIcon from '@mui/icons-material/DoDisturb';
+import CloseIcon from '@mui/icons-material/Close';
+
+interface DateObject {
+    year: number;
+    dayOfMonth: number;
+    month: string;
+    dayOfWeek: string;
+    dayOfYear: number;
+    monthNumber: number;
+    value$kotlinx_datetime: string;
+}
+
+interface Obra {
+    oid: number;
+    name: string;
+    location: string;
+    description: string;
+    startDate: DateObject | null;
+    endDate: DateObject | null;
+    status: string;
+    foto: string | null;
+    function: string;
+}
+
+interface InviteResponse {
+    oid: number;
+    response: string;
+}
+
+interface InvitesModel {
+    obrasAndRole: Obra[];
+}
 
 function NavBar() {
     const [cookies] = useCookies(["token"]);
@@ -24,26 +59,26 @@ function NavBar() {
     const currentUserAvatar = useAvatar();
     const [anchorElUser, setAnchorElUser] = React.useState(null);
     const [anchorElNotifications, setAnchorElNotifications] = React.useState(null);
-    const [notifications, setNotifications] = React.useState(0);
+    const [invites, setInvites] = useState<InvitesModel>({ obrasAndRole: [] });
 
     useEffect(() => {
-        fetch(`/api/`, {
+        fetch(`/api/convites`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
                 "Authorization": `Bearer ${cookies.token}`
             },
         }).then((res) => {
-            if (res.ok) return res.json()
-            else return null
+            if (res.ok) return res.json();
+            else return null;
         }).then((body) => {
             if (body) {
-                setNotifications(body)
+                setInvites(body);
             }
         }).catch(error => {
-            console.error("Error fetching notifications: ", error)
-        })
-    }, [cookies.token])
+            console.error("Error fetching notifications: ", error);
+        });
+    }, [cookies.token]);
 
     const handleOpenUserMenu = (event) => {
         setAnchorElUser(event.currentTarget);
@@ -64,8 +99,32 @@ function NavBar() {
     const navigate = useNavigate();
 
     const handleClickHome = () => {
-        navigate(`/`)
-    }
+        navigate(`/`);
+    };
+
+    const handleAcceptOrRejectInvite = (oid: number, response: string) => {
+        fetch(`/api/convites`, {
+            method: 'PUT',
+            headers: {
+                'Content-type': 'application/json',
+                'Authorization': `Bearer ${cookies.token}`
+            },
+            body: JSON.stringify({ oid: oid, response: response })
+        })
+            .then((res) => {
+                if (res.ok) return res.json();
+                throw new Error('Falha ao aceitar o convite.');
+            })
+            .then(() => {
+                setInvites(prevInvites => ({
+                    ...prevInvites,
+                    obrasAndRole: prevInvites.obrasAndRole.filter(invite => invite.oid !== oid)
+                }));
+            })
+            .catch(() => {
+                navigate(`/obras`)
+            });
+    };
 
     return (
         <AppBar position="fixed">
@@ -106,14 +165,14 @@ function NavBar() {
                             </Button>
                         </Box>
                     ) : (
-                        <><Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}></Box></>
+                        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}></Box>
                     )}
 
                     {currentUser ? (
                         <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>
                             <Tooltip title="Notificações">
                                 <IconButton onClick={handleOpenNotificationsMenu} sx={{ p: 1, color: 'white', mr: 1 }}>
-                                    <Badge badgeContent={notifications.length} color="warning">
+                                    <Badge badgeContent={invites.obrasAndRole.length} color="warning">
                                         <NotificationsIcon sx={{ color: 'white' }} />
                                     </Badge>
                                 </IconButton>
@@ -133,9 +192,17 @@ function NavBar() {
                                 open={Boolean(anchorElNotifications)}
                                 onClose={handleCloseNotificationsMenu}
                             >
-                                {notifications.length > 0 ? (
-                                    notifications.map((notification, index) => (
-                                        <MenuItem key={index}>{notification}</MenuItem>
+                                {invites.obrasAndRole.length > 0 ? (
+                                    invites.obrasAndRole.map((invite) => (
+                                        <MenuItem key={invite.oid}>
+                                            Convite para a obra {invite.name} com a função: {invite.function}
+                                            <IconButton onClick={(e) => { e.stopPropagation(); handleAcceptOrRejectInvite(invite.oid, "accepted") }}>
+                                                <CheckIcon sx={{ color: 'green' }}/>
+                                            </IconButton>
+                                            <IconButton onClick={(e) => { e.stopPropagation(); handleAcceptOrRejectInvite(invite.oid, "rejected") }}>
+                                                <CloseIcon sx={{ color: 'red' }}/>
+                                            </IconButton>
+                                        </MenuItem>
                                     ))
                                 ) : (
                                     <MenuItem>Sem notificações</MenuItem>

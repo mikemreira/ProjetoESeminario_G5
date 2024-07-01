@@ -4,7 +4,7 @@ import Home from './Home'
 import LogIn from './user/LogIn.jsx'
 import './App.css'
 import Success from './user/Success.jsx'
-import NavBar from './NavBar'
+import NavBar from './NavBar.tsx'
 import Obras from "./obra/Obras.tsx"
 import LogOut from "./user/LogOut.tsx"
 import {AuthnContainer} from "./context/Authn.tsx";
@@ -17,7 +17,7 @@ import ObraFuncionarios from "./obra/ObraFuncionarios.tsx";
 import ObraFuncionarioInfo from "./obra/ObraFuncionarioInfo.tsx";
 import ObraRegistosOfUser from "./obra/ObraRegistosOfUser.tsx";
 import ObraRegistosOfAllUsers from "./obra/ObraRegistosOfAllUsers.tsx";
-import InviteToObra from "./obra/InviteToObra.tsx";
+import InviteToObra from "./convite/InviteToObra.tsx";
 
 const AppLayout = () => {
   return (

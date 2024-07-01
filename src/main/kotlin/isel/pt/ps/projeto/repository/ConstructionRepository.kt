@@ -36,4 +36,6 @@ interface ConstructionRepository {
 
     fun getRegisters(userId: Int, oid: Int, role: String, filters: RegisterQuery): List<RegisterAndUser>
 
+    fun isUserAssociatedWithConstructionByEmail(oid: Int, email: String): Boolean
+
 }

@@ -78,6 +78,7 @@ class InviteController(
         }
     }
 
+
     @PutMapping("/convites")
     fun acceptOrDeny(
         @RequestBody input: acceptOrDenyInvite,
