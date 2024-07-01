@@ -13,4 +13,6 @@ interface RegistersRepository {
     fun getUsersRegistersFromConstruction(oid: Int, page: Int): List<RegisterAndUser>
     fun getUserRegisterFromConstruction(userId: Int, oid: Int, page: Int): List<RegisterAndUser>
 
+    fun acceptOrDeny(userId: Int, oid: Int, registerId: Int, response: String) : Boolean
+
 }

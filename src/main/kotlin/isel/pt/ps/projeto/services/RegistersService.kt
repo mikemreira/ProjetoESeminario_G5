@@ -22,6 +22,7 @@ sealed class RegistersInfoError {
 typealias RegistersInfoResult = Either<RegistersInfoError, List<RegisterOutputModel>>
 typealias ListOfUsersRegistersInfoResult = Either<RegistersInfoError, List<RegisterAndUser>>
 typealias EntryRegisterResult = Either<RegistersInfoError, Boolean>
+typealias AcceptOrDenyRegisterResult = Either<RegistersInfoError, Boolean>
 
 @Component
 class RegistersService(
@@ -90,6 +91,20 @@ class RegistersService(
 
         val registers = registersRepository.getUserRegisterFromConstruction(userId, oid, pg)
         return success(registers)
+    }
+
+    fun acceptOrDenyRegisters(authId:Int, userId: Int, registerId: Int, oid: Int, response: String): AcceptOrDenyRegisterResult{
+        val construction = constructionRepository.getConstruction(oid)
+            ?: return failure(RegistersInfoError.NoConstruction)
+
+        val role = constructionRepository.getUserRoleFromConstruction(authId, construction.oid).also { println("ROLE : $it") }
+            ?: return failure(RegistersInfoError.NoAccessToConstruction)
+
+        if (role.role != "admin")
+            return failure(RegistersInfoError.NoPermission)
+
+        val res = registersRepository.acceptOrDeny(userId, oid, registerId, response)
+        return success(res)
     }
 
 }

@@ -1,7 +1,8 @@
 package isel.pt.ps.projeto.services
 
 import isel.pt.ps.projeto.domain.constructions.ConstructionsDomain
-import isel.pt.ps.projeto.domain.invite.Invite
+import isel.pt.ps.projeto.models.invite.Invite
+import isel.pt.ps.projeto.models.constructions.ConstructionAndRole
 import isel.pt.ps.projeto.repository.InviteRepository
 import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
@@ -19,6 +20,8 @@ sealed class InviteInfoError {
 }
 
 typealias InviteInfoResult = Either<InviteInfoError, Boolean>
+typealias ListOfInvitesInfoResult = Either<InviteInfoError, List<ConstructionAndRole>>
+
 
 @Component
 class InviteService(
@@ -51,4 +54,13 @@ class InviteService(
         return success(res)
     }
 
+    fun invited(userId: Int): ListOfInvitesInfoResult {
+        val res = inviteRepository.invited(userId)
+        return success(res)
+    }
+
+    fun acceptOrDeny(userId: Int, oid: Int, response: String): InviteInfoResult{
+        val res = inviteRepository.acceptOrDeny(userId, oid, response)
+        return success(res)
+    }
 }

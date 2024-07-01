@@ -6,6 +6,7 @@ import isel.pt.ps.projeto.repository.RegistersRepository
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.stereotype.Component
 import java.sql.Connection
+import java.sql.SQLException
 import java.sql.Timestamp
 
 
@@ -191,4 +192,31 @@ class RegistersRepository : RegistersRepository {
             }
         }
     }
+
+    override fun acceptOrDeny(userId: Int, oid: Int, registerId: Int, response: String): Boolean {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement(
+                    "UPDATE Registo \n" +
+                        "SET status = ? \n" +
+                        "WHERE id_utilizador = ? AND id_obra = ? AND id = ?"
+                )
+                println(response)
+                pStatement.setString(1, response)
+                pStatement.setInt(2, userId)
+                pStatement.setInt(3, oid)
+                pStatement.setInt(4, registerId)
+                pStatement.executeUpdate()
+                true
+            }  catch (e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+
 }

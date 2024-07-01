@@ -133,6 +133,27 @@ class RegistersController(
         }
     }
 
+    @PutMapping("/obras/{oid}/registos")
+    fun acceptOrDenyRegistersFromConstruction(
+        @PathVariable oid: Int,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestBody input: AcceptOrDenyRegister,
+        @RequestHeader("Authorization") userToken: String,
+    ): ResponseEntity<*>{
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        return when (val res = registersService.acceptOrDenyRegisters(authUser.user.id, input.userId, input.registerId, oid, input.response)) {
+            is Success -> ResponseEntity.status(200).body("Registo ${input.response}")
+            is Failure -> when (res.value) {
+                RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
+                RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                RegistersInfoError.InvalidRegister -> TODO()
+                RegistersInfoError.NoRegisters -> TODO()
+            }
+        }
+    }
+
     // ver registos de um utilizador numa obra, apenas admin
     @GetMapping("/obras/{oid}/registos/{userId}")
     fun getRegistersOfUserFromConstruction(

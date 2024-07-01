@@ -188,7 +188,7 @@ class ConstructionsRepository(
             it.autoCommit = false
             return try {
                 println("foto: $foto")
-                val fotoBytes = utils.base64ToByteArray(foto!!)
+                val fotoBytes = if (foto!=null) utils.base64ToByteArray(foto) else null
                 val generatedColumns = arrayOf("id")
                 val insertStatement = it.prepareStatement(
                     "INSERT INTO Obra (nome, localização, descrição, data_inicio, data_fim, foto)\n" +

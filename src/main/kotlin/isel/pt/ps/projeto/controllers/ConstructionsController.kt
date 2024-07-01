@@ -52,6 +52,7 @@ class ConstructionsController(
                 ResponseEntity.status(200)
                     .body(
                         ConstructionAndRoleOutputModel(
+                            result.construction.oid,
                             result.construction.nome,
                             result.construction.localizacao,
                             result.construction.descricao,
@@ -59,7 +60,8 @@ class ConstructionsController(
                             result.construction.data_fim,
                             fotoString,
                             result.construction.status,
-                            result.role.role
+                            result.role.role,
+                            result.role.function
                         )
                     )
             }
