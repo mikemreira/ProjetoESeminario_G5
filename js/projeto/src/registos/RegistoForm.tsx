@@ -9,6 +9,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import {Box, InputLabel, MenuItem, Select, Typography} from "@mui/material";
 import {useEffect, useState} from "react";
 import {useCookies} from "react-cookie";
+import {useNavigate} from "react-router-dom";
 
 interface RegistoFormProps {
     open: boolean,
@@ -70,6 +71,8 @@ export default function RegistoForm(props: RegistoFormProps) {
                 setObras({ obras: [] }); // Handle error by setting obras to an empty array
             });
     }, [cookies.token, props.open])
+
+    const navigate = useNavigate();
 
     return (
         <React.Fragment>
