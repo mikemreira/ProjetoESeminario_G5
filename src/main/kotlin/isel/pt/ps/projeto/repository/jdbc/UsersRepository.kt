@@ -398,6 +398,43 @@ class UsersRepository(
         }
     }
 
+    override fun editPassword(id: Int, password: PasswordValidationInfo): SimpleUser {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement(
+                    "UPDATE Utilizador\n" +
+                        "SET password = ?\n" +
+                        "WHERE id = ? \n"
+                )
+                pStatement.setString(1, password.validationInfo)
+                pStatement.setInt(2, id)
+                pStatement.executeUpdate()
+
+                val selectStatement = it.prepareStatement(
+                    "SELECT id, nome, email, morada, foto FROM Utilizador WHERE id = ?"
+                )
+                selectStatement.setInt(1, id)
+
+                val resultSet = selectStatement.executeQuery()
+                resultSet.next()
+                SimpleUser(
+                        id = resultSet.getInt("id"),
+                        nome = resultSet.getString("nome"),
+                        email = resultSet.getString("email"),
+                        morada = resultSet.getString("morada"),
+                        foto = resultSet.getString("foto")
+                )
+
+            } catch (e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
     override fun deleteUser(id: Int): User {
         TODO("Not yet implemented")
     }

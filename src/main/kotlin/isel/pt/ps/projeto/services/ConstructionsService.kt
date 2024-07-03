@@ -3,6 +3,8 @@ package isel.pt.ps.projeto.services
 import isel.pt.ps.projeto.domain.constructions.ConstructionsDomain
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.constructions.ConstructionAndRole
+import isel.pt.ps.projeto.models.constructions.ConstructionEditInputModel
+import isel.pt.ps.projeto.models.constructions.ConstructionInputModel
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterQuery
 import isel.pt.ps.projeto.models.users.SimpleUserAndFunc
@@ -36,10 +38,17 @@ sealed class ConstructionUserError {
     object UserNotFound: ConstructionUserError()
 }
 
+sealed class ConstructionEditError {
+    object ConstructionNotFound : ConstructionEditError()
+    object NoPermission: ConstructionEditError()
+    object InvalidInput: ConstructionEditError()
+}
+
 typealias ConstructionAndRoleResult = Either<ConstructionInfoError, ConstructionAndRole>
 typealias ConstructionCreationResult = Either<ConstructionCreationError, Int>
 typealias ConstructionInfoResult = Either<ConstructionInfoError, Construction>
 typealias ConstructionsInfoResult = Either<ConstructionInfoError, List<Construction>>
+typealias ConstructionEditResult = Either<ConstructionEditError, Construction>
 
 //typealias InviteInfoResult = Either<ConstructionInfoError, Boolean>
 typealias RegisterInfoResult = Either<ConstructionInfoError, Boolean>
@@ -120,6 +129,23 @@ class ConstructionsService(
 
         val constructionAndRole = ConstructionAndRole(construction, role)
         return success(constructionAndRole)
+    }
+
+    fun editConstruction(userId: Int, oid: Int, inputModel: ConstructionEditInputModel): ConstructionEditResult {
+        val construction = constructionsRepository.getConstruction(oid)
+            ?: return failure(ConstructionEditError.ConstructionNotFound)
+
+        val role = constructionsRepository.getUserRoleFromConstruction(userId, construction.oid)
+            ?: return failure(ConstructionEditError.NoPermission)
+
+        if (role.role != "admin")
+            return failure(ConstructionEditError.NoPermission)
+
+        if (inputModel.name.isEmpty() || inputModel.location.isEmpty() || inputModel.description.isEmpty())
+            return failure(ConstructionEditError.InvalidInput)
+
+        val updatedConstruction = constructionsRepository.editConstruction(oid, inputModel)
+        return success(updatedConstruction)
     }
 /*
     fun inviteToConstruction(userId: Int, oid: Int, invite: Invite): InviteInfoResult {

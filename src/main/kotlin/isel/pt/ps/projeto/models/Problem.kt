@@ -52,5 +52,7 @@ class Problem(
         val userNotFound = Problem("User not found")
 
         val alreadyExists = Problem("Already Exists")
+
+        val invalidConstructionInput = Problem("Invalid construction input")
     }
 }

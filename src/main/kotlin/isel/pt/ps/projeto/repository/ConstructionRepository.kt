@@ -1,6 +1,7 @@
 package isel.pt.ps.projeto.repository
 
 import isel.pt.ps.projeto.models.constructions.Construction
+import isel.pt.ps.projeto.models.constructions.ConstructionEditInputModel
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterQuery
 import isel.pt.ps.projeto.models.role.Role
@@ -37,5 +38,7 @@ interface ConstructionRepository {
     fun getRegisters(userId: Int, oid: Int, role: String, filters: RegisterQuery): List<RegisterAndUser>
 
     fun isUserAssociatedWithConstructionByEmail(oid: Int, email: String): Boolean
+
+    fun editConstruction(oid: Int, inputModel: ConstructionEditInputModel): Construction
 
 }

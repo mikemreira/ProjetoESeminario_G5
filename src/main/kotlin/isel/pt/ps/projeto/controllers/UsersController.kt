@@ -64,6 +64,28 @@ class UsersController(
         }
     }
 
+    @PutMapping("/me/password")
+    fun editPassword(
+        @RequestHeader("Authorization") token : String,
+        @RequestBody input: UserEditPasswordInputModel
+    ): ResponseEntity<*> {
+        logger.info("Request body: $input")
+        println("entrou")
+        val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
+        val res = usersService.editPassword(authUser.user.id, input.password)
+        return when (res) {
+            is Success ->
+                ResponseEntity.status(201)
+                    .body(UserChangePasswordOutputModel("Password changed"))
+            is Failure ->
+                when (res.value) {
+                    UserError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
+                    UserError.UserAlreadyExists -> Problem.response(400, Problem.userAlreadyExists)
+                    UserError.InvalidEmail -> Problem.response(400, Problem.emailAlreadyExists)
+                }
+        }
+    }
+
     @GetMapping
     fun getUsers(): ResponseEntity<*> {
         println(usersService.getUsers())

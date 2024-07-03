@@ -56,6 +56,7 @@ CREATE TABLE if not exists Convite (
                         funcao VARCHAR(255),
                         status VARCHAR(10) NOT NULL DEFAULT 'pending' CHECK (status IN ('rejected', 'pending', 'accepted')),
                         id_obra INT NOT NULL,
+                        papel VARCHAR(255) CHECK (papel IN ('admin', 'funcionario')),
                         PRIMARY KEY (id_utilizador, id_obra),
                         CONSTRAINT fk_obra
                             FOREIGN KEY (id_obra)

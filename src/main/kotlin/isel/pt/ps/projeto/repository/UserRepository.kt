@@ -56,6 +56,11 @@ interface UserRepository {
         foto: String?,
     ): SimpleUser
 
+    fun editPassword(
+        id: Int,
+        password: PasswordValidationInfo,
+    ): SimpleUser
+
     /**
      * Delete
      */

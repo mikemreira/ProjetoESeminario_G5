@@ -13,17 +13,21 @@ import {Navigate, useParams} from "react-router-dom"
 interface InviteValues {
     email: string
     function: string
+    role: string
 }
 
-const roles = [
+const func = [
     'Ajudante', 'Apontador', 'Armador de ferro', 'Arvorado', 'Calceteiro', 'Canalisador', 'Carpinteiro', 'Chefe de equipa', 'Condutor Manobrador', 'Diretor de serviços', 'Eletricista', 'Encarregado', 'Escriturário', 'Estucador',  'Ferramenteiro', 'Gruista', 'Impermiabilizador', 'Ladrilhador', 'Marteleiro', 'Montador de andaimes', 'Pedreiro', 'Pintor', 'Serralheiro', 'Servente', 'Soldador', 'Técnico de manutenção', 'Tubista', 'Outro'
 ];
+
+const roles = ['admin', 'funcionario'];
 
 export default function InviteToObra() {
     const [cookies] = useCookies(["token"]);
     const [values, setValues] = useState<InviteValues>({
         email: "",
-        function: ""
+        function: "",
+        role: ""
     });
 
 
@@ -35,17 +39,32 @@ export default function InviteToObra() {
     const [success, setSuccess] = useState(false);
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = event.target;
+        const { name, value } = event.target
         setValues((values) => ({
             ...values,
             [name]: value
-        }));
-    };
+        }))
+    }
+
+    const handleFunctionChange = (event: ChangeEvent<{ value: unknown }>) => {
+        setValues((values) => ({
+            ...values,
+            function: event.target.value as string
+        }))
+    }
+
+    const handleRoleChange = (event: ChangeEvent<{ value: unknown }>) => {
+        setValues((values) => ({
+            ...values,
+            role: event.target.value as string
+        }))
+    }
 
     const handleSelectChange = (event: ChangeEvent<{ value: unknown }>) => {
         setValues((values) => ({
             ...values,
-            function: event.target.value as string
+            function: event.target.value as string,
+            role: event.target.value as string
         }));
     };
 
@@ -115,9 +134,26 @@ export default function InviteToObra() {
                         labelId="function-label"
                         id="function"
                         value={values.function}
-                        onChange={handleSelectChange}
+                        onChange={handleFunctionChange}
                         label="Função"
                         name="function"
+                    >
+                        {func.map((func) => (
+                            <MenuItem key={func} value={func}>
+                                {func}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <FormControl sx={{ m: 1, width: '25ch' }}>
+                    <InputLabel id="role-label">Papel</InputLabel>
+                    <Select
+                        labelId="role-label"
+                        id="role"
+                        value={values.role}
+                        onChange={handleRoleChange}
+                        label="Papel"
+                        name="role"
                     >
                         {roles.map((role) => (
                             <MenuItem key={role} value={role}>

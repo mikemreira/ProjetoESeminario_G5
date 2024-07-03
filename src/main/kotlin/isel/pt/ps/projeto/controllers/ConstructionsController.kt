@@ -8,10 +8,7 @@ import isel.pt.ps.projeto.models.registers.RegisterInputModelWeb
 import isel.pt.ps.projeto.models.users.ListOfSimpleUserAndFunc
 import isel.pt.ps.projeto.models.users.SimpleUserAndFunc
 import isel.pt.ps.projeto.models.users.SimpleUserAndFuncOutput
-import isel.pt.ps.projeto.services.ConstructionCreationError
-import isel.pt.ps.projeto.services.ConstructionInfoError
-import isel.pt.ps.projeto.services.ConstructionUserError
-import isel.pt.ps.projeto.services.ConstructionsService
+import isel.pt.ps.projeto.services.*
 import isel.pt.ps.projeto.utils.Failure
 import isel.pt.ps.projeto.utils.Success
 import kotlinx.datetime.toLocalDate
@@ -20,6 +17,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
@@ -78,6 +76,41 @@ class ConstructionsController(
                 }
         }
     }
+
+    @PutMapping("/{oid}")
+    fun editConstruction(
+        @RequestBody input: ConstructionEditInputModel,
+        @RequestHeader("Authorization") userToken: String,
+        @PathVariable oid: Int,
+    ): ResponseEntity<*> {
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        val res = constructionService.editConstruction(authUser.user.id, oid, input)
+        return when (res) {
+            is Success -> {
+                val fotoString = if (res.value.foto != null) utils.byteArrayToBase64(res.value.foto) else null
+                ResponseEntity.status(201).body(
+                    ConstructionOutputModel(
+                        res.value.oid,
+                        res.value.nome,
+                        res.value.localizacao,
+                        res.value.descricao,
+                        res.value.data_inicio,
+                        res.value.data_fim,
+                        fotoString,
+                        res.value.status
+                    )
+                )
+            }
+            is Failure -> when (res.value) {
+                ConstructionEditError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
+                ConstructionEditError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                ConstructionEditError.InvalidInput -> Problem.response(400, Problem.invalidConstructionInput)
+
+            }
+        }
+    }
+
 
     @GetMapping("/{oid}/users")
     fun getConstructionsUsers(

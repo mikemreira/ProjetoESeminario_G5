@@ -233,6 +233,47 @@ class RegistersRepository : RegistersRepository {
         }
     }
 
+    override fun getPendingRegisters(userId: Int, page: Int): List<RegisterAndUser> {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pg = (page-1)*10
+                val pStatement = it.prepareStatement(
+                    "Select * from Registo r \n" +
+                        "inner join utilizador u on r.id_utilizador = u.id \n" +
+                        "where r.id_obra =(Select id_obra From Utilizador u2 \n" +
+                        "Inner join Papel p on u2.id = p.id_utilizador \n" +
+                        "where u2.id = ? and papel = 'admin') \n" +
+                        "LIMIT 10 offset ?"
+                )
+                pStatement.setInt(1, userId)
+                pStatement.setInt(2, pg)
+                val result = pStatement.executeQuery()
+                val registers = mutableListOf<RegisterAndUser>()
+                while (result.next()){
+                    val saida = result.getTimestamp("saida")
+                    registers.add(
+                        RegisterAndUser(
+                            result.getString("nome"),
+                            result.getInt("id"),
+                            result.getInt("id_obra"),
+                            result.getInt("id_utilizador"),
+                            result.getTimestamp("entrada").toLocalDateTime(),
+                            if (saida == null) null else saida.toLocalDateTime(),
+                            result.getString("status")
+                        )
+                    )
+                }
+                registers
+            }  catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
     override fun acceptOrDeny(userId: Int, oid: Int, registerId: Int, response: String): Boolean {
         initializeConnection().use {
             it.autoCommit = false

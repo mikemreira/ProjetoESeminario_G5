@@ -1,6 +1,7 @@
 package isel.pt.ps.projeto.repository.jdbc
 
 import isel.pt.ps.projeto.models.constructions.Construction
+import isel.pt.ps.projeto.models.constructions.ConstructionEditInputModel
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterQuery
 import isel.pt.ps.projeto.models.role.Role
@@ -291,27 +292,69 @@ class ConstructionsRepository(
             it.autoCommit = false
             return try {
                 val query = """
-                SELECT COUNT(*) AS count 
-                FROM utilizador u
-                INNER JOIN papel p ON p.id_utilizador = u.id
-                INNER JOIN obra o ON o.id = p.id_obra
-                WHERE u.email = ? AND o.id = ?
-            """
+                    SELECT EXISTS (
+                        SELECT *
+                        FROM utilizador u
+                        INNER JOIN papel p ON p.id_utilizador = u.id
+                        INNER JOIN obra o ON o.id = p.id_obra
+                        WHERE u.email = ? AND o.id = ?
+                    ) as resp
+                """
                 val pstmt = it.prepareStatement(query)
                 pstmt.setString(1, email)
                 pstmt.setInt(2, oid)
                 val result = pstmt.executeQuery()
-                if (result.next()) {
-                    val count = result.getInt("count")
-                    count > 0
-                } else {
-                    false
-                }
+                result.next()
+                result.getBoolean("resp")
             } catch (e: Exception) {
                 it.rollback()
                 throw e
             } finally {
                 it.commit()
+            }
+        }
+    }
+
+    override fun editConstruction(oid: Int, inputModel: ConstructionEditInputModel): Construction {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val fotoBytes = if (inputModel.foto != null) utils.base64ToByteArray(inputModel.foto) else null
+                val pStatement = it.prepareStatement(
+                    "UPDATE Obra\n" +
+                        "SET nome = ?, localização = ?, descrição = ?, data_inicio = ?, data_fim = ?, foto = ?, status = ? \n" +
+                        "WHERE id = ?"
+                )
+                pStatement.setString(1, inputModel.name)
+                pStatement.setString(2, inputModel.location)
+                pStatement.setString(3, inputModel.description)
+                pStatement.setDate(4, Date.valueOf(inputModel.startDate))
+                pStatement.setDate(5, if (inputModel.endDate != null) Date.valueOf(inputModel.endDate) else null)
+                pStatement.setBytes(6, fotoBytes)
+                pStatement.setString(7, inputModel.status)
+                pStatement.setInt(8, oid)
+                pStatement.executeUpdate()
+                val selectConst = it.prepareStatement("SELECT * FROM Obra WHERE id = ?")
+                selectConst.setInt(1, oid)
+                val result = selectConst.executeQuery()
+                result.next()
+                val dataF = result.getDate("data_fim")
+                Construction(
+                    result.getInt("id"),
+                    result.getString("nome"),
+                    result.getString("localização"),
+                    result.getString("descrição"),
+                    result.getDate("data_inicio").toString().toLocalDate(),
+                    if (dataF != null) dataF.toString().toLocalDate() else null,
+                    result.getString("status"),
+                    result.getBytes("foto")
+                )
+            } catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+
             }
         }
     }
