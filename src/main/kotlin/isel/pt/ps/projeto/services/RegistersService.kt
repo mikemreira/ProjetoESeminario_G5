@@ -93,6 +93,25 @@ class RegistersService(
         return success(registers)
     }
 
+    fun getPendingRegistersFromUsersInConstruction(userId: Int, oid: Int, page: Int): ListOfUsersRegistersInfoResult {
+        val construction = constructionRepository.getConstruction(oid)
+            ?: return failure(RegistersInfoError.NoConstruction)
+
+        val role = constructionRepository.getUserRoleFromConstruction(userId, construction.oid).also { println("ROLE : $it") }
+            ?: return failure(RegistersInfoError.NoAccessToConstruction)
+
+        if (role.role != "admin")
+            return failure(RegistersInfoError.NoPermission)
+
+        var pg = page
+        if (page <= 0)
+            pg = 1
+
+        val registers = registersRepository.getPendingRegistersFromConstruction(oid, pg)
+
+        return success(registers)
+    }
+
     fun acceptOrDenyRegisters(authId:Int, userId: Int, registerId: Int, oid: Int, response: String): AcceptOrDenyRegisterResult{
         val construction = constructionRepository.getConstruction(oid)
             ?: return failure(RegistersInfoError.NoConstruction)

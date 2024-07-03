@@ -15,8 +15,11 @@ import {
     Avatar,
     Button,
     Box,
-    Divider,
+    Divider, Badge,
 } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import PendingActionsIcon from '@mui/icons-material/PendingActions';
+import Tooltip from "@mui/material/Tooltip";
 
 
 interface DateObject {
@@ -39,6 +42,21 @@ interface Obra {
     status: string;
     role: string;
     foto: string | null;
+    function: string;
+}
+
+interface Registo {
+    id: number;
+    id_utilizador: number;
+    id_obra: number;
+    nome: string;
+    entrada: DateObject;
+    saida: DateObject | null;
+    status: string | null;
+}
+
+interface RegistosOutputModel {
+    registers: Registo[];
 }
 
 const formatDate = (dateObj: DateObject | null): string => {
@@ -50,6 +68,7 @@ export default function ObrasInfo() {
     const [obra, setObra] = useState<Obra | null>(null);
     const { oid } = useParams<{ oid: string }>();
     const navigate = useNavigate();
+    const [pendingRegisters, setPendingRegisters] = useState<RegistosOutputModel>({ registers: [] });
 
     useEffect(() => {
         fetch(`/api/obras/${oid}`, {
@@ -67,11 +86,34 @@ export default function ObrasInfo() {
                 }
             })
             .then((body) => {
+                console.log(body);
                 setObra(body);
             })
             .catch((error) => {
                 console.error("Error fetching obra:", error);
             });
+    }, [cookies.token, oid]);
+
+    useEffect(() => {
+        fetch(`/api/obras/${oid}/registos/pendente`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`,
+            },
+        }).then((res) => {
+            if (res.ok) {
+                return res.json();
+            } else {
+                throw new Error('Failed to fetch registos pendentes');
+            }
+        }).then((body) => {
+            console.log(body);
+            setPendingRegisters(body);
+
+        }).catch((error) => {
+            console.error("Error fetching registos pendentes:", error);
+        });
     }, [cookies.token, oid]);
 
     const handleClickRegistos = () => {
@@ -84,6 +126,10 @@ export default function ObrasInfo() {
 
     const handleClickAddFuncionario = () => {
         navigate(`/obras/${oid}/funcionario/invite`)
+    }
+
+    const handleClickPendingRegisters = () => {
+        navigate(`/obras/${oid}/registers/pending`);
     }
 
     if (!obra) {
@@ -106,6 +152,15 @@ export default function ObrasInfo() {
                         />
                     </Grid>
                     <Grid item xs={12} md={8}>
+                        <Box display="flex" justifyContent="flex-end" alignItems="center">
+                            <Tooltip title="Registos Pendentes">
+                                <IconButton color="primary" onClick={handleClickPendingRegisters}>
+                                    <Badge badgeContent={pendingRegisters.registers.length} color="warning">
+                                        <PendingActionsIcon sx={{ color: 'black' }} />
+                                    </Badge>
+                                </IconButton>
+                            </Tooltip>
+                        </Box>
                         <List>
                             <ListItem>
                                 <ListItemText primary="Nome" secondary={obra.name} primaryTypographyProps={{ style: { color: '#0000FF' } }} />
@@ -129,6 +184,10 @@ export default function ObrasInfo() {
                             <Divider />
                             <ListItem>
                                 <ListItemText primary="Status" secondary={obra.status} primaryTypographyProps={{ style: { color: '#0000FF' } }}/>
+                            </ListItem>
+                            <Divider />
+                            <ListItem>
+                                <ListItemText primary="Função" secondary={obra.function} primaryTypographyProps={{ style: { color: '#0000FF' } }}/>
                             </ListItem>
                         </List>
                         <Box mt={2}>

@@ -263,8 +263,9 @@ class ConstructionsRepository(
                 val pStatement = it.prepareStatement("select u.id, u.nome, u.email, u.morada, u.foto from utilizador u\n" +
                     "inner join papel p on p.id_utilizador = u.id\n" +
                     "inner join obra o on o.id = p.id_obra\n" +
-                    "where u.email = ?")
+                    "where u.email = ?  and o.id = ?")
                 pStatement.setString(1, email)
+                pStatement.setInt(2, oid)
                 val result = pStatement.executeQuery()
                 if (!result.next())
                     null
@@ -283,12 +284,11 @@ class ConstructionsRepository(
                 it.commit()
             }
         }
-
     }
 
     override fun isUserAssociatedWithConstructionByEmail(oid: Int, email: String): Boolean {
-        initializeConnection().use { conn ->
-            conn.autoCommit = false
+        initializeConnection().use {
+            it.autoCommit = false
             return try {
                 val query = """
                 SELECT COUNT(*) AS count 
@@ -297,21 +297,21 @@ class ConstructionsRepository(
                 INNER JOIN obra o ON o.id = p.id_obra
                 WHERE u.email = ? AND o.id = ?
             """
-                val pstmt = conn.prepareStatement(query)
+                val pstmt = it.prepareStatement(query)
                 pstmt.setString(1, email)
                 pstmt.setInt(2, oid)
                 val result = pstmt.executeQuery()
                 if (result.next()) {
                     val count = result.getInt("count")
-                    count > 0 // Retorna true se o contador for maior que zero
+                    count > 0
                 } else {
-                    false // Retorna false se não houver nenhum resultado
+                    false
                 }
             } catch (e: Exception) {
-                conn.rollback()
+                it.rollback()
                 throw e
             } finally {
-                conn.commit()
+                it.commit()
             }
         }
     }

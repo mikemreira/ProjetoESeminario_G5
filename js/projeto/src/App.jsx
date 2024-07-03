@@ -18,6 +18,7 @@ import ObraFuncionarioInfo from "./obra/ObraFuncionarioInfo.tsx";
 import ObraRegistosOfUser from "./obra/ObraRegistosOfUser.tsx";
 import ObraRegistosOfAllUsers from "./obra/ObraRegistosOfAllUsers.tsx";
 import InviteToObra from "./convite/InviteToObra.tsx";
+import ObraRegistosOfAllPendingUsers from "./obra/ObraRegistosOfAllPendingUsers.tsx";
 
 const AppLayout = () => {
   return (
@@ -74,6 +75,10 @@ const router = createBrowserRouter([
       {
         "path": "/obras/:oid/registers/all",
         "element": <ObraRegistosOfAllUsers/>
+      },
+      {
+        "path": "/obras/:oid/registers/pending",
+        "element": <ObraRegistosOfAllPendingUsers/>
       },
       {
         "path": "/obras/:oid/funcionarios",

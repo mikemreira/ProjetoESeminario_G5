@@ -1,5 +1,5 @@
 package isel.pt.ps.projeto.casbin
-
+/*
 import org.springframework.security.core.GrantedAuthority
 
 class GrantedAuthorityImpl(private val authority: String) : GrantedAuthority {
@@ -8,3 +8,5 @@ class GrantedAuthorityImpl(private val authority: String) : GrantedAuthority {
         return authority
     }
 }
+
+ */
