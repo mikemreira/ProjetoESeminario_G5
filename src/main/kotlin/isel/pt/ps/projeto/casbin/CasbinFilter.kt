@@ -1,13 +1,6 @@
 package isel.pt.ps.projeto.casbin
 
-import isel.pt.ps.projeto.domain.constructions.ConstructionsDomain
-import isel.pt.ps.projeto.models.users.User
-import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
-import isel.pt.ps.projeto.repository.jdbc.UsersRepository
-import isel.pt.ps.projeto.services.ConstructionAndRoleResult
-import isel.pt.ps.projeto.services.ConstructionsService
 import isel.pt.ps.projeto.services.UsersService
-import isel.pt.ps.projeto.utils.Either
 import jakarta.servlet.*
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -44,7 +37,7 @@ class CasbinFilter(private val enforcer: Enforcer, private val usersService: Use
         if (user != null) {
             val method = httpServletRequest.method
             val path = httpServletRequest.requestURI
-            println(httpServletRequest.method)
+            println(enforcer.getRolesForUser("mike@mike.com"))
 
             if (enforcer.enforce(user.email, path, method)) {
                 logger.info("session is authorized: {} {} {}", user.email, method, path)

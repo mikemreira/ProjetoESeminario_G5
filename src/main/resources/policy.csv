@@ -1,5 +1,17 @@
 p, user, /users/me, GET
 p, user, /registos, GET
 p, user, /obras, GET
-
+p, user, /users/me, PUT
+p, user, /convites, GET
+p, user, /profile, GET
+p, construction_1_admin, /obras/1, GET
+p, construction_1_admin, /obras/1, POST
+p, construction_1_admin, /obras/1, PUT
+p, construction_1_user, /obras/1, GET
+p, construction_1_admin, /obras/1/registos, GET
+p, construction_1_user, /obras/1/registos, GET
+p, construction_1_admin, /obras/1/registos/me, GET
+p, construction_1_user, /obras/1/registos/me, GET
 g, mike@mike.com, user
+g, abc@abc.com, user
+g, mike@mike.com, construction_1_admin

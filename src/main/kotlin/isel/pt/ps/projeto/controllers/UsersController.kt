@@ -22,6 +22,7 @@ import java.util.*
 class UsersController(
     private val usersService: UsersService,
     private val requestTokenProcessor: RequestTokenProcessor,
+    private val authorizationService: AuthorizationService,
     private val utils: UtilsController
 ) {
     private val logger: Logger = LoggerFactory.getLogger(UsersController::class.java)

@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController
 class ConstructionsController(
     private val constructionService: ConstructionsService,
     private val requestTokenProcessor: RequestTokenProcessor,
+    private val authorizationService: AuthorizationService,
     private val utils: UtilsController
 ) {
     @GetMapping("/{oid}")

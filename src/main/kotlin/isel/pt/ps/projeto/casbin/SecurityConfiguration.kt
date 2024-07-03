@@ -1,5 +1,5 @@
 package isel.pt.ps.projeto.casbin
-/*
+
 import org.casbin.jcasbin.main.Enforcer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -28,10 +28,14 @@ class SecurityConfiguration {
             csrf { disable() }
             cors {  }
             authorizeHttpRequests {
-                authorize("/users/*", permitAll)
-                //authorize("/users/signup", permitAll)
-                authorize("/registos", permitAll)
-                authorize("/obras", permitAll)
+                authorize("/users/signin", permitAll)
+                authorize("/users/signup", permitAll)
+                authorize("/users/me", authenticated)
+                authorize("/registos", authenticated)
+                authorize("/obras", authenticated)
+                authorize("/obras/*", authenticated)
+                authorize("/convites", authenticated)
+                authorize("/profile", authenticated)
             }
             addFilterBefore<UsernamePasswordAuthenticationFilter>(casbinFilter)
         }
@@ -42,18 +46,13 @@ class SecurityConfiguration {
     fun corsConfigurationSource(): UrlBasedCorsConfigurationSource {
         val source = UrlBasedCorsConfigurationSource()
         val config = CorsConfiguration().apply {
-            allowedOrigins = listOf("http://localhost:5173") // Adjust as needed
+            allowedOrigins = listOf("http://localhost:5174") // Adjust as needed
             allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
             allowedHeaders = listOf("Authorization", "Content-Type")
             allowCredentials = true
         }
         source.registerCorsConfiguration("/**", config)
         return source
-    }
-
-    @Bean
-    fun enforcer(): Enforcer {
-        return Enforcer("src/main/resources/model.conf", "src/main/resources/policy.csv")
     }
 
     @Bean
@@ -70,5 +69,3 @@ class SecurityConfiguration {
         return InMemoryUserDetailsManager(user)
     }
 }
-
- */
