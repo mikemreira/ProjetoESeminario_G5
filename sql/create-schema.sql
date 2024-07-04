@@ -66,6 +66,7 @@ CREATE TABLE if not exists Convite (
                             REFERENCES Utilizador(id)
 );
 
+-- Trigger to delete invites rejected and establish the construction if accepted
 CREATE OR REPLACE FUNCTION handle_convite_status_update()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -87,13 +88,14 @@ FOR EACH ROW
 WHEN (OLD.status IS DISTINCT FROM NEW.status)
 EXECUTE FUNCTION handle_convite_status_update();
 
+-- Trigger to delete register rejected
 CREATE OR REPLACE FUNCTION handle_registo_status_update()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.status = 'rejected' THEN
         DELETE FROM Registo WHERE id = NEW.id AND id_utilizador = NEW.id_utilizador AND id_obra = NEW.id_obra;
     END IF;
-    RETURN NULL; -- Returning NULL prevents any operation on the record as it has been deleted.
+    RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -102,3 +104,20 @@ AFTER UPDATE ON Registo
 FOR EACH ROW
 WHEN (OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'rejected')
 EXECUTE FUNCTION handle_registo_status_update();
+
+-- Trigger foi deletion
+CREATE OR REPLACE FUNCTION delete_related_records() RETURNS TRIGGER AS $$
+BEGIN
+    DELETE FROM Registo WHERE id_obra = OLD.id;
+    DELETE FROM Papel WHERE id_obra = OLD.id;
+    DELETE FROM Convite WHERE id_obra = OLD.id;
+    DELETE FROM Obra WHERE id = OLD.id;
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_delete_related_records
+AFTER UPDATE OF status ON Obra
+FOR EACH ROW
+WHEN (NEW.status = 'deleted')
+EXECUTE FUNCTION delete_related_records();

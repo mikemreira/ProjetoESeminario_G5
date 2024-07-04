@@ -18,6 +18,7 @@ sealed class RegistersInfoError {
     object NoConstruction : RegistersInfoError()
     object NoPermission : RegistersInfoError()
     object NoAccessToConstruction : RegistersInfoError()
+    object ConstructionSuspended : RegistersInfoError()
 }
 typealias RegistersInfoResult = Either<RegistersInfoError, List<RegisterOutputModel>>
 typealias ListOfUsersRegistersInfoResult = Either<RegistersInfoError, List<RegisterAndUser>>
@@ -31,6 +32,7 @@ class RegistersService(
 ) {
 
     fun getUserRegisters(uid: Int): RegistersInfoResult {
+
         val register = registersRepository.getUserRegisters(uid)
         return if (register.isEmpty()) {
             failure(RegistersInfoError.NoRegisters)
@@ -40,6 +42,12 @@ class RegistersService(
     }
 
     fun addUserRegisterEntry(uid: Int, obraId: Int, entry: LocalDateTime) : EntryRegisterResult {
+        val construction = constructionRepository.getConstruction(obraId)
+            ?: return failure(RegistersInfoError.NoConstruction)
+
+        if (construction.status == "recoverable")
+            return failure(RegistersInfoError.ConstructionSuspended)
+
         val res = registersRepository.addUserRegisterEntry(uid, obraId, entry)
         return if (res) {
             success(true)
@@ -49,6 +57,13 @@ class RegistersService(
     }
 
     fun addUserRegisterExit(uid: Int, obraId: Int, exit: LocalDateTime) : EntryRegisterResult {
+
+        val construction = constructionRepository.getConstruction(obraId)
+            ?: return failure(RegistersInfoError.NoConstruction)
+
+        if (construction.status == "recoverable")
+            return failure(RegistersInfoError.ConstructionSuspended)
+
         val res = registersRepository.addUserRegisterExit(uid, obraId, exit)
         return if (res) {
             success(true)

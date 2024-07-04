@@ -30,6 +30,7 @@ sealed class ConstructionInfoError {
     object InvalidRegister: ConstructionInfoError()
     object NoPermission: ConstructionInfoError()
     object AlreadyInConstruction: ConstructionInfoError()
+    object ConstructionSuspended: ConstructionInfoError()
 
 }
 
@@ -49,6 +50,7 @@ typealias ConstructionCreationResult = Either<ConstructionCreationError, Int>
 typealias ConstructionInfoResult = Either<ConstructionInfoError, Construction>
 typealias ConstructionsInfoResult = Either<ConstructionInfoError, List<Construction>>
 typealias ConstructionEditResult = Either<ConstructionEditError, Construction>
+
 
 //typealias InviteInfoResult = Either<ConstructionInfoError, Boolean>
 typealias RegisterInfoResult = Either<ConstructionInfoError, Boolean>
@@ -189,9 +191,12 @@ class ConstructionsService(
         val construction = constructionsRepository.getConstruction(oid)
             ?: return failure(ConstructionInfoError.ConstructionNotFound)
 
+        if (construction.status == "recoverable")
+            return failure(ConstructionInfoError.ConstructionSuspended)
+
         val role = constructionsRepository.getUserRoleFromConstruction(userId, construction.oid)
             ?: return failure(ConstructionInfoError.NoAccessToConstruction)
-        // Could be changed to return regist
+        // Could be changed to return register
         constructionsRepository.registerIntoConstruction(userId, oid, startTime, endTime, role.role)
         return success(true)
     }
