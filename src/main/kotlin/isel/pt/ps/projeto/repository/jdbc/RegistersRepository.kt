@@ -22,7 +22,8 @@ class RegistersRepository : RegistersRepository {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pStatement2 = it.prepareStatement("select * from registo as R\n"
+                val pStatement2 = it.prepareStatement(
+                    "select R.id, R.id_utilizador, R.id_obra, R.entrada, R.saida, R.status, O.nome as nome_obra from registo as R\n"
                     + "join obra as O on R.id_obra = O.id\n"
                     + "where id_utilizador = ?")
                 pStatement2.setInt(1, userId)
@@ -35,7 +36,7 @@ class RegistersRepository : RegistersRepository {
                                 res2.getInt("id"),
                                 res2.getInt("id_utilizador"),
                                 res2.getInt("id_obra"),
-                                res2.getString("nome"),
+                                res2.getString("nome_obra"),
                             res2.getTimestamp("entrada").toLocalDateTime(),
                             res2.getTimestamp("saida").toLocalDateTime(),
                                 res2.getString("status"),
@@ -47,7 +48,7 @@ class RegistersRepository : RegistersRepository {
                                 res2.getInt("id"),
                                 res2.getInt("id_utilizador"),
                                 res2.getInt("id_obra"),
-                                res2.getString("nome"),
+                                res2.getString("nome_obra"),
                             res2.getTimestamp("entrada").toLocalDateTime(),
                             null,
                             res2.getString("status")
@@ -243,7 +244,7 @@ class RegistersRepository : RegistersRepository {
                         "inner join utilizador u on r.id_utilizador = u.id \n" +
                         "where r.id_obra =(Select id_obra From Utilizador u2 \n" +
                         "Inner join Papel p on u2.id = p.id_utilizador \n" +
-                        "where u2.id = ? and papel = 'admin') \n" +
+                        "where u2.id = ? and papel = 'admin') and r.status = 'pending'\n" +
                         "LIMIT 10 offset ?"
                 )
                 pStatement.setInt(1, userId)

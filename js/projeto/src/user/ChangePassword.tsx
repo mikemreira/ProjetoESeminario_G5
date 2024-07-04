@@ -7,8 +7,12 @@ import Alert from "@mui/material/Alert";
 // @ts-ignore
 import logo from '../assets/logo-black-transparent.png';
 
+interface UserEditPasswordInputModel {
+    password: string
+}
+
 export default function ChangePassword() {
-    const [values, setValues] = useState({password: "" })
+    const [values, setValues] = useState<UserEditPasswordInputModel>({password: "" })
     const [cookies] = useCookies(["token"])
     const [submitted, setSubmitted] = useState(false)
     const [valid, setValid] = useState(false)
@@ -27,13 +31,14 @@ export default function ChangePassword() {
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        fetch("/api/users/me/password", {
+        console.log("values: " + values.password)
+        fetch("/api/users/me/changepassword", {
             method: "PUT",
             headers: {
-                'Content-type': 'application/json',
+                "Content-type": "application/json",
                 "Authorization": `Bearer ${cookies.token}`,
             },
-            body: JSON.stringify(values)
+            body: JSON.stringify({ password: values.password })
         }).then(res => {
             setSubmitted(true)
             console.log(res)
@@ -46,11 +51,6 @@ export default function ChangePassword() {
                 setValid(false)
                 setError("Invalid password")
                 return res.json()
-            }
-        }).then(body => {
-            if (body.error) setError(body.error)
-            else {
-                setValid(true)
             }
         }).catch(error => {
             setError(error.message)

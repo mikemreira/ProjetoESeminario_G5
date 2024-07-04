@@ -24,14 +24,14 @@ import * as React from "react";
 import { Delete, Edit } from "@mui/icons-material";
 import RegistoForm from "./RegistoForm";
 import AddIcon from "@mui/icons-material/Add";
+import {useNavigate} from "react-router-dom";
+import Button from "@mui/material/Button";
 
 const columns = [
-    { accessorKey: 'id_utilizador', header: 'User ID' },
-    { accessorKey: 'id_obra', header: 'Obra ID' },
-    { accessorKey: 'nome', header: 'Nome' },
+    { accessorKey: 'nome_obra', header: 'Nome da obra' },
     { accessorKey: 'entrada', header: 'Entrada' },
     { accessorKey: 'saida', header: 'Saida' },
-    { accessorKey: 'status', header: 'State' },
+    { accessorKey: 'status', header: 'Estado' },
     { id: 'actions', header: 'Actions' },
 ];
 
@@ -54,7 +54,7 @@ interface Registo {
     id: number;
     id_utilizador: number;
     id_obra: number;
-    nome: string;
+    nome_obra: string;
     entrada: DateObject;
     saida: DateObject | null;
     status: string | null;
@@ -64,12 +64,13 @@ interface RegistosOutputModel {
     registos: Registo[];
 }
 
-const Registos = () => {
+export default function Registos () {
     const [cookies] = useCookies(["token"]);
     const [registos, setRegistos] = useState<Registo[]>([])
     const [loading, setLoading] = useState(true);
     const [openForm, setOpenForm] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetch("/api/registos", {
@@ -79,7 +80,10 @@ const Registos = () => {
                 "Authorization": `Bearer ${cookies.token}`
             },
         }).then((res) => {
-            if (res.ok) return res.json()
+            if (res.ok) {
+                console.log("Registos: " + res)
+                return res.json()
+            }
             else {
                 setSnackbarOpen(true);
                 return null;
@@ -105,6 +109,10 @@ const Registos = () => {
     const handleCloseSnackbar = () => {
         setSnackbarOpen(false);
     };
+
+    const handleClickOpenObra = (oid: number) => {
+        navigate(`/obras/${oid}`)
+    }
 
     const table = useMaterialReactTable({
         columns,
@@ -132,7 +140,6 @@ const Registos = () => {
             >
                 <Typography variant="h4" color={"black"}>Registos</Typography>
                 <MRT_GlobalFilterTextField table={table} />
-                <MRT_TablePagination table={table} />
                 <IconButton onClick={handleClickOpenForm} color="primary" sx={{
                     bgcolor: 'primary.main',
                     borderRadius: '40%',
@@ -174,11 +181,17 @@ const Registos = () => {
                                 <TableRow key={row.id} selected={row.getIsSelected()}>
                                     {row.getVisibleCells().map((cell, _columnIndex) => (
                                         <TableCell align="center" variant="body" key={cell.id}>
-                                            <MRT_TableBodyCellValue
-                                                cell={cell}
-                                                table={table}
-                                                staticRowIndex={rowIndex}
-                                            />
+                                            {cell.column.id === 'nome_obra' ? (
+                                                <Button onClick={() => handleClickOpenObra(row.original.id_obra)}  style={{ textTransform: 'none' }} >
+                                                    {cell.row.original.nome_obra}
+                                                </Button>
+                                            ) : (
+                                                <MRT_TableBodyCellValue
+                                                    cell={cell}
+                                                    table={table}
+                                                    staticRowIndex={rowIndex}
+                                                />
+                                            )}
                                         </TableCell>
                                     ))}
                                     <TableCell>
@@ -194,8 +207,11 @@ const Registos = () => {
                         )}
                     </TableBody>
                 </Table>
-            </TableContainer>
 
+            </TableContainer>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+            <MRT_TablePagination table={table} />
+            </Box>
             <RegistoForm open={openForm} onHandleClose={handleCloseForm} onHandleOpen={handleClickOpenForm} />
 
             <Snackbar
@@ -209,4 +225,3 @@ const Registos = () => {
     );
 };
 
-export default Registos;

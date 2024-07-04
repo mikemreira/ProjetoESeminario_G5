@@ -24,6 +24,12 @@ import TextField from "@mui/material/TextField";
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import ClearIcon from '@mui/icons-material/Clear';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+
+
 
 interface DateObject {
     year: number;
@@ -146,15 +152,11 @@ export default function ObrasInfo() {
     }, [cookies.token, oid]);
 
     const handleClickRegistos = () => {
-        navigate(`/obras/${oid}/registers`)
+        navigate(`/obras/${oid}/registers?status=${obra?.status}`)
     }
 
     const handleClickFuncionarios = () => {
         navigate(`/obras/${oid}/funcionarios`)
-    }
-
-    const handleClickAddFuncionario = () => {
-        navigate(`/obras/${oid}/funcionario/invite`)
     }
 
     const handleClickPendingRegisters = () => {
@@ -168,6 +170,10 @@ export default function ObrasInfo() {
     const handleCancelEdit = () => {
         setEditedObra(obra)
         setIsEditing(false)
+    }
+
+    const handleBack = () => {
+        navigate("/obras")
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -231,13 +237,13 @@ export default function ObrasInfo() {
         }
     }
 
-    const handleSuspendOrRecover = () => {
+    const handleSuspendOrRecover = (status: string) => {
         if (!obra) return
         const updatedObra = {
             ...obra,
             startDate: obra.startDate?.value$kotlinx_datetime || null,
             endDate: obra.endDate?.value$kotlinx_datetime || null,
-            status: obra.status === "on going" ? "recoverable" : "on going",
+            status: status || "on going",
         };
         fetch(`/api/obras/${oid}`, {
             method: "PUT",
@@ -262,6 +268,22 @@ export default function ObrasInfo() {
             })
     }
 
+    const handleDeleteObra = () => {
+        handleSuspendOrRecover("deleted")
+        navigate("/obras")
+    }
+
+    const handleRecoverObra = () => {
+        handleSuspendOrRecover("on going")
+    }
+
+    const handleSuspendObra = () => {
+        handleSuspendOrRecover("recoverable")
+    }
+
+    const handleCompletedObra = () => {
+        handleSuspendOrRecover("completed")
+    }
 
     if (!obra) {
         return <CircularProgress />;
@@ -270,6 +292,11 @@ export default function ObrasInfo() {
     return (
         <Card>
             <CardContent>
+                <Box display="flex" justifyContent="flex-start">
+                    <IconButton onClick={handleBack} title={"Voltar"}>
+                        <ArrowBackIcon />
+                    </IconButton>
+                </Box>
                 <Typography variant="h4" component="h2" gutterBottom>
                     Informações da Obra
                 </Typography>
@@ -297,7 +324,7 @@ export default function ObrasInfo() {
                         )}
                     </Grid>
                     <Grid item xs={12} md={8}>
-                        {obra.role === "admin" && !isEditing && (obra.status === "on going" || obra.status === "completed") && (
+                        {obra.role === "admin" && !isEditing && (obra.status === "on going") && (
                             <Box display="flex" justifyContent="flex-end" alignItems="center">
                                 <Tooltip title="Registos Pendentes">
                                     <IconButton color="primary" onClick={handleClickPendingRegisters}>
@@ -387,7 +414,7 @@ export default function ObrasInfo() {
                             </ListItem>
                             <Divider />
                             <ListItem>
-                                <ListItemText primary="Status" secondary={
+                                <ListItemText primary="Estado" secondary={
                                         obra.status
                                 } primaryTypographyProps={{ style: { color: '#0000FF' } }}/>
                             </ListItem>
@@ -396,7 +423,6 @@ export default function ObrasInfo() {
                                 <ListItemText primary="Função" secondary={
                                     isEditing ? (
                                         <>
-                                            <InputLabel id="function-label">Função</InputLabel>
                                             <Select
                                                 labelId="function-label"
                                                 id="function"
@@ -426,29 +452,40 @@ export default function ObrasInfo() {
                                         Registos
                                     </Button>
                                     {obra.role === "admin" && (
-                                        <Button variant="contained" color="secondary" sx={{ ml: 2 }} onClick={handleClickFuncionarios}>
-                                            Funcionários
+                                        <Button variant="contained" color="primary" sx={{ ml: 2 }} onClick={handleClickFuncionarios}>
+                                            Membros
                                         </Button>
                                     )}
-                                    {obra.role === "admin" && (obra.status === "on going" || obra.status === "completed") && (
+                                    {obra.role === "admin" && obra.status === "on going" && (
                                         <>
-                                            <Button variant="contained" color="secondary" sx={{ ml: 2 }} onClick={handleClickAddFuncionario}>
-                                                Adicionar Funcionário
-                                            </Button>
-                                            <Button variant="contained" color="secondary" sx={{ ml: 2 }} onClick={handleClickEditObra}>
-                                                Editar
-                                            </Button>
+                                            <IconButton variant="contained" color="primary" sx={{ ml: 2 }} onClick={handleClickEditObra} title="Editar">
+                                                <EditIcon />
+                                            </IconButton>
+                                            <IconButton variant="contained" sx={{ ml: 2 }} onClick={handleSuspendObra} title="Suspender">
+                                                <ClearIcon sx={{ color: 'red' }}/>
+                                            </IconButton>
+                                            <IconButton variant="contained" sx={{ ml: 2 }} onClick={handleCompletedObra} title="Terminar" >
+                                                <CheckCircleIcon sx={{ color: 'green'}}/>
+                                            </IconButton>
                                         </>
                                     )}
                                     {obra.role === "admin" && (obra.status === "on going" || obra.status === "completed") && (
-                                        <IconButton variant="contained" sx={{ ml: 2 }} onClick={handleSuspendOrRecover} title="Suspender">
-                                            <ClearIcon sx={{ color: 'red' }}/>
-                                        </IconButton>
+                                        <>
+
+
+                                        </>
+
                                     )}
                                     {obra.role === "admin" && (obra.status === "recoverable") && (
-                                        <IconButton variant="contained" sx={{ ml: 2 }} onClick={handleSuspendOrRecover} title="Recuperar">
-                                            <ArrowCircleUpIcon sx={{ color: 'green' }}/>
-                                        </IconButton>
+                                        <>
+                                            <IconButton variant="contained" sx={{ ml: 2 }} onClick={handleRecoverObra} title="Recuperar">
+                                                <ArrowCircleUpIcon sx={{ color: 'green' }}/>
+                                            </IconButton>
+                                            <IconButton variant="contained" sx={{ ml: 2 }} onClick={handleDeleteObra} title="Apagar">
+                                                <DeleteIcon sx={{ color: 'darkred' }}/>
+                                            </IconButton>
+                                        </>
+
                                     )}
                                 </>
                             )}

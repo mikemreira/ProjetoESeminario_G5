@@ -24,7 +24,7 @@ import {Delete, Edit} from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import AddIcon from "@mui/icons-material/Add";
-import {useParams, useSearchParams} from "react-router-dom";
+import {useLocation, useParams, useSearchParams} from "react-router-dom";
 
 const columns = [
     {
@@ -88,16 +88,19 @@ export default function ObraRegistos() {
     const [open, setOpen] = useState(false);
     const { oid } = useParams<{ oid: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
+    const status = searchParams.get('status')
 
     useEffect(() => {
         const page = searchParams.get('page') || '0'
-        fetch(`/api/obras/${oid}/registos/me?page=${page}`, {
+        fetch(`/api/obras/${oid}/registos/me?page=${page}&status=${status}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
                 "Authorization": `Bearer ${cookies.token}`
             },
         }).then((res) => {
+            console.log(oid)
+            console.log(status)
             if (res.ok) return res.json()
             else return null
         }).then((body) => {
@@ -152,17 +155,19 @@ export default function ObraRegistos() {
                  */}
                 <MRT_GlobalFilterTextField table={table} />
                 <MRT_TablePagination table={table} />
-                <IconButton onClick={handleClickOpen} color="primary" sx={{
-                    bgcolor: 'primary.main',
-                    borderRadius: '40%',
-                    width: '40px',
-                    height: '40px',
-                    '&:hover': {
-                        bgcolor: 'primary.dark',
-                    },
-                }}>
-                    <AddIcon sx={{ fontSize: 32, color: 'white' }}/>
-                </IconButton>
+                {status === "on going" && (
+                    <IconButton onClick={handleClickOpen} color="primary" sx={{
+                        bgcolor: 'primary.main',
+                        borderRadius: '40%',
+                        width: '40px',
+                        height: '40px',
+                        '&:hover': {
+                            bgcolor: 'primary.dark',
+                        },
+                    }}>
+                        <AddIcon sx={{ fontSize: 32, color: 'white' }}/>
+                    </IconButton>
+                )}
             </Box>
             {/* Using Vanilla Material-UI Table components here */}
             <TableContainer sx={{ backgroundColor: '#cccccc',  }}>

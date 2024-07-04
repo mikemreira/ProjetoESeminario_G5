@@ -1,5 +1,5 @@
 package isel.pt.ps.projeto.controllers
-
+/*
 import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
 import jakarta.annotation.PostConstruct
@@ -57,3 +57,5 @@ class AuthorizationService(
     private val enforcer = enforcer()
 
 }
+
+ */

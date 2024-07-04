@@ -98,7 +98,7 @@ class ConstructionsService(
 
     fun getConstructionsOfUser(uid: Int): ConstructionsInfoResult {
         val construction = constructionsRepository.getConstructionsOfUser(uid)
-        return if (construction.isEmpty()) {  // se nao existirem obras deviamos de retornar uma lista vazia
+        return if (construction.isEmpty()) {
             failure(ConstructionInfoError.NoConstructions)
         } else {
             success(construction)

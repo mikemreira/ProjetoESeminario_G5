@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController
 class ConstructionsController(
     private val constructionService: ConstructionsService,
     private val requestTokenProcessor: RequestTokenProcessor,
-    private val authorizationService: AuthorizationService,
+   // private val authorizationService: AuthorizationService,
     private val utils: UtilsController
 ) {
     @GetMapping("/{oid}")
@@ -73,6 +73,7 @@ class ConstructionsController(
                     ConstructionInfoError.InvalidRegister -> TODO()
                     ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                     ConstructionInfoError.AlreadyInConstruction -> TODO()
+                    ConstructionInfoError.ConstructionSuspended -> TODO()
                 }
         }
     }
@@ -153,7 +154,7 @@ class ConstructionsController(
                 ConstructionInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                 ConstructionInfoError.AlreadyInConstruction -> TODO()
-
+                ConstructionInfoError.ConstructionSuspended -> TODO()
             }
         }
     }
@@ -225,6 +226,7 @@ class ConstructionsController(
                     ConstructionInfoError.InvalidRegister -> TODO()
                     ConstructionInfoError.NoPermission -> TODO()
                     ConstructionInfoError.AlreadyInConstruction -> TODO()
+                    ConstructionInfoError.ConstructionSuspended -> TODO()
                 }
         }
     }
@@ -284,6 +286,7 @@ class ConstructionsController(
                 ConstructionInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                 ConstructionInfoError.AlreadyInConstruction -> TODO()
+                ConstructionInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }

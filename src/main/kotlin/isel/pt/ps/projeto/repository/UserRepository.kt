@@ -59,7 +59,7 @@ interface UserRepository {
     fun editPassword(
         id: Int,
         password: PasswordValidationInfo,
-    ): SimpleUser
+    ): Boolean
 
     /**
      * Delete

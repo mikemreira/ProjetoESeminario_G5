@@ -47,12 +47,10 @@ export default function RegistoForm(props: RegistoFormProps) {
             },
         })
             .then(res => {
+                console.log(res);
                 if (res.ok) {
                     return res.json();
                 } else if (res.status == 404) {
-                   console.log("No obras found")
-                    //setObras({ obras: [] })
-                    //return null;
                     return { obras: []}
                 } else {
                     return null;
@@ -68,7 +66,7 @@ export default function RegistoForm(props: RegistoFormProps) {
             })
             .catch(error => {
                 console.error("Error fetching obras: ", error);
-                setObras({ obras: [] }); // Handle error by setting obras to an empty array
+                setObras({ obras: [] });
             });
     }, [cookies.token, props.open])
 
@@ -105,14 +103,13 @@ export default function RegistoForm(props: RegistoFormProps) {
                     },
                 }}
             >
-                <DialogTitle>Subscribe</DialogTitle>
+                <DialogTitle>Subscrever</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        To subscribe to this website, please enter your email address here. We
-                        will send updates occasionally.
+                        Escolha a obra e o horário de entrada e saída.
                     </DialogContentText>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <InputLabel id="obra">Select obra</InputLabel>
+                        <InputLabel id="obra">Selecione a obra</InputLabel>
                         {obras ? (
                                 obras.obras.length > 0 ? (
                                     <Select
@@ -153,6 +150,7 @@ export default function RegistoForm(props: RegistoFormProps) {
                             id="saida"
                             label="Saida"
                             type="datetime-local"
+                            required
                             value={optionalDateTime}
                             onChange={(e) => setOptionalDateTime(e.target.value)}
                             InputLabelProps={{
@@ -163,8 +161,8 @@ export default function RegistoForm(props: RegistoFormProps) {
 
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={props.onHandleClose}>Cancel</Button>
-                    <Button type="submit">Submit</Button>
+                    <Button onClick={props.onHandleClose}>Cancelar</Button>
+                    <Button type="submit">Submeter</Button>
                 </DialogActions>
             </Dialog>
         </React.Fragment>

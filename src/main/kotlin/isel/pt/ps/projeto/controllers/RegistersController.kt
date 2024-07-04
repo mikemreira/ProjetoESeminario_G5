@@ -36,7 +36,7 @@ class RegistersController(
                                     it.id,
                                     it.id_utilizador,
                                     it.id_obra,
-                                    it.nome,
+                                    it.nome_obra,
                                     it.entrada,
                                     it.saida,
                                     it.status
@@ -51,6 +51,7 @@ class RegistersController(
                     RegistersInfoError.NoAccessToConstruction -> TODO()
                     RegistersInfoError.NoConstruction -> TODO()
                     RegistersInfoError.NoPermission -> TODO()
+                    RegistersInfoError.ConstructionSuspended -> TODO()
                 }
         }
     }
@@ -73,6 +74,7 @@ class RegistersController(
                     RegistersInfoError.NoAccessToConstruction -> TODO()
                     RegistersInfoError.NoConstruction -> TODO()
                     RegistersInfoError.NoPermission -> TODO()
+                    RegistersInfoError.ConstructionSuspended -> TODO()
                 }
         }
     }
@@ -95,6 +97,7 @@ class RegistersController(
                     RegistersInfoError.NoAccessToConstruction -> TODO()
                     RegistersInfoError.NoConstruction -> TODO()
                     RegistersInfoError.NoPermission -> TODO()
+                    RegistersInfoError.ConstructionSuspended -> TODO()
                 }
         }
     }
@@ -129,6 +132,7 @@ class RegistersController(
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                 RegistersInfoError.InvalidRegister -> TODO()
                 RegistersInfoError.NoRegisters -> TODO()
+                RegistersInfoError.ConstructionSuspended -> TODO()
             }
         }
     }
@@ -150,6 +154,7 @@ class RegistersController(
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                 RegistersInfoError.InvalidRegister -> TODO()
                 RegistersInfoError.NoRegisters -> TODO()
+                RegistersInfoError.ConstructionSuspended -> TODO()
             }
         }
     }
@@ -184,6 +189,7 @@ class RegistersController(
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                 RegistersInfoError.InvalidRegister -> TODO()
                 RegistersInfoError.NoRegisters -> TODO()
+                RegistersInfoError.ConstructionSuspended -> TODO()
             }
         }
     }
@@ -193,6 +199,7 @@ class RegistersController(
     fun getRegistersMyRegistersFromConstruction(
         @PathVariable oid: Int,
         @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "on going") status: String,
         @RequestHeader("Authorization") userToken: String,
     ): ResponseEntity<*>{
         val authUser =
@@ -218,6 +225,7 @@ class RegistersController(
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                 RegistersInfoError.InvalidRegister -> TODO()
                 RegistersInfoError.NoRegisters -> TODO()
+                RegistersInfoError.ConstructionSuspended -> TODO()
             }
         }
     }
@@ -251,6 +259,7 @@ class RegistersController(
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                 RegistersInfoError.InvalidRegister -> TODO()
                 RegistersInfoError.NoRegisters -> TODO()
+                RegistersInfoError.ConstructionSuspended -> TODO()
             }
         }
     }
@@ -283,6 +292,7 @@ class RegistersController(
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                 RegistersInfoError.InvalidRegister -> TODO()
                 RegistersInfoError.NoRegisters -> TODO()
+                RegistersInfoError.ConstructionSuspended -> TODO()
             }
         }
     }

@@ -398,7 +398,7 @@ class UsersRepository(
         }
     }
 
-    override fun editPassword(id: Int, password: PasswordValidationInfo): SimpleUser {
+    override fun editPassword(id: Int, password: PasswordValidationInfo): Boolean {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -409,23 +409,15 @@ class UsersRepository(
                 )
                 pStatement.setString(1, password.validationInfo)
                 pStatement.setInt(2, id)
-                pStatement.executeUpdate()
+                val rowUpdated = pStatement.executeUpdate()
 
-                val selectStatement = it.prepareStatement(
-                    "SELECT id, nome, email, morada, foto FROM Utilizador WHERE id = ?"
-                )
-                selectStatement.setInt(1, id)
-
-                val resultSet = selectStatement.executeQuery()
-                resultSet.next()
-                SimpleUser(
-                        id = resultSet.getInt("id"),
-                        nome = resultSet.getString("nome"),
-                        email = resultSet.getString("email"),
-                        morada = resultSet.getString("morada"),
-                        foto = resultSet.getString("foto")
-                )
-
+                if (rowUpdated > 0 ) {
+                    it.commit()
+                    true
+                } else {
+                    it.rollback()
+                    false
+                }
             } catch (e: SQLException) {
                 it.rollback()
                 throw e

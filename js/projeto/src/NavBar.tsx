@@ -112,7 +112,7 @@ export default function NavBar() {
                 throw new Error('Failed to fetch registos pendentes');
             }
         }).then((body) => {
-            console.log(body);
+            console.log("Registos pendentes: ", body);
             setPendingRegisters(body);
 
         }).catch((error) => {

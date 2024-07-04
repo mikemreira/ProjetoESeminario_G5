@@ -32,6 +32,7 @@ sealed class TokenError {
 
 typealias UserResult = Either<UserError, User>
 typealias SimpleUserResult = Either<UserError, SimpleUser>
+typealias ChangePasswordResult = Either<UserError, Boolean>
 
 
 typealias TokenResult = Either<TokenError, TokenExternalInfo>
@@ -120,7 +121,7 @@ class UsersService(
         return success(res)
     }
 
-    fun editPassword(id: Int, password: String): SimpleUserResult {
+    fun editPassword(id: Int, password: String): ChangePasswordResult {
         if (!usersDomain.isSafePassword(password)) {
             println("Insecure password")
             return failure(UserError.InsecurePassword)
