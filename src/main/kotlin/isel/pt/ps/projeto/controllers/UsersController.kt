@@ -22,7 +22,7 @@ import java.util.*
 class UsersController(
     private val usersService: UsersService,
     private val requestTokenProcessor: RequestTokenProcessor,
-    private val authorizationService: AuthorizationService,
+    //private val authorizationService: AuthorizationService,
     private val utils: UtilsController
 ) {
     private val logger: Logger = LoggerFactory.getLogger(UsersController::class.java)
@@ -61,6 +61,27 @@ class UsersController(
                    UserError.InvalidEmail -> Problem.response(400, Problem.emailAlreadyExists)
                    UserError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
                }
+        }
+    }
+
+    @PutMapping("/me/changepassword")
+    fun editPassword(
+        @RequestHeader("Authorization") token : String,
+        @RequestBody input: UserEditPasswordInputModel
+    ): ResponseEntity<*> {
+        println("entrou")
+        val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
+        val res = usersService.editPassword(authUser.user.id, input.password)
+        return when (res) {
+            is Success ->
+                ResponseEntity.status(201)
+                    .body(UserChangePasswordOutputModel(res.value.toString()))
+            is Failure ->
+                when (res.value) {
+                    UserError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
+                    UserError.UserAlreadyExists -> Problem.response(400, Problem.userAlreadyExists)
+                    UserError.InvalidEmail -> Problem.response(400, Problem.emailAlreadyExists)
+                }
         }
     }
 

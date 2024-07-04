@@ -18,6 +18,7 @@ sealed class RegistersInfoError {
     object NoConstruction : RegistersInfoError()
     object NoPermission : RegistersInfoError()
     object NoAccessToConstruction : RegistersInfoError()
+    object ConstructionSuspended : RegistersInfoError()
 }
 typealias RegistersInfoResult = Either<RegistersInfoError, List<RegisterOutputModel>>
 typealias ListOfUsersRegistersInfoResult = Either<RegistersInfoError, List<RegisterAndUser>>
@@ -31,6 +32,7 @@ class RegistersService(
 ) {
 
     fun getUserRegisters(uid: Int): RegistersInfoResult {
+
         val register = registersRepository.getUserRegisters(uid)
         return if (register.isEmpty()) {
             failure(RegistersInfoError.NoRegisters)
@@ -40,6 +42,12 @@ class RegistersService(
     }
 
     fun addUserRegisterEntry(uid: Int, obraId: Int, entry: LocalDateTime) : EntryRegisterResult {
+        val construction = constructionRepository.getConstruction(obraId)
+            ?: return failure(RegistersInfoError.NoConstruction)
+
+        if (construction.status == "recoverable")
+            return failure(RegistersInfoError.ConstructionSuspended)
+
         val res = registersRepository.addUserRegisterEntry(uid, obraId, entry)
         return if (res) {
             success(true)
@@ -49,6 +57,13 @@ class RegistersService(
     }
 
     fun addUserRegisterExit(uid: Int, obraId: Int, exit: LocalDateTime) : EntryRegisterResult {
+
+        val construction = constructionRepository.getConstruction(obraId)
+            ?: return failure(RegistersInfoError.NoConstruction)
+
+        if (construction.status == "recoverable")
+            return failure(RegistersInfoError.ConstructionSuspended)
+
         val res = registersRepository.addUserRegisterExit(uid, obraId, exit)
         return if (res) {
             success(true)
@@ -97,7 +112,7 @@ class RegistersService(
         val construction = constructionRepository.getConstruction(oid)
             ?: return failure(RegistersInfoError.NoConstruction)
 
-        val role = constructionRepository.getUserRoleFromConstruction(userId, construction.oid).also { println("ROLE : $it") }
+        val role = constructionRepository.getUserRoleFromConstruction(userId, construction.oid)
             ?: return failure(RegistersInfoError.NoAccessToConstruction)
 
         if (role.role != "admin")
@@ -109,6 +124,14 @@ class RegistersService(
 
         val registers = registersRepository.getPendingRegistersFromConstruction(oid, pg)
 
+        return success(registers)
+    }
+
+    fun getPendingRegistersFromUsers(userId: Int, page: Int): ListOfUsersRegistersInfoResult {
+        var pg = page
+        if (page <= 0)
+            pg = 1
+        val registers = registersRepository.getPendingRegisters(userId, pg)
         return success(registers)
     }
 

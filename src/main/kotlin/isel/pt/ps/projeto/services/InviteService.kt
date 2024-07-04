@@ -42,20 +42,14 @@ class InviteService(
 
         val user = usersRepository.getUserByEmail(invite.email)
             ?: return failure(InviteInfoError.NoUserWithThatEmail)
-/*
-        val checkPresence = constructionsRepository.getUserByEmailFromConstructions(oid, invite.email)
 
-        if (checkPresence != null)
-            return failure(InviteInfoError.AlreadyInConstruction)
-
- */
         val checkPresence = constructionsRepository.isUserAssociatedWithConstructionByEmail(oid, invite.email)
         if (checkPresence)
             return failure(InviteInfoError.AlreadyInConstruction)
 
         // TODO(SEND MAIL)
 
-        val res = inviteRepository.inviteToConstruction(user.id, oid, invite.email, invite.function)
+        val res = inviteRepository.inviteToConstruction(user.id, oid, invite.email, invite.function, invite.role)
         return success(res)
     }
 

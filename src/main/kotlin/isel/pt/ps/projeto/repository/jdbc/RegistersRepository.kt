@@ -22,7 +22,8 @@ class RegistersRepository : RegistersRepository {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pStatement2 = it.prepareStatement("select * from registo as R\n"
+                val pStatement2 = it.prepareStatement(
+                    "select R.id, R.id_utilizador, R.id_obra, R.entrada, R.saida, R.status, O.nome as nome_obra from registo as R\n"
                     + "join obra as O on R.id_obra = O.id\n"
                     + "where id_utilizador = ?")
                 pStatement2.setInt(1, userId)
@@ -35,7 +36,7 @@ class RegistersRepository : RegistersRepository {
                                 res2.getInt("id"),
                                 res2.getInt("id_utilizador"),
                                 res2.getInt("id_obra"),
-                                res2.getString("nome"),
+                                res2.getString("nome_obra"),
                             res2.getTimestamp("entrada").toLocalDateTime(),
                             res2.getTimestamp("saida").toLocalDateTime(),
                                 res2.getString("status"),
@@ -47,7 +48,7 @@ class RegistersRepository : RegistersRepository {
                                 res2.getInt("id"),
                                 res2.getInt("id_utilizador"),
                                 res2.getInt("id_obra"),
-                                res2.getString("nome"),
+                                res2.getString("nome_obra"),
                             res2.getTimestamp("entrada").toLocalDateTime(),
                             null,
                             res2.getString("status")
@@ -217,6 +218,47 @@ class RegistersRepository : RegistersRepository {
                             result.getInt("rid"),
                             oid,
                             result.getInt("uid"),
+                            result.getTimestamp("entrada").toLocalDateTime(),
+                            if (saida == null) null else saida.toLocalDateTime(),
+                            result.getString("status")
+                        )
+                    )
+                }
+                registers
+            }  catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun getPendingRegisters(userId: Int, page: Int): List<RegisterAndUser> {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pg = (page-1)*10
+                val pStatement = it.prepareStatement(
+                    "Select * from Registo r \n" +
+                        "inner join utilizador u on r.id_utilizador = u.id \n" +
+                        "where r.id_obra =(Select id_obra From Utilizador u2 \n" +
+                        "Inner join Papel p on u2.id = p.id_utilizador \n" +
+                        "where u2.id = ? and papel = 'admin') and r.status = 'pending'\n" +
+                        "LIMIT 10 offset ?"
+                )
+                pStatement.setInt(1, userId)
+                pStatement.setInt(2, pg)
+                val result = pStatement.executeQuery()
+                val registers = mutableListOf<RegisterAndUser>()
+                while (result.next()){
+                    val saida = result.getTimestamp("saida")
+                    registers.add(
+                        RegisterAndUser(
+                            result.getString("nome"),
+                            result.getInt("id"),
+                            result.getInt("id_obra"),
+                            result.getInt("id_utilizador"),
                             result.getTimestamp("entrada").toLocalDateTime(),
                             if (saida == null) null else saida.toLocalDateTime(),
                             result.getString("status")

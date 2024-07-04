@@ -73,6 +73,10 @@ export default function ObraFuncionarios() {
         navigate(`/obras/${oid}/registers/all`)
     }
 
+    const handleClickAddFuncionario = () => {
+        navigate(`/obras/${oid}/funcionario/invite`)
+    }
+
     if (loading) return <CircularProgress />
     else return (
         <Stack sx={{ m: '5rem 0' }}>
@@ -83,18 +87,31 @@ export default function ObraFuncionarios() {
                     alignItems: 'center',
                 }}
             >
-                <Typography variant="h4" color={"black"}>Funcionários da Obra</Typography>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        handleViewAllRecords()
-                    }}
-                >
-                    Ver todos os Registos
-                </Button>
-
+                <Typography variant="h4" color={"black"}>Membros da Obra</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            handleViewAllRecords()
+                        }}
+                        sx={{ mr: 2 }}
+                    >
+                        Ver todos os Registos
+                    </Button>
+                    <IconButton onClick={handleClickAddFuncionario} color="primary" sx={{
+                        bgcolor: 'primary.main',
+                        borderRadius: '40%',
+                        width: '40px',
+                        height: '40px',
+                        '&:hover': {
+                            bgcolor: 'primary.dark',
+                        },
+                    }} title={"Adicionar membro"}>
+                        <AddIcon sx={{ fontSize: 32, color: 'white' }}/>
+                    </IconButton>
+                </Box>
             </Box>
             <TableContainer sx={{ backgroundColor: '#cccccc', mt: 2 }}>
                 <Table sx={{ tableLayout: 'fixed' }}>

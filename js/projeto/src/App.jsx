@@ -1,7 +1,7 @@
 import { Outlet, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from 'react-router-dom'
-import SignUp from './user/SignUp.jsx'
+import SignUp from './user/SignUp.tsx'
 import Home from './Home'
-import LogIn from './user/LogIn.jsx'
+import LogIn from './user/LogIn.tsx'
 import './App.css'
 import Success from './user/Success.jsx'
 import NavBar from './NavBar.tsx'
@@ -19,6 +19,7 @@ import ObraRegistosOfUser from "./obra/ObraRegistosOfUser.tsx";
 import ObraRegistosOfAllUsers from "./obra/ObraRegistosOfAllUsers.tsx";
 import InviteToObra from "./convite/InviteToObra.tsx";
 import ObraRegistosOfAllPendingUsers from "./obra/ObraRegistosOfAllPendingUsers.tsx";
+import ChangePassword from "./user/ChangePassword.tsx";
 
 const AppLayout = () => {
   return (
@@ -95,6 +96,10 @@ const router = createBrowserRouter([
       {
         "path": "/profile",
         "element": <Profile />
+      },
+      {
+        "path": "/profile/changePassword",
+        "element": <ChangePassword />
       },
       {
         "path": "/addObra",

@@ -32,6 +32,8 @@ sealed class TokenError {
 
 typealias UserResult = Either<UserError, User>
 typealias SimpleUserResult = Either<UserError, SimpleUser>
+typealias ChangePasswordResult = Either<UserError, Boolean>
+
 
 typealias TokenResult = Either<TokenError, TokenExternalInfo>
 
@@ -114,9 +116,19 @@ class UsersService(
         }
     }
 
-
     fun editUser(id: Int, nome: String, morada: String?, foto: String?): SimpleUserResult {
         val res = usersRepository.editUser(id, nome, morada, foto)
+        return success(res)
+    }
+
+    fun editPassword(id: Int, password: String): ChangePasswordResult {
+        if (!usersDomain.isSafePassword(password)) {
+            println("Insecure password")
+            return failure(UserError.InsecurePassword)
+        }
+        println("Safe password")
+        val passwordValidationInfo = usersDomain.createPasswordValidationInformation(password)
+        val res = usersRepository.editPassword(id, passwordValidationInfo)
         return success(res)
     }
 

@@ -19,8 +19,11 @@ import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckIcon from '@mui/icons-material/Check';
-import DoDisturbIcon from '@mui/icons-material/DoDisturb';
+import ReplyIcon from '@mui/icons-material/Reply';
 import CloseIcon from '@mui/icons-material/Close';
+// @ts-ignore
+import logo from './assets/logo-no-background.png';
+
 
 interface DateObject {
     year: number;
@@ -53,13 +56,28 @@ interface InvitesModel {
     obrasAndRole: Obra[];
 }
 
-function NavBar() {
+interface Registo {
+    id: number;
+    oid: number;
+    userName: string;
+    uid: number;
+    endTime: DateObject | null;
+    startTime: DateObject;
+    status: string;
+}
+
+interface RegistosOutputModel {
+    registers: Registo[];
+}
+
+export default function NavBar() {
     const [cookies] = useCookies(["token"]);
     const currentUser = useCurrentUser();
     const currentUserAvatar = useAvatar();
     const [anchorElUser, setAnchorElUser] = React.useState(null);
     const [anchorElNotifications, setAnchorElNotifications] = React.useState(null);
     const [invites, setInvites] = useState<InvitesModel>({ obrasAndRole: [] });
+    const [pendingRegisters, setPendingRegisters] = useState<RegistosOutputModel>({ registers: [] });
 
     useEffect(() => {
         fetch(`/api/convites`, {
@@ -77,6 +95,28 @@ function NavBar() {
             }
         }).catch(error => {
             console.error("Error fetching notifications: ", error);
+        });
+    }, [cookies.token]);
+
+    useEffect(() => {
+        fetch(`/api/registos/pendente`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`,
+            },
+        }).then((res) => {
+            if (res.ok) {
+                return res.json();
+            } else {
+                throw new Error('Failed to fetch registos pendentes');
+            }
+        }).then((body) => {
+            console.log("Registos pendentes: ", body);
+            setPendingRegisters(body);
+
+        }).catch((error) => {
+            console.error("Error fetching registos pendentes:", error);
         });
     }, [cookies.token]);
 
@@ -127,6 +167,10 @@ function NavBar() {
             });
     };
 
+    const handleGetPendingRegister = (oid: number) => {
+        navigate(`/obras/${oid}/registers/pending`);
+    };
+
     return (
         <AppBar position="fixed">
             <Container maxWidth="xl">
@@ -135,7 +179,7 @@ function NavBar() {
                         onClick={handleClickHome}
                         sx={{
                             mr: 3,
-                            display: { xs: 'none', md: 'flex' },
+                            display: {xs: 'none', md: 'flex'},
                             fontFamily: 'monospace',
                             fontWeight: 700,
                             letterSpacing: '.3rem',
@@ -144,10 +188,14 @@ function NavBar() {
                             fontSize: '1.5rem',
                         }}
                     >
-                        Registo de acessos
+                        <img
+                            src={logo}
+                            alt="Registo de acessos"
+                            style={{height: '2.5rem', width: 'auto'}}
+                        />
                     </Button>
                     {currentUser ? (
-                        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+                        <Box sx={{flexGrow: 1, display: {xs: 'none', md: 'flex'}}}>
                             <Button
                                 className="custom-link"
                                 component={Link}
@@ -173,7 +221,7 @@ function NavBar() {
                         <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>
                             <Tooltip title="Notificações">
                                 <IconButton onClick={handleOpenNotificationsMenu} sx={{ p: 1, color: 'white', mr: 1 }}>
-                                    <Badge badgeContent={invites.obrasAndRole.length} color="warning">
+                                    <Badge badgeContent={invites.obrasAndRole.length || pendingRegisters.registers.length} color="warning">
                                         <NotificationsIcon sx={{ color: 'white' }} />
                                     </Badge>
                                 </IconButton>
@@ -202,6 +250,15 @@ function NavBar() {
                                             </IconButton>
                                             <IconButton onClick={(e) => { e.stopPropagation(); handleAcceptOrRejectInvite(invite.oid, "rejected") }}>
                                                 <CloseIcon sx={{ color: 'red' }}/>
+                                            </IconButton>
+                                        </MenuItem>
+                                    ))
+                                ) : pendingRegisters.registers.length > 0 ? (
+                                    pendingRegisters.registers.map((register) => (
+                                        <MenuItem key={register.id}>
+                                            Registo pendente de {register.userName}
+                                            <IconButton onClick={(e) => { e.stopPropagation(); handleGetPendingRegister(register.oid) }}>
+                                                <ReplyIcon sx={{ color: 'blue' }}/>
                                             </IconButton>
                                         </MenuItem>
                                     ))
@@ -270,4 +327,3 @@ function NavBar() {
     );
 }
 
-export default NavBar;

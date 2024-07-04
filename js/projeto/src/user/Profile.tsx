@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import {useSetAvatar} from "../context/Authn";
+import {useNavigate} from "react-router-dom";
 
 interface UserModel {
     id: number
@@ -121,6 +122,12 @@ export default function Profile() {
         }
     }
 
+    const navigate = useNavigate()
+
+    const handleChangePass = () => {
+        navigate("/profile/changePassword")
+    }
+
     return (
         <div>
             {user && (
@@ -220,9 +227,12 @@ export default function Profile() {
                                         </>
                                     ) : (
                                         <Button variant="contained" color="primary" onClick={handleEditProfile}>
-                                            Editar Perfil
+                                            Editar
                                         </Button>
                                     )}
+                                    <Button variant="contained" color="primary" sx={{ marginLeft: 1 }} onClick={handleChangePass}>
+                                        Alterar Password
+                                    </Button>
                                 </Box>
                             </Grid>
                         </Grid>

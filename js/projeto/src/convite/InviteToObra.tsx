@@ -13,19 +13,25 @@ import {Navigate, useParams} from "react-router-dom"
 interface InviteValues {
     email: string
     function: string
+    role: string
 }
 
-const roles = [
+const func = [
     'Ajudante', 'Apontador', 'Armador de ferro', 'Arvorado', 'Calceteiro', 'Canalisador', 'Carpinteiro', 'Chefe de equipa', 'Condutor Manobrador', 'Diretor de serviços', 'Eletricista', 'Encarregado', 'Escriturário', 'Estucador',  'Ferramenteiro', 'Gruista', 'Impermiabilizador', 'Ladrilhador', 'Marteleiro', 'Montador de andaimes', 'Pedreiro', 'Pintor', 'Serralheiro', 'Servente', 'Soldador', 'Técnico de manutenção', 'Tubista', 'Outro'
 ];
+
+const roles = [
+    { value: 'admin', label: 'Administrador' },
+    { value: 'funcionario', label: 'Membro' }
+]
 
 export default function InviteToObra() {
     const [cookies] = useCookies(["token"]);
     const [values, setValues] = useState<InviteValues>({
         email: "",
-        function: ""
+        function: "",
+        role: ""
     });
-
 
     const [submitted, setSubmitted] = useState(false);
     const [valid, setValid] = useState(false);
@@ -35,19 +41,26 @@ export default function InviteToObra() {
     const [success, setSuccess] = useState(false);
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = event.target;
+        const { name, value } = event.target
         setValues((values) => ({
             ...values,
             [name]: value
-        }));
-    };
+        }))
+    }
 
-    const handleSelectChange = (event: ChangeEvent<{ value: unknown }>) => {
+    const handleFunctionChange = (event: ChangeEvent<{ value: unknown }>) => {
         setValues((values) => ({
             ...values,
             function: event.target.value as string
-        }));
-    };
+        }))
+    }
+
+    const handleRoleChange = (event: ChangeEvent<{ value: unknown }>) => {
+        setValues((values) => ({
+            ...values,
+            role: event.target.value as string
+        }))
+    }
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -100,7 +113,7 @@ export default function InviteToObra() {
                 autoComplete="off"
                 onSubmit={handleSubmit}
             >
-                <h1 className="black-text">Convidar funcionário</h1>
+                <h1 className="black-text">Convidar membro</h1>
                 <TextField
                     required
                     id="email"
@@ -115,13 +128,30 @@ export default function InviteToObra() {
                         labelId="function-label"
                         id="function"
                         value={values.function}
-                        onChange={handleSelectChange}
+                        onChange={handleFunctionChange}
                         label="Função"
                         name="function"
                     >
+                        {func.map((func) => (
+                            <MenuItem key={func} value={func}>
+                                {func}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <FormControl sx={{ m: 1, width: '25ch' }}>
+                    <InputLabel id="role-label">Papel</InputLabel>
+                    <Select
+                        labelId="role-label"
+                        id="role"
+                        value={values.role}
+                        onChange={handleRoleChange}
+                        label="Papel"
+                        name="role"
+                    >
                         {roles.map((role) => (
-                            <MenuItem key={role} value={role}>
-                                {role}
+                            <MenuItem key={role.value} value={role.value}>
+                                {role.label}
                             </MenuItem>
                         ))}
                     </Select>
@@ -130,7 +160,7 @@ export default function InviteToObra() {
                     Convidar
                 </Button>
                 {submitted && !valid && <Alert severity="error" sx={{ m: 1 }}>{error}</Alert>}
-                {submitted && valid && <Alert severity="success" sx={{ m: 1 }}>Funcionário convidado com sucesso!</Alert>}
+                {submitted && valid && <Alert severity="success" sx={{ m: 1 }}>Membro convidado com sucesso!</Alert>}
             </Box>
         </div>
     );
