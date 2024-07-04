@@ -1,6 +1,6 @@
 
 package isel.pt.ps.projeto.casbin
-/*
+
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 
@@ -46,4 +46,4 @@ class AuthenticationImpl(
     override fun getName(): String {
         return name
     }
-}*/
+}

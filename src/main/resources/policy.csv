@@ -12,6 +12,8 @@ p, construction_1_admin, /obras/1/registos, GET
 p, construction_1_user, /obras/1/registos, GET
 p, construction_1_admin, /obras/1/registos/me, GET
 p, construction_1_user, /obras/1/registos/me, GET
+p, user, /registos, POST
+p, user, /registos, PUT
 g, mike@mike.com, user
 g, abc@abc.com, user
 g, mike@mike.com, construction_1_admin

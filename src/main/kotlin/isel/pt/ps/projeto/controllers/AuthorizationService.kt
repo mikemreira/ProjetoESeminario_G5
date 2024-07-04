@@ -18,6 +18,8 @@ class AuthorizationService(
         println("RAN")
         savePolicy("user", "/obras", "GET")
         savePolicy("user", "/registos", "GET")
+        savePolicy("user", "/registos", "POST")
+        savePolicy("user", "/registos", "PUT")
         savePolicy("user", "/users/me", "GET")
         savePolicy("user", "/users/me", "PUT")
         savePolicy("user", "/convites", "GET")
