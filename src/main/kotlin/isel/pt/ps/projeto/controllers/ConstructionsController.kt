@@ -89,19 +89,23 @@ class ConstructionsController(
         val res = constructionService.editConstruction(authUser.user.id, oid, input)
         return when (res) {
             is Success -> {
-                val fotoString = if (res.value.foto != null) utils.byteArrayToBase64(res.value.foto) else null
-                ResponseEntity.status(201).body(
-                    ConstructionOutputModel(
-                        res.value.oid,
-                        res.value.nome,
-                        res.value.localizacao,
-                        res.value.descricao,
-                        res.value.data_inicio,
-                        res.value.data_fim,
-                        fotoString,
-                        res.value.status
+                if (res.value == null)
+                    ResponseEntity.status(204).body("Deleted")
+                else {
+                    val fotoString = if (res.value.foto != null) utils.byteArrayToBase64(res.value.foto) else null
+                    ResponseEntity.status(201).body(
+                        ConstructionOutputModel(
+                            res.value.oid,
+                            res.value.nome,
+                            res.value.localizacao,
+                            res.value.descricao,
+                            res.value.data_inicio,
+                            res.value.data_fim,
+                            fotoString,
+                            res.value.status
+                        )
                     )
-                )
+                }
             }
             is Failure -> when (res.value) {
                 ConstructionEditError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)

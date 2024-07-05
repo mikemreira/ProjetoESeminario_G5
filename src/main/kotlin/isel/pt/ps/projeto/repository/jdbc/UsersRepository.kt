@@ -409,15 +409,8 @@ class UsersRepository(
                 )
                 pStatement.setString(1, password.validationInfo)
                 pStatement.setInt(2, id)
-                val rowUpdated = pStatement.executeUpdate()
-
-                if (rowUpdated > 0 ) {
-                    it.commit()
-                    true
-                } else {
-                    it.rollback()
-                    false
-                }
+                pStatement.executeUpdate()
+                true
             } catch (e: SQLException) {
                 it.rollback()
                 throw e

@@ -71,7 +71,8 @@ class UsersController(
     ): ResponseEntity<*> {
         println("entrou")
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
-        val res = usersService.editPassword(authUser.user.id, password)
+        println("PASS : "+password)
+        val res = usersService. editPassword(authUser.user.id, password)
         return when (res) {
             is Success ->
                 ResponseEntity.status(201)
@@ -131,6 +132,7 @@ class UsersController(
         user: AuthenticatedUser,
         response: HttpServletResponse,
     ){
+        println("USER : $user")
         usersService.signOut(user.token)
     }
 

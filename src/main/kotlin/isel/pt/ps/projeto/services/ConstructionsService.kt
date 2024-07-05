@@ -49,7 +49,7 @@ typealias ConstructionAndRoleResult = Either<ConstructionInfoError, Construction
 typealias ConstructionCreationResult = Either<ConstructionCreationError, Int>
 typealias ConstructionInfoResult = Either<ConstructionInfoError, Construction>
 typealias ConstructionsInfoResult = Either<ConstructionInfoError, List<Construction>>
-typealias ConstructionEditResult = Either<ConstructionEditError, Construction>
+typealias ConstructionEditResult = Either<ConstructionEditError, Construction?>
 
 typealias RegisterInfoResult = Either<ConstructionInfoError, Boolean>
 
