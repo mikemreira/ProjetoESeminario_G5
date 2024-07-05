@@ -41,7 +41,8 @@ class RegistersController(
                                     it.saida,
                                     it.status
                                 )
-                            }
+                            },
+                            "/registos/pendente"
                         )
                     )
             is Failure ->
@@ -71,7 +72,7 @@ class RegistersController(
                 when (res.value) {
                     RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                     RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
-                    RegistersInfoError.NoAccessToConstruction -> TODO()
+                    RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                     RegistersInfoError.NoConstruction -> TODO()
                     RegistersInfoError.NoPermission -> TODO()
                     RegistersInfoError.ConstructionSuspended -> TODO()
@@ -94,7 +95,7 @@ class RegistersController(
                 when (res.value) {
                     RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                     RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
-                    RegistersInfoError.NoAccessToConstruction -> TODO()
+                    RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                     RegistersInfoError.NoConstruction -> TODO()
                     RegistersInfoError.NoPermission -> TODO()
                     RegistersInfoError.ConstructionSuspended -> TODO()
@@ -114,17 +115,23 @@ class RegistersController(
         return when (val res = registersService.getRegistersFromUsersInConstruction(authUser.user.id, oid, page)) {
             is Success -> ResponseEntity.status(200).body(
                 UserRegistersAndObraOutputModel(
-                res.value.map {
-                    RegisterAndUser(
-                        it.userName,
-                        it.id,
-                        it.oid,
-                        it.uid,
-                        it.startTime,
-                        it.endTime,
-                        it.status
-                    )
-                })
+                    res.value.registers.map {
+                        RegisterAndUser(
+                            it.userName,
+                            it.id,
+                            it.oid,
+                            it.uid,
+                            it.startTime,
+                            it.endTime,
+                            it.status
+                        )
+                    },
+                    res.value.constructionStatus
+                    ,
+                    "/obras/$oid/registos/me"
+                    ,
+                    "/obras/$oid/registos/pendente"
+                )
             )
             is Failure -> when (res.value) {
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
@@ -171,17 +178,18 @@ class RegistersController(
         return when (val res = registersService.getRegistersFromUserInConstruction(authUser.user.id, userId, oid, page,false)) {
             is Success -> ResponseEntity.status(200).body(
                 UserRegistersAndObraOutputModel(
-                res.value.map {
-                    RegisterAndUser(
-                        it.userName,
-                        it.id,
-                        it.oid,
-                        it.uid,
-                        it.startTime,
-                        it.endTime,
-                        it.status
-                    )
-                })
+                    res.value.map {
+                        RegisterAndUser(
+                            it.userName,
+                            it.id,
+                            it.oid,
+                            it.uid,
+                            it.startTime,
+                            it.endTime,
+                            it.status
+                        )
+                    }
+                )
             )
             is Failure -> when (res.value) {
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)

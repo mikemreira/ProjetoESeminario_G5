@@ -21,7 +21,7 @@ interface ConstructionRepository {
 
     fun getConstructionUser(oid: Int, uid: Int): SimpleUserAndFunc?
 
-    fun getConstructionsOfUser(id: Int): List<Construction>
+    fun getConstructionsOfUser(id: Int, status: String? = null): List<Construction>
 
     fun createConstruction(userId: Int, name: String, location: String, description: String, startDate: LocalDate, endDate: LocalDate?, foto: String?, status: String?, function: String): Int
 

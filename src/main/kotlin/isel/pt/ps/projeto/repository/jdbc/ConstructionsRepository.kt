@@ -135,7 +135,7 @@ class ConstructionsRepository(
     }
 
 
-    override fun getConstructionsOfUser(id: Int): List<Construction> {
+    override fun getConstructionsOfUser(id: Int, status: String?): List<Construction> {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -144,9 +144,12 @@ class ConstructionsRepository(
                         "select o.id, o.nome, o.localização, o.descrição, o.data_inicio, o.data_fim, o.status, o.foto from utilizador u\n" +
                             "inner join papel p on p.id_utilizador = u.id\n" +
                             "inner join obra o on o.id = p.id_obra\n" +
-                            "where u.id = ?",
+                            "where 1=1 \n" +
+                            "   AND (o.status = COALESCE(?, o.status))\n" +
+                            "   AND (u.id = COALESCE(?, u.id))",
                     )
                 pStatement.setInt(1, id)
+                pStatement.setString(2, status)
                 val result = pStatement.executeQuery()
                 val list = mutableListOf<Construction>()
                 while (result.next()) {
@@ -443,7 +446,8 @@ class ConstructionsRepository(
                             result.getInt("uid"),
                             result.getTimestamp("entrada").toLocalDateTime(),
                             if (saida == null) null else saida.toLocalDateTime(),
-                            result.getString("status")
+                            result.getString("status"),
+                            null
                         )
                     )
                 }

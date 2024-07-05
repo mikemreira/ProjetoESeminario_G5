@@ -231,6 +231,47 @@ class ConstructionsController(
         }
     }
 
+    @GetMapping("/obras/ongoing")
+    fun getContructionsOnGoing(
+            @RequestHeader("Authorization") userToken: String
+    ): ResponseEntity<*> {
+            val authUser =
+                requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+            val res = constructionService.getConstructionsOfUser(authUser.user.id)
+            return when (res) {
+                is Success ->
+                    ResponseEntity.status(200)
+                        .body(
+                            ListOfConstructionsOutputModel(
+                                res.value.map {
+                                    val fotoString = if (it.foto != null) utils.byteArrayToBase64(it.foto) else null
+                                    ConstructionOutputModel(
+                                        it.oid,
+                                        it.nome,
+                                        it.localizacao,
+                                        it.descricao,
+                                        it.data_inicio,
+                                        it.data_fim,
+                                        fotoString,
+                                        it.status
+                                    )
+                                }
+                            )
+                        )
+                is Failure ->
+                    when (res.value) {
+                        ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
+                        ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
+                        ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
+                        ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noAccessToConstruction)
+                        ConstructionInfoError.InvalidRegister -> TODO()
+                        ConstructionInfoError.NoPermission -> TODO()
+                        ConstructionInfoError.AlreadyInConstruction -> TODO()
+                        ConstructionInfoError.ConstructionSuspended -> TODO()
+                    }
+            }
+    }
+
     @PostMapping("")
     fun createConstruction(
         @RequestBody input: ConstructionInputModel,
@@ -282,7 +323,7 @@ class ConstructionsController(
                 ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
                 ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                 ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
-                ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
+                ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noAccessToConstruction)
                 ConstructionInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                 ConstructionInfoError.AlreadyInConstruction -> TODO()
