@@ -148,8 +148,8 @@ class ConstructionsRepository(
                             "   AND (o.status = COALESCE(?, o.status))\n" +
                             "   AND (u.id = COALESCE(?, u.id))",
                     )
-                pStatement.setInt(1, id)
-                pStatement.setString(2, status)
+                pStatement.setString(1, status)
+                pStatement.setInt(2, id)
                 val result = pStatement.executeQuery()
                 val list = mutableListOf<Construction>()
                 while (result.next()) {
@@ -447,7 +447,6 @@ class ConstructionsRepository(
                             result.getTimestamp("entrada").toLocalDateTime(),
                             if (saida == null) null else saida.toLocalDateTime(),
                             result.getString("status"),
-                            null
                         )
                     )
                 }

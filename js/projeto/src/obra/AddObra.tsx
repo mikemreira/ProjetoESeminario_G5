@@ -8,7 +8,9 @@ import Alert from '@mui/material/Alert';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
 import {colors, FormControl, InputLabel, MenuItem, Select, Snackbar} from "@mui/material";
-import {Navigate} from "react-router-dom"
+import {Navigate, useNavigate} from "react-router-dom"
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import {colorTransformations} from "@mui/material/Link/getTextDecoration";
 
 interface ObraValues {
     name: string
@@ -27,6 +29,12 @@ const roles = [
 
 export default function AddObra() {
     const [cookies] = useCookies(["token"]);
+    const [submitted, setSubmitted] = useState(false);
+    const [valid, setValid] = useState(false);
+    const [error, setError] = useState<string | undefined>(undefined);
+    const [redirect, setRedirect] = useState<JSX.Element | null>(null);
+    const [open, setOpen] = React.useState(false);
+    const navigate = useNavigate();
     const [values, setValues] = useState<ObraValues>({
         name: "",
         location: "",
@@ -49,13 +57,6 @@ export default function AddObra() {
         whiteSpace: 'nowrap',
         width: 1,
     });
-
-
-    const [submitted, setSubmitted] = useState(false);
-    const [valid, setValid] = useState(false);
-    const [error, setError] = useState<string | undefined>(undefined);
-    const [redirect, setRedirect] = useState<JSX.Element | null>(null);
-    const [open, setOpen] = React.useState(false);
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -123,6 +124,10 @@ export default function AddObra() {
     const handleClick = () => {
         setOpen(true);
     };
+
+    const handleCancel = () => {
+        navigate(-1)
+    }
 
 /*
     const handleClose = (event, reason) => {
@@ -227,9 +232,22 @@ export default function AddObra() {
                     onChange={handleFileChange}
                 />
             </Button>
-            <Button type="submit" variant="contained" color="primary" sx={{ m: 1 }}>
-                Adicionar
-            </Button>
+            <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                <Button variant="outlined" color="primary"  sx={{
+                    m: 1,
+                    borderColor: 'red',
+                    color: 'red',
+                    '&:hover': {
+                        borderColor: 'darkred',
+                        color: 'darkred',
+                    }
+                }}  onClick={handleCancel}>
+                    Cancelar
+                </Button>
+                <Button type="submit" variant="contained" sx={{ m: 1, backgroundColor: 'green', '&:hover': { backgroundColor: 'darkgreen' } }}>
+                    Adicionar
+                </Button>
+            </Box>
             {submitted && !valid && <Alert severity="error" sx={{ m: 1 }}>{error}</Alert>}
         </Box>
         </div>

@@ -85,7 +85,7 @@ export default function RegistoForm(props: RegistoFormProps) {
                         const formJson = Object.fromEntries((formData as any).entries());
                         const id = formJson.obra;
                         console.log(selectedObras + " -> " + requiredDateTime + " -> " + optionalDateTime);
-                        fetch(`api/obras/${selectedObras}/register`, {
+                        fetch(`/api/obras/${selectedObras}/register`, {
                             method: "POST",
                             headers: {
                                 "Content-type": "application/json",

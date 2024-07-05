@@ -207,13 +207,6 @@ export default function Profile() {
                                         />
                                     </ListItem>
                                     <Divider />
-                                    <ListItem>
-                                        <ListItemText
-                                            primary="ID"
-                                            secondary={user.id}
-                                            primaryTypographyProps={{ style: { color: "#0000FF" } }}
-                                        />
-                                    </ListItem>
                                 </List>
                                 <Box mt={2}>
                                     {isEditing ? (
@@ -226,13 +219,15 @@ export default function Profile() {
                                             </Button>
                                         </>
                                     ) : (
-                                        <Button variant="contained" color="primary" onClick={handleEditProfile}>
-                                            Editar
-                                        </Button>
+                                        <>
+                                            <Button variant="contained" color="primary" onClick={handleEditProfile}>
+                                                Editar
+                                            </Button>
+                                            <Button variant="contained" color="primary" sx={{ marginLeft: 1 }} onClick={handleChangePass}>
+                                                Alterar Password
+                                            </Button>
+                                        </>
                                     )}
-                                    <Button variant="contained" color="primary" sx={{ marginLeft: 1 }} onClick={handleChangePass}>
-                                        Alterar Password
-                                    </Button>
                                 </Box>
                             </Grid>
                         </Grid>

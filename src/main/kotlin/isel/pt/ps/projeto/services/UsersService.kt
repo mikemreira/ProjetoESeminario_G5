@@ -128,6 +128,7 @@ class UsersService(
         }
         println("Safe password")
         val passwordValidationInfo = usersDomain.createPasswordValidationInformation(password)
+        println("Password validation info: $passwordValidationInfo")
         val res = usersRepository.editPassword(id, passwordValidationInfo)
         return success(res)
     }

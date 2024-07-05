@@ -152,7 +152,7 @@ export default function ObrasInfo() {
     }, [cookies.token, oid]);
 
     const handleClickRegistos = () => {
-        navigate(`/obras/${oid}/registers?status=${obra?.status}`)
+        navigate(`/obras/${oid}/registers`)
     }
 
     const handleClickFuncionarios = () => {
