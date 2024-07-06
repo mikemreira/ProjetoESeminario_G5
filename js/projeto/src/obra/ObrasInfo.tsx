@@ -16,6 +16,8 @@ import {
     Button,
     Box,
     Divider, Badge, InputLabel, Select, MenuItem,
+    Tabs,
+    Tab
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
@@ -28,8 +30,6 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-
-
 
 interface DateObject {
     year: number;
@@ -52,6 +52,13 @@ interface Obra {
     role: string;
     foto: string | null;
     function: string;
+}
+
+interface ObraOutputModel {
+    constructionAndRoleOutputModel: Obra
+    usersRoute: string
+    registersRoute: string
+    editRoute: string
 }
 
 interface Registo {
@@ -97,12 +104,13 @@ const func = [
 
 export default function ObrasInfo() {
     const [cookies] = useCookies(["token"]);
-    const [obra, setObra] = useState<Obra | null>(null);
+    const [obra, setObra] = useState<ObraOutputModel | null>(null);
     const { oid } = useParams<{ oid: string }>();
     const navigate = useNavigate();
     const [pendingRegisters, setPendingRegisters] = useState<RegistosOutputModel>({ registers: [] });
     const [isEditing, setIsEditing] = useState(false);
-    const [editedObra, setEditedObra] = useState<Obra | null>(null);
+    const [editedObra, setEditedObra] = useState<ObraOutputModel | null>(null);
+    const [tabIndex, setTabIndex] = useState(0);
 
     useEffect(() => {
         fetch(`/api/obras/${oid}`, {
@@ -120,7 +128,7 @@ export default function ObrasInfo() {
                 }
             })
             .then((body) => {
-                console.log(body);
+                console.log("Obra fetched:", body);
                 setObra(body);
                 setEditedObra(body);
             })
@@ -128,6 +136,31 @@ export default function ObrasInfo() {
                 console.error("Error fetching obra:", error);
             });
     }, [cookies.token, oid]);
+
+    const handleVisaoGeral = () => {
+        fetch(`/api/obras/${oid}`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`,
+            },
+        })
+            .then((res) => {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to fetch obra');
+                }
+            })
+            .then((body) => {
+                console.log("Obra fetched:", body);
+                setObra(body);
+                setEditedObra(body);
+            })
+            .catch((error) => {
+                console.error("Error fetching obra:", error);
+            });
+    }
 
     useEffect(() => {
         fetch(`/api/obras/${oid}/registos/pendente`, {
@@ -168,7 +201,7 @@ export default function ObrasInfo() {
     }
 
     const handleCancelEdit = () => {
-        setEditedObra(obra)
+        setEditedObra(obra?.constructionAndRoleOutputModel)
         setIsEditing(false)
     }
 
@@ -212,8 +245,8 @@ export default function ObrasInfo() {
         if (editedObra) {
             const editedObraForUpdate = {
                 ...editedObra,
-                startDate: editedObra.startDate?.value$kotlinx_datetime || null,
-                endDate: editedObra.endDate?.value$kotlinx_datetime || null,
+                startDate: editedObra.constructionAndRoleOutputModel.startDate?.value$kotlinx_datetime || null,
+                endDate: editedObra.constructionAndRoleOutputModel.endDate?.value$kotlinx_datetime || null,
             };
             fetch(`/api/obras/${oid}`, {
                 method: "PUT",
@@ -241,8 +274,8 @@ export default function ObrasInfo() {
         if (!obra) return
         const updatedObra = {
             ...obra,
-            startDate: obra.startDate?.value$kotlinx_datetime || null,
-            endDate: obra.endDate?.value$kotlinx_datetime || null,
+            startDate: obra.constructionAndRoleOutputModel.startDate?.value$kotlinx_datetime || null,
+            endDate: obra.constructionAndRoleOutputModel.endDate?.value$kotlinx_datetime || null,
             status: status || "on going",
         };
         fetch(`/api/obras/${oid}`, {
@@ -285,6 +318,10 @@ export default function ObrasInfo() {
         handleSuspendOrRecover("completed")
     }
 
+    const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+        setTabIndex(newValue);
+    };
+
     if (!obra) {
         return <CircularProgress />;
     }
@@ -303,12 +340,12 @@ export default function ObrasInfo() {
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={4}>
                         <Avatar
-                            alt={obra.name}
-                            src={obra.foto || "https://t-obra.com/wp-content/uploads/2019/09/graca16.jpg"}
+                            alt={obra.constructionAndRoleOutputModel.name}
+                            src={obra.constructionAndRoleOutputModel.foto || "https://t-obra.com/wp-content/uploads/2019/09/graca16.jpg"}
                             variant="rounded"
                             sx={{
-                                width: "100%",
-                                height: "100%",
+                                width: "40%",
+                                height: "40%",
                                 cursor: isEditing ? "pointer" : "default",
                             }}
                             onClick={isEditing ? () => document.getElementById('contained-button-file')?.click() : undefined}
@@ -322,9 +359,20 @@ export default function ObrasInfo() {
                                 onChange={handleFileChange}
                             />
                         )}
+                        <Tabs
+                            value={tabIndex}
+                            onChange={handleTabChange}
+                            indicatorColor="primary"
+                            textColor="primary"
+                            orientation="vertical"
+                        >
+                            <Tab label="Visão Geral" onClick={handleVisaoGeral}/>
+                            <Tab label="Registos" />
+                            <Tab label="Membros" />
+                        </Tabs>
                     </Grid>
                     <Grid item xs={12} md={8}>
-                        {obra.role === "admin" && !isEditing && (obra.status === "on going") && (
+                        {obra.constructionAndRoleOutputModel.role === "admin" && !isEditing && (obra.constructionAndRoleOutputModel.status === "on going") && (
                             <Box display="flex" justifyContent="flex-end" alignItems="center">
                                 <Tooltip title="Registos Pendentes">
                                     <IconButton color="primary" onClick={handleClickPendingRegisters}>
@@ -342,11 +390,11 @@ export default function ObrasInfo() {
                                         <TextField
                                             fullWidth
                                             name="name"
-                                            value={editedObra?.name || ""}
+                                            value={editedObra?.constructionAndRoleOutputModel.name || ""}
                                             onChange={handleChange}
                                         />
                                     ) : (
-                                        obra.name
+                                        obra.constructionAndRoleOutputModel.name
                                     )
                                 } primaryTypographyProps={{ style: { color: '#0000FF' } }} />
                             </ListItem>
@@ -357,11 +405,11 @@ export default function ObrasInfo() {
                                         <TextField
                                             fullWidth
                                             name="location"
-                                            value={editedObra?.location || ""}
+                                            value={editedObra?.constructionAndRoleOutputModel.location || ""}
                                             onChange={handleChange}
                                         />
                                     ) : (
-                                        obra.location
+                                        obra.constructionAndRoleOutputModel.location
                                     )
                                 } primaryTypographyProps={{ style: { color: '#0000FF' } }} />
                             </ListItem>
@@ -372,11 +420,11 @@ export default function ObrasInfo() {
                                         <TextField
                                             fullWidth
                                             name="description"
-                                            value={editedObra?.description || ""}
+                                            value={editedObra?.constructionAndRoleOutputModel.description || ""}
                                             onChange={handleChange}
                                         />
                                     ) : (
-                                        obra.description
+                                        obra.constructionAndRoleOutputModel.description
                                     )
                                 } primaryTypographyProps={{ style: { color: '#0000FF' } }} />
                             </ListItem>
@@ -388,11 +436,11 @@ export default function ObrasInfo() {
                                             fullWidth
                                             name="startDate"
                                             type={"date"}
-                                            value={formatDate(editedObra?.startDate)|| ""}
+                                            value={formatDate(editedObra?.constructionAndRoleOutputModel.startDate)|| ""}
                                             onChange={handleChange}
                                         />
                                     ) : (
-                                        formatDate(obra.startDate)
+                                        formatDate(obra.constructionAndRoleOutputModel.startDate)
                                     )
                                 } primaryTypographyProps={{ style: { color: '#0000FF' } }}/>
                             </ListItem>
@@ -404,18 +452,18 @@ export default function ObrasInfo() {
                                             fullWidth
                                             name="endDate"
                                             type={"date"}
-                                            value={formatDate(editedObra?.endDate) || ""}
+                                            value={formatDate(editedObra?.constructionAndRoleOutputModel.endDate) || ""}
                                             onChange={handleChange}
                                         />
                                     ) : (
-                                        formatDate(obra.endDate)
+                                        formatDate(obra.constructionAndRoleOutputModel.endDate)
                                     )
                                 } primaryTypographyProps={{ style: { color: '#0000FF' } }}/>
                             </ListItem>
                             <Divider />
                             <ListItem>
                                 <ListItemText primary="Estado" secondary={
-                                        obra.status
+                                        obra.constructionAndRoleOutputModel.status
                                 } primaryTypographyProps={{ style: { color: '#0000FF' } }}/>
                             </ListItem>
                             <Divider />
@@ -427,7 +475,7 @@ export default function ObrasInfo() {
                                                 labelId="function-label"
                                                 id="function"
                                                 name="function"
-                                                value={editedObra?.function || ""}
+                                                value={editedObra?.constructionAndRoleOutputModel.function || ""}
                                                 onChange={handleSelectChange}
                                                 required
                                                 fullWidth
@@ -440,7 +488,7 @@ export default function ObrasInfo() {
                                             </Select>
                                         </>
                                     ) : (
-                                        obra.function
+                                        obra.constructionAndRoleOutputModel.function
                                     )
                                 } primaryTypographyProps={{ style: { color: '#0000FF' } }}/>
                             </ListItem>
@@ -451,12 +499,12 @@ export default function ObrasInfo() {
                                     <Button variant="contained" color="primary" onClick={handleClickRegistos}>
                                         Registos
                                     </Button>
-                                    {obra.role === "admin" && (
+                                    {obra.constructionAndRoleOutputModel.role === "admin" && (
                                         <Button variant="contained" color="primary" sx={{ ml: 2 }} onClick={handleClickFuncionarios}>
                                             Membros
                                         </Button>
                                     )}
-                                    {obra.role === "admin" && obra.status === "on going" && (
+                                    {obra.constructionAndRoleOutputModel.role === "admin" && obra.constructionAndRoleOutputModel.status === "on going" && (
                                         <>
                                             <IconButton variant="contained" color="primary" sx={{ ml: 2 }} onClick={handleClickEditObra} title="Editar">
                                                 <EditIcon />
@@ -469,14 +517,14 @@ export default function ObrasInfo() {
                                             </IconButton>
                                         </>
                                     )}
-                                    {obra.role === "admin" && (obra.status === "on going" || obra.status === "completed") && (
+                                    {obra.constructionAndRoleOutputModel.role === "admin" && (obra.constructionAndRoleOutputModel.status === "on going" || obra.constructionAndRoleOutputModel.status === "completed") && (
                                         <>
 
 
                                         </>
 
                                     )}
-                                    {obra.role === "admin" && (obra.status === "recoverable") && (
+                                    {obra.constructionAndRoleOutputModel.role === "admin" && (obra.constructionAndRoleOutputModel.status === "recoverable") && (
                                         <>
                                             <IconButton variant="contained" sx={{ ml: 2 }} onClick={handleRecoverObra} title="Recuperar">
                                                 <ArrowCircleUpIcon sx={{ color: 'green' }}/>
@@ -489,7 +537,7 @@ export default function ObrasInfo() {
                                     )}
                                 </>
                             )}
-                            {isEditing && obra.role === "admin" && (
+                            {isEditing && obra.constructionAndRoleOutputModel.role === "admin" && (
                                 <>
                                     <Button variant="contained" color="primary" onClick={handleSaveObra} sx={{ marginRight: 1 }}>
                                         Guardar alterações
