@@ -39,8 +39,9 @@ class ProjetoApplication {
 
     @Bean
     fun constructionDomain() = ConstructionsDomain()
-}
 
+
+}
 @Configuration
 class PipelineConfigurer(
     val authenticationInterceptor: AuthenticationInterceptor,
