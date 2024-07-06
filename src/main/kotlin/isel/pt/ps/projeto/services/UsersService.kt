@@ -68,7 +68,10 @@ class UsersService(
     ): TokenResult {
         require(email.isNotEmpty() && password.isNotEmpty()) { return failure(TokenError.UserOrPasswordAreInvalid) }
         val user: User = usersRepository.getUserByEmail(email) ?: return failure(TokenError.UserOrPasswordAreInvalid)
+        println("SIGN IN USER : $user")
+        println(usersDomain.createPasswordValidationInformation(password))
         if (!usersDomain.validatePassword(password, user.passwordValidation)) {
+            println("PASS DIDNT MATCH")
             return failure(TokenError.UserOrPasswordAreInvalid)
         }
         val tokenValue = usersDomain.generateTokenValue()
@@ -86,6 +89,7 @@ class UsersService(
 
         val fotoString = if (user.foto != null ) utils.byteArrayToBase64(user.foto) else null
         val simpleUser = SimpleUser(user.id, user.nome, user.email, user.morada, fotoString)
+        println("Simple USER : $simpleUser")
         return Either.Right(
             TokenExternalInfo(
                 tokenValue,
@@ -128,6 +132,7 @@ class UsersService(
         }
         println("Safe password")
         val passwordValidationInfo = usersDomain.createPasswordValidationInformation(password)
+        println("Password validation info: $passwordValidationInfo")
         val res = usersRepository.editPassword(id, passwordValidationInfo)
         return success(res)
     }

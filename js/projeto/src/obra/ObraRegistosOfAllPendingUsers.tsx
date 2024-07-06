@@ -122,7 +122,7 @@ export default function ObraRegistosOfAllPendingUsers() {
     const table = useMaterialReactTable({
         columns,
         data: registos,
-        enableRowSelection: true,
+        enableRowSelection: false,
         initialState: {
             pagination: { pageSize: 5, pageIndex: 0 },
             showGlobalFilter: true,
@@ -177,7 +177,6 @@ export default function ObraRegistosOfAllPendingUsers() {
                  * They just need the `table` instance passed as a prop to work!
                  */}
                 <MRT_GlobalFilterTextField table={table} />
-                <MRT_TablePagination table={table} />
                 <IconButton onClick={handleClickOpen} color="primary" sx={{
                     bgcolor: 'primary.main',
                     borderRadius: '40%',
@@ -239,6 +238,9 @@ export default function ObraRegistosOfAllPendingUsers() {
                     </TableBody>
                 </Table>
             </TableContainer>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                <MRT_TablePagination table={table} />
+            </Box>
             <MRT_ToolbarAlertBanner stackAlertBanner table={table} />
         </Stack>
     );

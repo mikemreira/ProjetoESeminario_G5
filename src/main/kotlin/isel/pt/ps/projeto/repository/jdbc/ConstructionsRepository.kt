@@ -135,7 +135,7 @@ class ConstructionsRepository(
     }
 
 
-    override fun getConstructionsOfUser(id: Int): List<Construction> {
+    override fun getConstructionsOfUser(id: Int, status: String?): List<Construction> {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -144,9 +144,12 @@ class ConstructionsRepository(
                         "select o.id, o.nome, o.localização, o.descrição, o.data_inicio, o.data_fim, o.status, o.foto from utilizador u\n" +
                             "inner join papel p on p.id_utilizador = u.id\n" +
                             "inner join obra o on o.id = p.id_obra\n" +
-                            "where u.id = ?",
+                            "where 1=1 \n" +
+                            "   AND (o.status = COALESCE(?, o.status))\n" +
+                            "   AND (u.id = COALESCE(?, u.id))",
                     )
-                pStatement.setInt(1, id)
+                pStatement.setString(1, status)
+                pStatement.setInt(2, id)
                 val result = pStatement.executeQuery()
                 val list = mutableListOf<Construction>()
                 while (result.next()) {
@@ -315,7 +318,7 @@ class ConstructionsRepository(
         }
     }
 
-    override fun editConstruction(oid: Int, inputModel: ConstructionEditInputModel): Construction {
+    override fun editConstruction(oid: Int, inputModel: ConstructionEditInputModel): Construction? {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -334,6 +337,8 @@ class ConstructionsRepository(
                 pStatement.setString(7, inputModel.status)
                 pStatement.setInt(8, oid)
                 pStatement.executeUpdate()
+                if (inputModel.status == "deleted")
+                    return null
                 val selectConst = it.prepareStatement("SELECT * FROM Obra WHERE id = ?")
                 selectConst.setInt(1, oid)
                 val result = selectConst.executeQuery()
@@ -443,7 +448,7 @@ class ConstructionsRepository(
                             result.getInt("uid"),
                             result.getTimestamp("entrada").toLocalDateTime(),
                             if (saida == null) null else saida.toLocalDateTime(),
-                            result.getString("status")
+                            result.getString("status"),
                         )
                     )
                 }

@@ -123,7 +123,7 @@ export default function ObraRegistosOfAllUsers() {
         columns,
         data: registos, //must be memoized or stable (useState, useMemo, defined outside of this component, etc.)
         //MRT display columns can still work, optionally override cell renders with `displayColumnDefOptions`
-        enableRowSelection: true,
+        enableRowSelection: false,
         initialState: {
             pagination: { pageSize: 5, pageIndex: 0 },
             showGlobalFilter: true,
@@ -147,12 +147,7 @@ export default function ObraRegistosOfAllUsers() {
                 }}
             >
                 <Typography variant="h5" color={"black"}>Registos da obra</Typography>
-                {/**
-                 * Use MRT components along side your own markup.
-                 * They just need the `table` instance passed as a prop to work!
-                 */}
                 <MRT_GlobalFilterTextField table={table} />
-                <MRT_TablePagination table={table} />
                 <IconButton onClick={handleClickOpen} color="primary" sx={{
                     bgcolor: 'primary.main',
                     borderRadius: '40%',
@@ -214,6 +209,9 @@ export default function ObraRegistosOfAllUsers() {
                     </TableBody>
                 </Table>
             </TableContainer>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                <MRT_TablePagination table={table} />
+            </Box>
             <MRT_ToolbarAlertBanner stackAlertBanner table={table} />
         </Stack>
     );

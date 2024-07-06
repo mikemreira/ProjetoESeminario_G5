@@ -119,9 +119,10 @@ class RegistersRepository : RegistersRepository {
             return try {
                 val pg = (page-1)*10
                 val pStatement = it.prepareStatement(
-                    "SELECT r.id as rid, u.nome as nome, u.id as uid, r.entrada as entrada, r.saida as saida, r.status as status\n" +
+                    "SELECT r.id as rid, u.nome as nome, u.id as uid, r.entrada as entrada, r.saida as saida, r.status as status, o.status as obraStatus\n" +
                         "FROM Utilizador u \n" +
                         "INNER JOIN Registo r ON r.id_utilizador = u.id\n" +
+                        "INNER JOIN Obra o on o.id = r.id_obra \n" +
                         "WHERE r.id_obra = ?\n"+
                         "LIMIT 10 offset ?"
                 )

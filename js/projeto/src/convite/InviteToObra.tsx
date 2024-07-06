@@ -8,7 +8,7 @@ import Alert from '@mui/material/Alert';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
 import {colors, FormControl, InputLabel, MenuItem, Select, Snackbar} from "@mui/material";
-import {Navigate, useParams} from "react-router-dom"
+import {Navigate, useNavigate, useParams} from "react-router-dom"
 
 interface InviteValues {
     email: string
@@ -39,6 +39,7 @@ export default function InviteToObra() {
     const [redirect, setRedirect] = useState<JSX.Element | null>(null);
     const { oid } = useParams<{ oid: string }>();
     const [success, setSuccess] = useState(false);
+    const navigate = useNavigate()
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target
@@ -98,6 +99,10 @@ export default function InviteToObra() {
         });
     };
 
+    const handleCancel = () => {
+        navigate(-1)
+    }
+
     return (
         <div className="form-obras">
             {redirect}
@@ -156,9 +161,22 @@ export default function InviteToObra() {
                         ))}
                     </Select>
                 </FormControl>
-                <Button type="submit" variant="contained" color="primary" sx={{ m: 1 }}>
-                    Convidar
-                </Button>
+                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                    <Button variant="outlined" color="primary"  sx={{
+                        m: 1,
+                        borderColor: 'red',
+                        color: 'red',
+                        '&:hover': {
+                            borderColor: 'darkred',
+                            color: 'darkred',
+                        }
+                    }}  onClick={handleCancel}>
+                        Cancelar
+                    </Button>
+                    <Button type="submit" variant="contained" color="primary" sx={{ m: 1 }}>
+                        Convidar
+                    </Button>
+                </Box>
                 {submitted && !valid && <Alert severity="error" sx={{ m: 1 }}>{error}</Alert>}
                 {submitted && valid && <Alert severity="success" sx={{ m: 1 }}>Membro convidado com sucesso!</Alert>}
             </Box>

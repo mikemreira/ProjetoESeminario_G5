@@ -24,7 +24,8 @@ import {Delete, Edit} from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
 import AddIcon from "@mui/icons-material/Add";
-import {useLocation, useParams, useSearchParams} from "react-router-dom";
+import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
+import RegistoForm from "../registos/RegistoForm";
 
 const columns = [
     {
@@ -88,11 +89,12 @@ export default function ObraRegistos() {
     const [open, setOpen] = useState(false);
     const { oid } = useParams<{ oid: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
-    const status = searchParams.get('status')
+    const navigate = useNavigate();
+    const [openForm, setOpenForm] = useState(false);
 
     useEffect(() => {
         const page = searchParams.get('page') || '0'
-        fetch(`/api/obras/${oid}/registos/me?page=${page}&status=${status}`, {
+        fetch(`/api/obras/${oid}/registos/me?page=${page}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -122,16 +124,22 @@ export default function ObraRegistos() {
         setOpen(false);
     };
 
+    const handleClickOpenForm = () => {
+        setOpenForm(true);
+    };
+
+    const handleCloseForm = () => {
+        setOpenForm(false);
+    };
+
     const table = useMaterialReactTable({
         columns,
-        data: registos, //must be memoized or stable (useState, useMemo, defined outside of this component, etc.)
-        //MRT display columns can still work, optionally override cell renders with `displayColumnDefOptions`
-        enableRowSelection: true,
+        data: registos,
+        enableRowSelection: false,
         initialState: {
             pagination: { pageSize: 5, pageIndex: 0 },
             showGlobalFilter: true,
         },
-        //customize the MRT components
         muiPaginationProps: {
             rowsPerPageOptions: [5, 10, 15],
             variant: 'outlined',
@@ -149,14 +157,9 @@ export default function ObraRegistos() {
                     alignItems: 'center',
                 }}
             >
-                {/**
-                 * Use MRT components along side your own markup.
-                 * They just need the `table` instance passed as a prop to work!
-                 */}
+                <Typography variant="h4" color={"black"}>Registos</Typography>
                 <MRT_GlobalFilterTextField table={table} />
-                <MRT_TablePagination table={table} />
-                {status === "on going" && (
-                    <IconButton onClick={handleClickOpen} color="primary" sx={{
+                    <IconButton onClick={handleClickOpenForm} color="primary" sx={{
                         bgcolor: 'primary.main',
                         borderRadius: '40%',
                         width: '40px',
@@ -167,12 +170,9 @@ export default function ObraRegistos() {
                     }}>
                         <AddIcon sx={{ fontSize: 32, color: 'white' }}/>
                     </IconButton>
-                )}
             </Box>
-            {/* Using Vanilla Material-UI Table components here */}
             <TableContainer sx={{ backgroundColor: '#cccccc',  }}>
                 <Table sx={{ tableLayout: 'fixed' }}>
-                    {/* Use your own markup, customize however you want using the power of TanStack Table */}
                     <TableHead>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
@@ -218,7 +218,11 @@ export default function ObraRegistos() {
                     </TableBody>
                 </Table>
             </TableContainer>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                <MRT_TablePagination table={table} />
+            </Box>
             <MRT_ToolbarAlertBanner stackAlertBanner table={table} />
+            <RegistoForm open={openForm} onHandleClose={handleCloseForm} onHandleOpen={handleClickOpenForm} />
         </Stack>
     );
 };

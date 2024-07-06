@@ -50,17 +50,22 @@ class ConstructionsController(
                 val result = res.value
                 ResponseEntity.status(200)
                     .body(
-                        ConstructionAndRoleOutputModel(
-                            result.construction.oid,
-                            result.construction.nome,
-                            result.construction.localizacao,
-                            result.construction.descricao,
-                            result.construction.data_inicio,
-                            result.construction.data_fim,
-                            fotoString,
-                            result.construction.status,
-                            result.role.role,
-                            result.role.function
+                        ConstructionOutputModelAndHrefs(
+                            ConstructionAndRoleOutputModel(
+                                result.construction.oid,
+                                result.construction.nome,
+                                result.construction.localizacao,
+                                result.construction.descricao,
+                                result.construction.data_inicio,
+                                result.construction.data_fim,
+                                fotoString,
+                                result.construction.status,
+                                result.role.role,
+                                result.role.function
+                            ),
+                            "/obras/${result.construction.oid}/users",
+                            "/obras/${result.construction.oid}/registos",
+                            "/obras/${result.construction.oid}/edit"
                         )
                     )
             }
@@ -89,19 +94,23 @@ class ConstructionsController(
         val res = constructionService.editConstruction(authUser.user.id, oid, input)
         return when (res) {
             is Success -> {
-                val fotoString = if (res.value.foto != null) utils.byteArrayToBase64(res.value.foto) else null
-                ResponseEntity.status(201).body(
-                    ConstructionOutputModel(
-                        res.value.oid,
-                        res.value.nome,
-                        res.value.localizacao,
-                        res.value.descricao,
-                        res.value.data_inicio,
-                        res.value.data_fim,
-                        fotoString,
-                        res.value.status
+                if (res.value == null)
+                    ResponseEntity.status(204).body("Deleted")
+                else {
+                    val fotoString = if (res.value.foto != null) utils.byteArrayToBase64(res.value.foto) else null
+                    ResponseEntity.status(201).body(
+                        ConstructionOutputModel(
+                            res.value.oid,
+                            res.value.nome,
+                            res.value.localizacao,
+                            res.value.descricao,
+                            res.value.data_inicio,
+                            res.value.data_fim,
+                            fotoString,
+                            res.value.status
+                        )
                     )
-                )
+                }
             }
             is Failure -> when (res.value) {
                 ConstructionEditError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
@@ -231,6 +240,47 @@ class ConstructionsController(
         }
     }
 
+    @GetMapping("/obras/ongoing")
+    fun getContructionsOnGoing(
+            @RequestHeader("Authorization") userToken: String
+    ): ResponseEntity<*> {
+            val authUser =
+                requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+            val res = constructionService.getConstructionsOfUser(authUser.user.id)
+            return when (res) {
+                is Success ->
+                    ResponseEntity.status(200)
+                        .body(
+                            ListOfConstructionsOutputModel(
+                                res.value.map {
+                                    val fotoString = if (it.foto != null) utils.byteArrayToBase64(it.foto) else null
+                                    ConstructionOutputModel(
+                                        it.oid,
+                                        it.nome,
+                                        it.localizacao,
+                                        it.descricao,
+                                        it.data_inicio,
+                                        it.data_fim,
+                                        fotoString,
+                                        it.status
+                                    )
+                                }
+                            )
+                        )
+                is Failure ->
+                    when (res.value) {
+                        ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
+                        ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
+                        ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
+                        ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noAccessToConstruction)
+                        ConstructionInfoError.InvalidRegister -> TODO()
+                        ConstructionInfoError.NoPermission -> TODO()
+                        ConstructionInfoError.AlreadyInConstruction -> TODO()
+                        ConstructionInfoError.ConstructionSuspended -> TODO()
+                    }
+            }
+    }
+
     @PostMapping("")
     fun createConstruction(
         @RequestBody input: ConstructionInputModel,
@@ -284,7 +334,7 @@ class ConstructionsController(
                 ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
                 ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                 ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
-                ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
+                ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noAccessToConstruction)
                 ConstructionInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                 ConstructionInfoError.AlreadyInConstruction -> TODO()

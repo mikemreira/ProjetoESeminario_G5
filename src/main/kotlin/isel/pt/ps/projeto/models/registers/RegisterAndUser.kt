@@ -9,5 +9,5 @@ data class RegisterAndUser(
     val uid: Int,
     val startTime: LocalDateTime,
     val endTime: LocalDateTime?,
-    val status: String
+    val status: String,
 )

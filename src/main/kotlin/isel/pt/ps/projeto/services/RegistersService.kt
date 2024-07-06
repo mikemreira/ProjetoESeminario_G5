@@ -1,5 +1,6 @@
 package isel.pt.ps.projeto.services
 
+import isel.pt.ps.projeto.models.registers.ConstructionStatusAndUserRegisters
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterOutputModel
 import isel.pt.ps.projeto.repository.ConstructionRepository
@@ -22,6 +23,7 @@ sealed class RegistersInfoError {
 }
 typealias RegistersInfoResult = Either<RegistersInfoError, List<RegisterOutputModel>>
 typealias ListOfUsersRegistersInfoResult = Either<RegistersInfoError, List<RegisterAndUser>>
+typealias ListOfUsersRegistersAndConstructionStatusInfoResult = Either<RegistersInfoError, ConstructionStatusAndUserRegisters>
 typealias EntryRegisterResult = Either<RegistersInfoError, Boolean>
 typealias AcceptOrDenyRegisterResult = Either<RegistersInfoError, Boolean>
 
@@ -72,7 +74,7 @@ class RegistersService(
         }
     }
 
-    fun getRegistersFromUsersInConstruction(userId: Int, oid: Int, page: Int): ListOfUsersRegistersInfoResult {
+    fun getRegistersFromUsersInConstruction(userId: Int, oid: Int, page: Int): ListOfUsersRegistersAndConstructionStatusInfoResult {
         val construction = constructionRepository.getConstruction(oid)
             ?: return failure(RegistersInfoError.NoConstruction)
 
@@ -86,8 +88,8 @@ class RegistersService(
             pg = 1
 
         val registers = registersRepository.getUsersRegistersFromConstruction(oid, pg)
-
-        return success(registers)
+        val res = ConstructionStatusAndUserRegisters(constructionStatus = construction.status, registers = registers)
+        return success(res)
     }
 
     fun getRegistersFromUserInConstruction(authId:Int, userId: Int, oid: Int, page: Int, me: Boolean): ListOfUsersRegistersInfoResult {

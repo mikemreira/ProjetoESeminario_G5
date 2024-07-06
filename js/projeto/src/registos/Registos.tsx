@@ -117,7 +117,7 @@ export default function Registos () {
     const table = useMaterialReactTable({
         columns,
         data: registos,
-        enableRowSelection: true,
+        enableRowSelection: false,
         initialState: {
             pagination: { pageSize: 5, pageIndex: 0 },
             showGlobalFilter: true,

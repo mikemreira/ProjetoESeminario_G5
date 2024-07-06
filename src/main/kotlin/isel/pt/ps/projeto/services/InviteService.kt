@@ -27,6 +27,7 @@ typealias ListOfInvitesInfoResult = Either<InviteInfoError, List<ConstructionAnd
 class InviteService(
     private val constructionsRepository: ConstructionsRepository,
     private val usersRepository: UsersRepository,
+    private val emailSenderService: EmailSenderService,
     private val inviteRepository: InviteRepository
 ) {
 
@@ -47,9 +48,8 @@ class InviteService(
         if (checkPresence)
             return failure(InviteInfoError.AlreadyInConstruction)
 
-        // TODO(SEND MAIL)
-
         val res = inviteRepository.inviteToConstruction(user.id, oid, invite.email, invite.function, invite.role)
+        emailSenderService.sendEmail(invite.email, "Convite para obra ${construction.nome}", "http://localhost:5173/convites")
         return success(res)
     }
 

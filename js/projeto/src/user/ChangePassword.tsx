@@ -38,7 +38,7 @@ export default function ChangePassword() {
                 "Content-type": "application/json",
                 "Authorization": `Bearer ${cookies.token}`,
             },
-            body: JSON.stringify({ password: values.password })
+            body: JSON.stringify(values)
         }).then(res => {
             setSubmitted(true)
             console.log(res)
