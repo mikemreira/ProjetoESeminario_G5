@@ -50,17 +50,22 @@ class ConstructionsController(
                 val result = res.value
                 ResponseEntity.status(200)
                     .body(
-                        ConstructionAndRoleOutputModel(
-                            result.construction.oid,
-                            result.construction.nome,
-                            result.construction.localizacao,
-                            result.construction.descricao,
-                            result.construction.data_inicio,
-                            result.construction.data_fim,
-                            fotoString,
-                            result.construction.status,
-                            result.role.role,
-                            result.role.function
+                        ConstructionOutputModelAndHrefs(
+                            ConstructionAndRoleOutputModel(
+                                result.construction.oid,
+                                result.construction.nome,
+                                result.construction.localizacao,
+                                result.construction.descricao,
+                                result.construction.data_inicio,
+                                result.construction.data_fim,
+                                fotoString,
+                                result.construction.status,
+                                result.role.role,
+                                result.role.function
+                            ),
+                            "/obras/${result.construction.oid}/users",
+                            "/obras/${result.construction.oid}/registos",
+                            "/obras/${result.construction.oid}/edit"
                         )
                     )
             }
