@@ -57,12 +57,11 @@ class InviteRepository() : InviteRepository {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pStatement = it.prepareStatement("insert into Convite (id_utilizador, email, id_obra, funcao, papel) values (?,?,?,?,?)")
+                val pStatement = it.prepareStatement("insert into Convite (id_utilizador, email, id_obra, funcao) values (?,?,?,?)")
                 pStatement.setInt(1, userId)
                 pStatement.setString(2, email)
                 pStatement.setInt(3, oid)
                 pStatement.setString(4, function)
-                pStatement.setString(5, role)
                 pStatement.executeUpdate()
                 true
             }  catch (e: SQLException) {

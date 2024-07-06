@@ -10,10 +10,10 @@ class EmailSenderService(
 ) {
     fun sendEmail(toEmail : String, subject: String, body: String) {
         val message = SimpleMailMessage()
-        message.from = "registosdeacesso@gmail.com"
         message.setTo(toEmail)
         message.text = "Este Link irá redirecioná-lo $body"
         message.subject = subject
+        println(message)
         emailSender.send(message)
 
         println("EMAIL SENT ... ")
