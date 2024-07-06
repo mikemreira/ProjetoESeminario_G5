@@ -1,5 +1,5 @@
 package isel.pt.ps.projeto.controllers
-/*
+
 import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
 import jakarta.annotation.PostConstruct
@@ -17,6 +17,7 @@ class AuthorizationService(
     fun initialize() {
         println("RAN")
         savePolicy("user", "/obras", "GET")
+        savePolicy("user", "/obras", "POST")
         savePolicy("user", "/registos", "GET")
         savePolicy("user", "/registos", "POST")
         savePolicy("user", "/registos", "PUT")
@@ -31,6 +32,9 @@ class AuthorizationService(
                 savePolicy("construction_${construction.oid}_admin", "/obras/${construction.oid}", "POST")
                 savePolicy("construction_${construction.oid}_admin", "/obras/${construction.oid}", "PUT")
                 savePolicy("construction_${construction.oid}_admin", "/obras/${construction.oid}/registos/me", "GET")
+                savePolicy("construction_${construction.oid}_admin", "/obras/${construction.oid}/convite", "POST")
+                savePolicy("construction_${construction.oid}_admin", "/obras/${construction.oid}/users", "GET")
+                savePolicy("construction_${construction.oid}_admin", "/obras/${construction.oid}/registos/pendente", "GET")
                 savePolicy("construction_${construction.oid}_user", "/obras/${construction.oid}", "GET")
                 savePolicy("construction_${construction.oid}_user", "/obras/${construction.oid}/registos/me", "GET")
                 println(constructionsRepository.getUserRoleFromConstruction(user.id, construction.oid)?.role)
@@ -59,5 +63,3 @@ class AuthorizationService(
     private val enforcer = enforcer()
 
 }
-
- */

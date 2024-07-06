@@ -1,5 +1,5 @@
 package isel.pt.ps.projeto.casbin
-/*
+
 import isel.pt.ps.projeto.services.UsersService
 import jakarta.servlet.*
 import jakarta.servlet.http.HttpServletRequest
@@ -67,5 +67,3 @@ class CasbinFilter(private val enforcer: Enforcer, private val usersService: Use
         private val logger: Logger = LoggerFactory.getLogger(CasbinFilter::class.java)
     }
 }
-
- */

@@ -1,5 +1,5 @@
 package isel.pt.ps.projeto.casbin
-/*
+
 import org.casbin.jcasbin.main.Enforcer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -33,7 +33,7 @@ class SecurityConfiguration {
                 authorize("/users/me", authenticated)
                 authorize("/registos", authenticated)
                 authorize("/obras", authenticated)
-                authorize("/obras/*", authenticated)
+                authorize("/obras/**", authenticated)
                 authorize("/convites", authenticated)
                 authorize("/profile", authenticated)
             }
@@ -69,6 +69,3 @@ class SecurityConfiguration {
         return InMemoryUserDetailsManager(user)
     }
 }
-
-
- */

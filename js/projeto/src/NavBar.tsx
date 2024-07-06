@@ -220,9 +220,20 @@ export default function NavBar() {
                     {currentUser ? (
                         <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>
                             <Tooltip title="Notificações">
-                                <IconButton onClick={handleOpenNotificationsMenu} sx={{ p: 1, color: 'white', mr: 1 }}>
+                                <IconButton onClick={handleOpenNotificationsMenu} sx={{
+                                    p: 1,
+                                    color: 'white',
+                                    mr: 1,
+                                    width: '40px', // Set the width to a fixed value
+                                    height: '40px', // Set the height to the same fixed value
+                                    borderRadius: '50%', // Make it a circle
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    position: 'relative'
+                                }}>
                                     <Badge badgeContent={invites.obrasAndRole.length || pendingRegisters.registers.length} color="warning">
-                                        <NotificationsIcon sx={{ color: 'white' }} />
+                                        <NotificationsIcon sx={{ color: 'white',  }} />
                                     </Badge>
                                 </IconButton>
                             </Tooltip>

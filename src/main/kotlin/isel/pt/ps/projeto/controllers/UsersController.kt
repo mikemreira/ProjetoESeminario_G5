@@ -22,7 +22,7 @@ import java.util.*
 class UsersController(
     private val usersService: UsersService,
     private val requestTokenProcessor: RequestTokenProcessor,
-    //private val authorizationService: AuthorizationService,
+    private val authorizationService: AuthorizationService,
     private val utils: UtilsController
 ) {
     private val logger: Logger = LoggerFactory.getLogger(UsersController::class.java)
@@ -98,9 +98,11 @@ class UsersController(
     ): ResponseEntity<*> {
         val res = usersService.signUp(input.name, input.email, input.password)
         return when (res) {
-            is Success ->
+            is Success -> {
+                authorizationService.saveUserRole(input.email)
                 ResponseEntity.status(201)
                     .body(UserSignUpOutputModel("User added"))
+            }
             is Failure ->
                 when (res.value) {
                     UserError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)

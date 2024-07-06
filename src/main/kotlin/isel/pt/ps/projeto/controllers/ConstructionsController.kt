@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController
 class ConstructionsController(
     private val constructionService: ConstructionsService,
     private val requestTokenProcessor: RequestTokenProcessor,
-   // private val authorizationService: AuthorizationService,
+    private val authorizationService: AuthorizationService,
     private val utils: UtilsController
 ) {
     @GetMapping("/{oid}")
@@ -251,9 +251,11 @@ class ConstructionsController(
             input.function
         )
         return when (res) {
-            is Success ->
+            is Success -> {
+                authorizationService.saveConstructionUserRole(authUser.user.email, res.value, "admin")
                 ResponseEntity.status(201)
                     .body(ConstructionIdOutputModel(res.value))
+            }
             is Failure ->
                 when (res.value) {
                     //ConstructionCreationError.ConstructionAlreadyExists -> Problem.response(400, Problem.constructionAlreadyExists)
