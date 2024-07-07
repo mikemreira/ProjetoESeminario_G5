@@ -48,7 +48,7 @@ class InviteController(
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        return when(val res = inviteService.invited(authUser.user.id)) {
+        return when(val res = inviteService.invited(authUser.user.email)) {
             is Success -> ResponseEntity.status(201)
                 .body(
                     ListOfConstructionAndRoleOutputModel(
@@ -87,7 +87,7 @@ class InviteController(
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
 
-        val res = inviteService.acceptOrDeny(authUser.user.id, input.oid, input.response)
+        val res = inviteService.acceptOrDeny(authUser.user.email, input.oid, input.response)
         return when(res) {
             is Success -> ResponseEntity.status(201)
                 .body("O Convite foi ${input.response}")

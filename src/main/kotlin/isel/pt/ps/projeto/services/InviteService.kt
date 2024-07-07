@@ -42,24 +42,29 @@ class InviteService(
             return failure(InviteInfoError.NoPermission)
 
         val user = usersRepository.getUserByEmail(invite.email)
-            ?: return failure(InviteInfoError.NoUserWithThatEmail)
 
         val checkPresence = constructionsRepository.isUserAssociatedWithConstructionByEmail(oid, invite.email)
         if (checkPresence)
             return failure(InviteInfoError.AlreadyInConstruction)
 
-        val res = inviteRepository.inviteToConstruction(user.id, oid, invite.email, invite.function, invite.role)
-        emailSenderService.sendEmail(invite.email, "Convite para obra ${construction.nome}", "http://localhost:5173/convites")
+        val res = inviteRepository.inviteToConstruction(oid, invite.email, invite.function, invite.role)
+
+        var msg = "http://localhost:5173/"
+
+        if (user == null)
+            msg += "signup"
+
+        emailSenderService.sendEmail(invite.email, "Convite para obra ${construction.nome}", msg)
         return success(res)
     }
 
-    fun invited(userId: Int): ListOfInvitesInfoResult {
-        val res = inviteRepository.invited(userId)
+    fun invited(email: String): ListOfInvitesInfoResult {
+        val res = inviteRepository.invited(email)
         return success(res)
     }
 
-    fun acceptOrDeny(userId: Int, oid: Int, response: String): InviteInfoResult{
-        val res = inviteRepository.acceptOrDeny(userId, oid, response)
+    fun acceptOrDeny(email: String, oid: Int, response: String): InviteInfoResult{
+        val res = inviteRepository.acceptOrDeny(email, oid, response)
         return success(res)
     }
 }

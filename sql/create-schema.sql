@@ -51,41 +51,46 @@ create table if not exists Registo (
 );
 
 CREATE TABLE if not exists Convite (
-                        id_utilizador INT NOT NULL,
                         email VARCHAR(255) NOT NULL,
                         funcao VARCHAR(255),
                         status VARCHAR(10) NOT NULL DEFAULT 'pending' CHECK (status IN ('rejected', 'pending', 'accepted')),
                         id_obra INT NOT NULL,
                         papel VARCHAR(255) CHECK (papel IN ('admin', 'funcionario')),
-                        PRIMARY KEY (id_utilizador, id_obra),
+                        PRIMARY KEY (email, id_obra),
                         CONSTRAINT fk_obra
                             FOREIGN KEY (id_obra)
-                            REFERENCES Obra(id),
-                        CONSTRAINT fk_utilizador
-                            FOREIGN KEY (id_utilizador)
-                            REFERENCES Utilizador(id)
+                            REFERENCES Obra(id)
 );
 
--- Trigger to delete invites rejected and establish the construction if accepted
+-- Create the trigger function
 CREATE OR REPLACE FUNCTION handle_convite_status_update()
 RETURNS TRIGGER AS $$
+DECLARE
+    user_id int;
 BEGIN
+    -- Check if the status is being updated to 'accepted'
     IF NEW.status = 'accepted' THEN
+        -- Check if a user with the given email exists
+        SELECT id INTO user_id FROM Utilizador WHERE email = NEW.email;
+
         INSERT INTO Papel (id_utilizador, id_obra, papel, funcao)
-        VALUES (NEW.id_utilizador, NEW.id_obra, 'funcionario', NEW.funcao);
-        DELETE FROM Convite WHERE id_utilizador = NEW.id_utilizador AND id_obra = NEW.id_obra;
+        VALUES (user_id, NEW.id_obra, NEW.papel, NEW.funcao);
+
+
+    -- Check if the status is being updated to 'rejected'
     ELSIF NEW.status = 'rejected' THEN
-        DELETE FROM Convite WHERE id_utilizador = NEW.id_utilizador AND id_obra = NEW.id_obra;
+        -- Delete the row from Convite
+        DELETE FROM Convite WHERE email = NEW.email AND id_obra = NEW.id_obra;
     END IF;
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-
+-- Create the trigger
 CREATE TRIGGER convite_status_update_trigger
 AFTER UPDATE ON Convite
 FOR EACH ROW
-WHEN (OLD.status IS DISTINCT FROM NEW.status)
 EXECUTE FUNCTION handle_convite_status_update();
 
 -- Trigger to delete register rejected

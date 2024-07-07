@@ -53,15 +53,15 @@ class InviteRepository() : InviteRepository {
         }
     }
 
-    override fun inviteToConstruction(userId: Int, oid: Int, email: String, function: String, role: String): Boolean {
+    override fun inviteToConstruction(oid: Int, email: String, function: String, role: String): Boolean {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pStatement = it.prepareStatement("insert into Convite (id_utilizador, email, id_obra, funcao) values (?,?,?,?)")
-                pStatement.setInt(1, userId)
-                pStatement.setString(2, email)
-                pStatement.setInt(3, oid)
-                pStatement.setString(4, function)
+                val pStatement = it.prepareStatement("insert into Convite (email, id_obra, funcao, papel) values (?,?,?,?)")
+                pStatement.setString(1, email)
+                pStatement.setInt(2, oid)
+                pStatement.setString(3, function)
+                pStatement.setString(4, role)
                 pStatement.executeUpdate()
                 true
             }  catch (e: SQLException) {
@@ -77,16 +77,17 @@ class InviteRepository() : InviteRepository {
         }
     }
 
-    override fun invited(userId: Int): List<ConstructionAndRole> {
+    override fun invited(email: String): List<ConstructionAndRole> {
         initializeConnection().use {
             it.autoCommit = false
             return try {
                 val pStatement = it.prepareStatement(
                     "select * from Convite c\n" +
                     "inner join Obra o on c.id_obra = o.id\n" +
-                    "where c.id_utilizador = ?"
+                    "where c.email = ?"
                 )
-                pStatement.setInt(1, userId)
+                println(email)
+                pStatement.setString(1, email)
                 val result = pStatement.executeQuery()
                 val list = mutableListOf<ConstructionAndRole>()
                 while (result.next()) {
@@ -104,7 +105,7 @@ class InviteRepository() : InviteRepository {
                                 result.getBytes("foto")
                             ),
                             Role(
-                                "funcionario",
+                                result.getString("papel"),
                                 result.getString("funcao")
                             )
                         )
@@ -120,18 +121,18 @@ class InviteRepository() : InviteRepository {
         }
     }
 
-    override fun acceptOrDeny(userId: Int, oid: Int, response: String): Boolean {
+    override fun acceptOrDeny(email: String, oid: Int, response: String): Boolean {
         initializeConnection().use {
             it.autoCommit = false
             return try {
                 val pStatement = it.prepareStatement(
                     "UPDATE Convite \n" +
                         "SET status = ? \n" +
-                        "WHERE id_utilizador = ? AND id_obra = ?"
+                        "WHERE email = ? AND id_obra = ?"
                 )
                 println(response)
                 pStatement.setString(1, response)
-                pStatement.setInt(2, userId)
+                pStatement.setString(2, email)
                 pStatement.setInt(3, oid)
                 pStatement.executeUpdate()
                 true
