@@ -42,7 +42,7 @@ interface DateObject {
 }
 
 interface Obra {
-    oid: number;
+    oid: number ;
     name: string;
     location: string;
     description: string;
@@ -102,6 +102,10 @@ const func = [
     'Ajudante', 'Apontador', 'Armador de ferro', 'Arvorado', 'Calceteiro', 'Canalisador', 'Carpinteiro', 'Chefe de equipa', 'Condutor Manobrador', 'Diretor de serviços', 'Eletricista', 'Encarregado', 'Escriturário', 'Estucador',  'Ferramenteiro', 'Gruista', 'Impermiabilizador', 'Ladrilhador', 'Marteleiro', 'Montador de andaimes', 'Pedreiro', 'Pintor', 'Serralheiro', 'Servente', 'Soldador', 'Técnico de manutenção', 'Tubista', 'Outro'
 ]
 
+interface states {
+    vale: string
+}
+
 export default function ObrasInfo() {
     const [cookies] = useCookies(["token"]);
     const [obra, setObra] = useState<ObraOutputModel | null>(null);
@@ -111,6 +115,9 @@ export default function ObrasInfo() {
     const [isEditing, setIsEditing] = useState(false);
     const [editedObra, setEditedObra] = useState<ObraOutputModel | null>(null);
     const [tabIndex, setTabIndex] = useState(0);
+    const [registos, setRegistos] = useState<Registo[]>([])
+    const [state, setState] = useState<states | null>(null)
+
 
     useEffect(() => {
         fetch(`/api/obras/${oid}`, {
@@ -136,31 +143,6 @@ export default function ObrasInfo() {
                 console.error("Error fetching obra:", error);
             });
     }, [cookies.token, oid]);
-
-    const handleVisaoGeral = () => {
-        fetch(`/api/obras/${oid}`, {
-            method: "GET",
-            headers: {
-                "Content-type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`,
-            },
-        })
-            .then((res) => {
-                if (res.ok) {
-                    return res.json();
-                } else {
-                    throw new Error('Failed to fetch obra');
-                }
-            })
-            .then((body) => {
-                console.log("Obra fetched:", body);
-                setObra(body);
-                setEditedObra(body);
-            })
-            .catch((error) => {
-                console.error("Error fetching obra:", error);
-            });
-    }
 
     useEffect(() => {
         fetch(`/api/obras/${oid}/registos/pendente`, {
@@ -184,6 +166,29 @@ export default function ObrasInfo() {
         });
     }, [cookies.token, oid]);
 
+    const teste = () => {
+            fetch(`/api/obras/${oid}/registos/me`, {
+                method: "GET",
+                headers: {
+                    "Content-type": "application/json",
+                    "Authorization": `Bearer ${cookies.token}`
+                },
+            }).then((res) => {
+                console.log(oid)
+                console.log(status)
+                setState("registo")
+                if (res.ok) return res.json()
+                else return null
+            }).then((body) => {
+                if (body) {
+                    setRegistos(body.registers)
+                    console.log(JSON.stringify(body))
+                }
+            }).catch(error => {
+                console.error("Error fetching registos: ", error)
+            })
+    }
+
     const handleClickRegistos = () => {
         navigate(`/obras/${oid}/registers`)
     }
@@ -201,11 +206,11 @@ export default function ObrasInfo() {
     }
 
     const handleCancelEdit = () => {
-        setEditedObra(obra?.constructionAndRoleOutputModel)
+        setEditedObra(obra)
         setIsEditing(false)
     }
 
-    const handleBack = () => {
+    const navigateBack = () => {
         navigate("/obras")
     }
 
@@ -322,6 +327,14 @@ export default function ObrasInfo() {
         setTabIndex(newValue);
     };
 
+    const navigateToRegisters = () => {
+        navigate(`/obras/${oid}/registers`)
+    }
+
+    const navigateToMembers = () => {
+        navigate(`/obras/${oid}/funcionarios`)
+    }
+
     if (!obra) {
         return <CircularProgress />;
     }
@@ -330,7 +343,7 @@ export default function ObrasInfo() {
         <Card>
             <CardContent>
                 <Box display="flex" justifyContent="flex-start">
-                    <IconButton onClick={handleBack} title={"Voltar"}>
+                    <IconButton onClick={navigateBack} title={"Voltar"}>
                         <ArrowBackIcon />
                     </IconButton>
                 </Box>
@@ -338,7 +351,10 @@ export default function ObrasInfo() {
                     Informações da Obra
                 </Typography>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-center' }}>
+                        <Typography variant="h4" color={"black"} sx={{ alignSelf: 'flex-start', mb: 2 }}>
+                            {obra.constructionAndRoleOutputModel.name}
+                        </Typography>
                         <Avatar
                             alt={obra.constructionAndRoleOutputModel.name}
                             src={obra.constructionAndRoleOutputModel.foto || "https://t-obra.com/wp-content/uploads/2019/09/graca16.jpg"}
@@ -346,6 +362,7 @@ export default function ObrasInfo() {
                             sx={{
                                 width: "40%",
                                 height: "40%",
+                                mb: 2,
                                 cursor: isEditing ? "pointer" : "default",
                             }}
                             onClick={isEditing ? () => document.getElementById('contained-button-file')?.click() : undefined}
@@ -366,9 +383,9 @@ export default function ObrasInfo() {
                             textColor="primary"
                             orientation="vertical"
                         >
-                            <Tab label="Visão Geral" onClick={handleVisaoGeral}/>
-                            <Tab label="Registos" />
-                            <Tab label="Membros" />
+                            <Tab label="Visão Geral" />
+                            <Tab label="Registos" onClick={navigateToRegisters}/>
+                            <Tab label="Membros" onClick={navigateToMembers}/>
                         </Tabs>
                     </Grid>
                     <Grid item xs={12} md={8}>

@@ -18,7 +18,9 @@ import {
 } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import {useSetAvatar} from "../context/Authn";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
+import IconButton from "@mui/material/IconButton";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 interface UserModel {
     id: number
@@ -34,6 +36,7 @@ export default function ObraFuncionarioInfo() {
     const [user, setUser] = useState<UserModel>()
     const { oid } = useParams<{ oid: string }>();
     const { uid } = useParams<{ uid: string }>();
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetch(`/api/obras/${oid}/user/${uid}`, {
@@ -60,12 +63,21 @@ export default function ObraFuncionarioInfo() {
             })
     }, [cookies.token, user?.foto])
 
+    const navigateBack = () => {
+        navigate(`/obras/${oid}/funcionarios`)
+    }
+
 
     return (
         <div>
             {user && (
                 <Card sx={{ boxShadow: 3 }}>
                     <CardContent>
+                        <Box display="flex" justifyContent="flex-start">
+                            <IconButton onClick={navigateBack} title={"Voltar"}>
+                                <ArrowBackIcon />
+                            </IconButton>
+                        </Box>
                         <Typography variant="h3" gutterBottom>
                             Perfil
                         </Typography>

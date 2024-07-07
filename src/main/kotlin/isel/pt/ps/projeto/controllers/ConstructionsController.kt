@@ -95,7 +95,7 @@ class ConstructionsController(
         return when (res) {
             is Success -> {
                 if (res.value == null)
-                    ResponseEntity.status(204).body("Deleted")
+                    ResponseEntity.status(204).body("deleted")
                 else {
                     val fotoString = if (res.value.foto != null) utils.byteArrayToBase64(res.value.foto) else null
                     ResponseEntity.status(201).body(

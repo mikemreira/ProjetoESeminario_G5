@@ -7,14 +7,15 @@ import {
     useMaterialReactTable, MRT_Row,
 } from 'material-react-table';
 import {
-    Box, CircularProgress,
-    Stack,
+    Avatar,
+    Box, Card, CardContent, CircularProgress, Grid,
+    Stack, Tab,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
-    TableRow,
+    TableRow, Tabs,
     Typography,
 } from '@mui/material';
 import { useEffect, useState } from "react";
@@ -26,6 +27,7 @@ import Button from "@mui/material/Button";
 import AddIcon from "@mui/icons-material/Add";
 import {useLocation, useNavigate, useParams, useSearchParams} from "react-router-dom";
 import RegistoForm from "../registos/RegistoForm";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const columns = [
     {
@@ -72,6 +74,26 @@ interface DateObject {
     value$kotlinx_datetime: string;
 }
 
+interface Obra {
+    oid: number;
+    name: string;
+    location: string;
+    description: string;
+    startDate: DateObject | null;
+    endDate: DateObject | null;
+    status: string;
+    role: string;
+    foto: string | null;
+    function: string;
+}
+
+interface ObraOutputModel {
+    constructionAndRoleOutputModel: Obra
+    usersRoute: string
+    registersRoute: string
+    editRoute: string
+}
+
 interface Registo {
     userName: string;
     oid: number;
@@ -91,6 +113,11 @@ export default function ObraRegistos() {
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const [openForm, setOpenForm] = useState(false);
+    const [tabIndex, setTabIndex] = useState(1);
+    const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+        setTabIndex(newValue);
+    };
+    const [obra, setObra] = useState<ObraOutputModel | null>(null);
 
     useEffect(() => {
         const page = searchParams.get('page') || '0'
@@ -116,6 +143,30 @@ export default function ObraRegistos() {
         })
     }, [cookies.token, open, searchParams])
 
+    useEffect(() => {
+        fetch(`/api/obras/${oid}`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`,
+            },
+        })
+            .then((res) => {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to fetch obra');
+                }
+            })
+            .then((body) => {
+                console.log("Obra fetched:", body);
+                setObra(body);
+            })
+            .catch((error) => {
+                console.error("Error fetching obra:", error);
+            });
+    }, [cookies.token, oid]);
+
     const handleClickOpen = () => {
         setOpen(true);
     };
@@ -132,6 +183,19 @@ export default function ObraRegistos() {
         setOpenForm(false);
     };
 
+    const navigateToVisaoGeral = () => {
+        navigate(`/obras/${oid}`)
+    }
+
+    const navigateToMembers = () => {
+        navigate(`/obras/${oid}/funcionarios`)
+    }
+
+    const navigateBack = () => {
+        navigate("/obras")
+    }
+
+
     const table = useMaterialReactTable({
         columns,
         data: registos,
@@ -147,82 +211,119 @@ export default function ObraRegistos() {
         paginationDisplayMode: 'pages',
     });
 
-    if (loading) return <CircularProgress/>
+    if (loading || !obra) return <CircularProgress />
     else return (
-        <Stack sx={{ m: '2rem 0' }}>
-            <Box
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                }}
-            >
-                <Typography variant="h4" color={"black"}>Registos</Typography>
-                <MRT_GlobalFilterTextField table={table} />
-                    <IconButton onClick={handleClickOpenForm} color="primary" sx={{
-                        bgcolor: 'primary.main',
-                        borderRadius: '40%',
-                        width: '40px',
-                        height: '40px',
-                        '&:hover': {
-                            bgcolor: 'primary.dark',
-                        },
-                    }}>
-                        <AddIcon sx={{ fontSize: 32, color: 'white' }}/>
+        <Card>
+            <CardContent>
+                <Box display="flex" justifyContent="flex-start">
+                    <IconButton onClick={navigateBack} title={"Voltar"}>
+                        <ArrowBackIcon />
                     </IconButton>
-            </Box>
-            <TableContainer sx={{ backgroundColor: '#cccccc',  }}>
-                <Table sx={{ tableLayout: 'fixed' }}>
-                    <TableHead>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => (
-                                    <TableCell align="center" variant="head" key={header.id}>
-                                        {header.isPlaceholder
-                                            ? null
-                                            : flexRender(
-                                                header.column.columnDef.Header ??
-                                                header.column.columnDef.header,
-                                                header.getContext(),
-                                            )}
-                                    </TableCell>
-
-                                ))}
-                                <TableCell/>
-                            </TableRow>
-                        ))}
-                    </TableHead>
-                    <TableBody>
-                        {table.getRowModel().rows.map((row, rowIndex) => (
-                            <TableRow key={row.id} selected={row.getIsSelected()}>
-                                {row.getVisibleCells().map((cell, _columnIndex) => (
-                                    <TableCell align="center" variant="body" key={cell.id}>
-                                        {/* Use MRT's cell renderer that provides better logic than flexRender */}
-                                        <MRT_TableBodyCellValue
-                                            cell={cell}
-                                            table={table}
-                                            staticRowIndex={rowIndex} //just for batch row selection to work
-                                        />
-                                    </TableCell>
-                                ))}
-                                <TableCell>
-                                    <IconButton style={{ color: '#3547a1' }} onClick={() => handleEdit()}>
-                                        <Edit/>
-                                    </IconButton>
-                                    <IconButton style={{ color: '#c24242' }} onClick={() => handleDelete(row.original)}>
-                                        <Delete/>
-                                    </IconButton>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                <MRT_TablePagination table={table} />
-            </Box>
-            <MRT_ToolbarAlertBanner stackAlertBanner table={table} />
-            <RegistoForm open={openForm} onHandleClose={handleCloseForm} onHandleOpen={handleClickOpenForm} />
-        </Stack>
+                </Box>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-center' }}>
+                        <Typography variant="h4" color={"black"} sx={{ alignSelf: 'flex-start', mb: 2 }}>
+                            {obra.constructionAndRoleOutputModel.name}
+                        </Typography>
+                        <Avatar
+                            alt={obra.constructionAndRoleOutputModel.name}
+                            src={obra.constructionAndRoleOutputModel.foto || "https://t-obra.com/wp-content/uploads/2019/09/graca16.jpg"}
+                            variant="rounded"
+                            sx={{
+                                width: "40%",
+                                height: "40%",
+                                mb: 2,
+                            }}
+                        />
+                        <Tabs
+                            value={tabIndex}
+                            onChange={handleTabChange}
+                            indicatorColor="primary"
+                            textColor="primary"
+                            orientation="vertical"
+                        >
+                            <Tab label="Visão Geral" onClick={navigateToVisaoGeral} />
+                            <Tab label="Registos" />
+                            <Tab label="Membros" onClick={navigateToMembers}/>
+                        </Tabs>
+                    </Grid>
+                    <Grid item xs={12} md={8}>
+                        <Stack sx={{ m: '2rem 0' }}>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Typography variant="h4" color={"black"}>Registos</Typography>
+                                <MRT_GlobalFilterTextField table={table} />
+                                <IconButton onClick={handleClickOpenForm} color="primary" sx={{
+                                    bgcolor: 'primary.main',
+                                    borderRadius: '40%',
+                                    width: '40px',
+                                    height: '40px',
+                                    '&:hover': {
+                                        bgcolor: 'primary.dark',
+                                    },
+                                }}>
+                                    <AddIcon sx={{ fontSize: 32, color: 'white' }} />
+                                </IconButton>
+                            </Box>
+                            <TableContainer sx={{ backgroundColor: '#cccccc', }}>
+                                <Table sx={{ tableLayout: 'fixed' }}>
+                                    <TableHead>
+                                        {table.getHeaderGroups().map((headerGroup) => (
+                                            <TableRow key={headerGroup.id}>
+                                                {headerGroup.headers.map((header) => (
+                                                    <TableCell align="center" variant="head" key={header.id}>
+                                                        {header.isPlaceholder
+                                                            ? null
+                                                            : flexRender(
+                                                                header.column.columnDef.Header ??
+                                                                header.column.columnDef.header,
+                                                                header.getContext()
+                                                            )}
+                                                    </TableCell>
+                                                ))}
+                                                <TableCell />
+                                            </TableRow>
+                                        ))}
+                                    </TableHead>
+                                    <TableBody>
+                                        {table.getRowModel().rows.map((row, rowIndex) => (
+                                            <TableRow key={row.id} selected={row.getIsSelected()}>
+                                                {row.getVisibleCells().map((cell) => (
+                                                    <TableCell align="center" variant="body" key={cell.id}>
+                                                        <MRT_TableBodyCellValue
+                                                            cell={cell}
+                                                            table={table}
+                                                            staticRowIndex={rowIndex}
+                                                        />
+                                                    </TableCell>
+                                                ))}
+                                                <TableCell>
+                                                    <IconButton style={{ color: '#3547a1' }} onClick={() => handleEdit()}>
+                                                        <Edit />
+                                                    </IconButton>
+                                                    <IconButton style={{ color: '#c24242' }} onClick={() => handleDelete(row.original)}>
+                                                        <Delete />
+                                                    </IconButton>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                <MRT_TablePagination table={table} />
+                            </Box>
+                            <MRT_ToolbarAlertBanner stackAlertBanner table={table} />
+                            <RegistoForm open={openForm} onHandleClose={handleCloseForm} onHandleOpen={handleClickOpenForm} />
+                        </Stack>
+                    </Grid>
+                </Grid>
+            </CardContent>
+        </Card>
     );
 };
