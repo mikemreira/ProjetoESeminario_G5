@@ -50,24 +50,20 @@ class ConstructionsController(
                 val result = res.value
                 ResponseEntity.status(200)
                     .body(
-                        ConstructionOutputModelAndHrefs(
-                            ConstructionAndRoleOutputModel(
-                                result.construction.oid,
-                                result.construction.nome,
-                                result.construction.localizacao,
-                                result.construction.descricao,
-                                result.construction.data_inicio,
-                                result.construction.data_fim,
-                                fotoString,
-                                result.construction.status,
-                                result.role.role,
-                                result.role.function
-                            ),
-                            "/obras/${result.construction.oid}/users",
-                            "/obras/${result.construction.oid}/registos",
-                            "/obras/${result.construction.oid}/edit"
+                        ConstructionAndRoleOutputModel(
+                            result.construction.oid,
+                            result.construction.nome,
+                            result.construction.localizacao,
+                            result.construction.descricao,
+                            result.construction.data_inicio,
+                            result.construction.data_fim,
+                            fotoString,
+                            result.construction.status,
+                            result.role.role,
+                            result.role.function
                         )
                     )
+
             }
             is Failure ->
                 when (res.value) {

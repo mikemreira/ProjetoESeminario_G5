@@ -168,7 +168,7 @@ export default function NavBar() {
     };
 
     const handleGetPendingRegister = (oid: number) => {
-        navigate(`/obras/${oid}/registers/pending`);
+        navigate(`/obras/${oid}`);
     };
 
     return (

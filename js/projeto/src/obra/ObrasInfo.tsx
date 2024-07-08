@@ -2,7 +2,7 @@ import {ChangeEvent, useEffect, useState} from "react";
 import { useCookies } from "react-cookie";
 import * as React from "react";
 import {useTheme} from "@mui/material/styles";
-import {Navigate, useNavigate, useParams} from "react-router-dom";
+import {Navigate, useNavigate, useParams, useSearchParams} from "react-router-dom";
 import {
     Card,
     CardContent,
@@ -30,8 +30,15 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ObrasVisaoGeralForm from "./Forms/ObrasVisaoGeralForm";
+import ObraRegistosForm from "./Forms/ObraRegistosForm";
+import {useMaterialReactTable} from "material-react-table";
+import ObraFuncionariosForm from "./Forms/ObraFuncionariosForm";
+import ObraRegistosOfAllPendingUsersForm from "./Forms/ObraRegistosOfAllPendingUsersForm";
+import ObraRegistosOfUserForm from "./Forms/ObraRegistosOfUserForm";
+import ObraFuncionarioInfoForm from "./Forms/ObraFuncionarioInfoForm";
 
-interface DateObject {
+export interface DateObject {
     year: number;
     dayOfMonth: number;
     month: string;
@@ -41,7 +48,7 @@ interface DateObject {
     value$kotlinx_datetime: string;
 }
 
-interface Obra {
+export interface Obra {
     oid: number ;
     name: string;
     location: string;
@@ -54,26 +61,22 @@ interface Obra {
     function: string;
 }
 
-interface ObraOutputModel {
-    constructionAndRoleOutputModel: Obra
-    usersRoute: string
-    registersRoute: string
-    editRoute: string
-}
+    interface Registo {
+        id: number;
+        id_utilizador: number;
+        id_obra: number;
+        nome: string;
+        entrada: DateObject;
+        saida: DateObject | null;
+        status: string | null;
+    }
 
-interface Registo {
-    id: number;
-    id_utilizador: number;
-    id_obra: number;
-    nome: string;
-    entrada: DateObject;
-    saida: DateObject | null;
-    status: string | null;
-}
-
-interface RegistosOutputModel {
-    registers: Registo[]
-}
+    export interface RegistosOutputModel {
+        registers: Registo[],
+        meRoute: string,
+        pendingRoute: string,
+        allRoute: string
+    }
 
 const formatDate = (dateObj: DateObject | null | undefined): string => {
     if (!dateObj || !dateObj.value$kotlinx_datetime) {
@@ -102,21 +105,55 @@ const func = [
     'Ajudante', 'Apontador', 'Armador de ferro', 'Arvorado', 'Calceteiro', 'Canalisador', 'Carpinteiro', 'Chefe de equipa', 'Condutor Manobrador', 'Diretor de serviços', 'Eletricista', 'Encarregado', 'Escriturário', 'Estucador',  'Ferramenteiro', 'Gruista', 'Impermiabilizador', 'Ladrilhador', 'Marteleiro', 'Montador de andaimes', 'Pedreiro', 'Pintor', 'Serralheiro', 'Servente', 'Soldador', 'Técnico de manutenção', 'Tubista', 'Outro'
 ]
 
+const columns = [
+    {
+        accessorKey: 'userName',
+        header: 'Nome',
+    },
+    {
+        accessorKey: 'startTime',
+        header: 'Entrada',
+    },
+    {
+        accessorKey: 'endTime',
+        header: 'Saida',
+    },
+    {
+        accessorKey: 'status',
+        header: 'Estado',
+    },
+    {
+        id: 'actions',
+        header: 'Ações'
+    },
+];
+
+export interface UserModel {
+    id: number
+    nome: string
+    email: string
+    morada: string
+    func: string
+    foto: string | null
+}
+
+export interface UserOutputModel {
+    users: UserModel[]
+}
+
 interface states {
-    vale: string
+    value: string
 }
 
 export default function ObrasInfo() {
     const [cookies] = useCookies(["token"]);
-    const [obra, setObra] = useState<ObraOutputModel | null>(null);
+    const [obra, setObra] = useState<Obra>()
     const { oid } = useParams<{ oid: string }>();
     const navigate = useNavigate();
-    const [pendingRegisters, setPendingRegisters] = useState<RegistosOutputModel>({ registers: [] });
     const [isEditing, setIsEditing] = useState(false);
-    const [editedObra, setEditedObra] = useState<ObraOutputModel | null>(null);
+    const [editedObra, setEditedObra] = useState<Obra>();
     const [tabIndex, setTabIndex] = useState(0);
-    const [registos, setRegistos] = useState<Registo[]>([])
-    const [state, setState] = useState<states | null>(null)
+    const [state, setState] = useState<states>({ value: "geral" })
 
 
     useEffect(() => {
@@ -158,7 +195,6 @@ export default function ObrasInfo() {
                 throw new Error('Failed to fetch registos pendentes');
             }
         }).then((body) => {
-            console.log(body);
             setPendingRegisters(body);
 
         }).catch((error) => {
@@ -166,27 +202,29 @@ export default function ObrasInfo() {
         });
     }, [cookies.token, oid]);
 
-    const teste = () => {
-            fetch(`/api/obras/${oid}/registos/me`, {
-                method: "GET",
-                headers: {
-                    "Content-type": "application/json",
-                    "Authorization": `Bearer ${cookies.token}`
-                },
-            }).then((res) => {
-                console.log(oid)
-                console.log(status)
-                setState("registo")
-                if (res.ok) return res.json()
-                else return null
-            }).then((body) => {
-                if (body) {
-                    setRegistos(body.registers)
-                    console.log(JSON.stringify(body))
+    const handleVisaoGeral = () => {
+        fetch(`/api/obras/${oid}`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`,
+            },
+        })
+            .then((res) => {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to fetch obra');
                 }
-            }).catch(error => {
-                console.error("Error fetching registos: ", error)
             })
+            .then((body) => {
+                setObra(body);
+                setEditedObra(body);
+                setState({ value: "geral" })
+            })
+            .catch((error) => {
+                console.error("Error fetching obra:", error);
+            });
     }
 
     const handleClickRegistos = () => {
@@ -230,7 +268,6 @@ export default function ObrasInfo() {
         }))
     }
 
-
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
@@ -250,9 +287,9 @@ export default function ObrasInfo() {
         console.log(isEditing)
         if (editedObra) {
             const editedObraForUpdate = {
-                ...editedObra.constructionAndRoleOutputModel,
-                startDate: editedObra.constructionAndRoleOutputModel.startDate?.value$kotlinx_datetime || null,
-                endDate: editedObra.constructionAndRoleOutputModel.endDate?.value$kotlinx_datetime || null,
+                ...editedObra,
+                startDate: editedObra.startDate?.value$kotlinx_datetime || null,
+                endDate: editedObra.endDate?.value$kotlinx_datetime || null,
             };
             fetch(`/api/obras/${oid}`, {
                 method: "PUT",
@@ -280,8 +317,8 @@ export default function ObrasInfo() {
         if (!obra) return
         const updatedObra = {
             ...obra,
-            startDate: obra.constructionAndRoleOutputModel.startDate?.value$kotlinx_datetime || null,
-            endDate: obra.constructionAndRoleOutputModel.endDate?.value$kotlinx_datetime || null,
+            startDate: obra.startDate?.value$kotlinx_datetime || null,
+            endDate: obra.endDate?.value$kotlinx_datetime || null,
             status: status || "on going",
         };
         fetch(`/api/obras/${oid}`, {
@@ -336,33 +373,331 @@ export default function ObrasInfo() {
         navigate(`/obras/${oid}/funcionarios`)
     }
 
+    /*
+    *  Registers
+     */
+    const [registos, setRegistos] = useState<RegistosOutputModel>({
+        allRoute: "",
+        meRoute: "", pendingRoute: "", registers: [] })
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [openForm, setOpenForm] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    const handleGetRegistersMine = () => {
+        const page = searchParams.get('page') || '0'
+        fetch(`/api/obras/${oid}/registos/me?page=${page}`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`
+            },
+        }).then((res) => {
+            console.log(oid)
+            console.log(status)
+            setState({ value: "registo" })
+            if (res.ok) return res.json()
+            else return null
+        }).then((body) => {
+            if (body) {
+                //console.log("registos: "+ JSON.stringify(body.registers))
+                setRegistos(body)
+                setLoading(false)
+                //console.log(JSON.stringify(body))
+            }
+        }).catch(error => {
+            console.error("Error fetching registos: ", error)
+        })
+    }
+
+    const handleGetRegistersAll = () => {
+        const page = searchParams.get('page') || '0'
+        fetch(`/api/obras/${oid}/registos?page=${page}`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`
+            },
+        }).then((res) => {
+            console.log(oid)
+            console.log(status)
+            setState({ value: "registo" })
+            if (res.ok) return res.json()
+            else return null
+        }).then((body) => {
+            if (body) {
+                //console.log("registos: "+ JSON.stringify(body.registers))
+                console.log(body)
+                setRegistos(body)
+                setLoading(false)
+                //console.log(JSON.stringify(body))
+            }
+        }).catch(error => {
+            console.error("Error fetching registos: ", error)
+        })
+    }
+
+    console.log("registos: " + registos.pendingRoute)
+
+
+    const handleClickOpenForm = () => {
+        setOpenForm(true);
+    };
+
+    const handleCloseForm = () => {
+        setOpenForm(false);
+    };
+
+    const tableRegisters = useMaterialReactTable({
+        columns,
+        data: registos.registers,
+        enableRowSelection: false,
+        initialState: {
+            pagination: { pageSize: 5, pageIndex: 0 },
+            showGlobalFilter: true,
+        },
+        muiPaginationProps: {
+            rowsPerPageOptions: [5, 10, 15],
+            variant: 'outlined',
+        },
+        paginationDisplayMode: 'pages',
+    });
+
+    /*
+     * Pending Registers
+     */
+    const [pendingRegisters, setPendingRegisters] = useState<RegistosOutputModel>({
+        allRoute: "",
+        meRoute: "",
+        pendingRoute: "",
+        registers: [] });
+    const [open, setOpen] = useState(false);
+    const handleGetPendingRegisters = () => {
+        const page = searchParams.get('page') || '0'
+        fetch(`/api/obras/${oid}/registos/pendente?page=${page}`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`
+            },
+        }).then((res) => {
+            setState({ value: "pendente" })
+            if (res.ok) return res.json()
+            else return null
+        }).then((body) => {
+            if (body) {
+                setPendingRegisters(body)
+                setLoading(false)
+                console.log(JSON.stringify(body))
+            }
+        }).catch(error => {
+            console.error("Error fetching registos: ", error)
+        })
+    }
+
+    const handleAcceptOrRejectPendingRegister = (registerId: number, userId: number, response: string) => {
+        fetch(`/api/obras/${oid}/registos`, {
+            method: 'PUT',
+            headers: {
+                'Content-type': 'application/json',
+                'Authorization': `Bearer ${cookies.token}`
+            },
+            body: JSON.stringify({ registerId: registerId, userId: userId, response: response })
+        })
+            .then((res) => {
+                if (res.ok) return res;
+                else return null;
+            })
+            .then((body) => {
+                console.log(body);
+                setPendingRegisters((prevRegistos) => ({
+                    ...prevRegistos,
+                    registers: prevRegistos.registers.map((registo) =>
+                        registo.id === registerId ? { ...registo, status: response } : registo
+                    )
+                }))
+                navigate(`/obras/${oid}`)
+            })
+            .catch(error => {
+                console.error("Error fetching: ", error);
+            });
+    };
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const tablePendingRegisters = useMaterialReactTable({
+        columns,
+        data: pendingRegisters.registers,
+        enableRowSelection: false,
+        initialState: {
+            pagination: { pageSize: 5, pageIndex: 0 },
+            showGlobalFilter: true,
+        },
+        muiPaginationProps: {
+            rowsPerPageOptions: [5, 10, 15],
+            variant: 'outlined',
+        },
+        paginationDisplayMode: 'pages',
+    });
+
+    /*
+     * Registo Funcionario
+     */
+    const [registosFuncionario, setRegistosFuncionario] = useState<RegistosOutputModel>({
+        allRoute: "",
+        meRoute: "",
+        pendingRoute: "",
+        registers: [] })
+    const [username, setUsername] = useState<string>("as")
+
+    const handleGetUserRegisters = (uid: number) => {
+        const page = searchParams.get('page') || '0'
+        fetch(`/api/obras/${oid}/registos/${uid}?page=${page}`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`
+            },
+        }).then((res) => {
+            setState({ value: "registoFuncionario" })
+            if (res.ok) return res.json()
+            else return null
+        }).then((body) => {
+            if (body) {
+                setRegistosFuncionario(body)
+                setLoading(false)
+                setUsername(body.registers[0].userName)
+            }
+        }).catch(error => {
+            console.error("Error fetching registos: ", error)
+        })
+    }
+
+    const tableRegistersFuncionario = useMaterialReactTable({
+        columns,
+        data: registosFuncionario.registers,
+        enableRowSelection: false,
+        initialState: {
+            pagination: { pageSize: 5, pageIndex: 0 },
+            showGlobalFilter: true,
+        },
+        muiPaginationProps: {
+            rowsPerPageOptions: [5, 10, 15],
+            variant: 'outlined',
+        },
+        paginationDisplayMode: 'pages',
+    });
+
+    /*
+    *  Funcionarios
+     */
+    const [users, setUsers] = useState<UserOutputModel>({ users: [] });
+
+    const handleViewAllRecords = () => {
+        navigate(`/obras/${oid}/registers/all`)
+    }
+
+    const handleClickAddFuncionario = () => {
+        navigate(`/obras/${oid}/funcionario/invite`)
+    }
+
+    const handleViewProfile = (uid: number) => {
+        navigate(`/obras/${oid}/funcionarios/${uid}`)
+    }
+
+    const handleViewUserRecords = (uid: number) => {
+        navigate(`/obras/${oid}/registers/${uid}`)
+    }
+
+    const handleGetFuncionarios = () => {
+        fetch(`/api/obras/${oid}/users`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`
+            },
+        }).then((res) => {
+            setState({ value: "funcionarios" })
+            if (res.ok) return res.json()
+            else return null
+        }).then((body) => {
+            if (body) {
+                //console.log(JSON.stringify(body))
+                setUsers(body)
+                setLoading(false)
+                //console.log(users)
+            }
+        }).catch(error => {
+            console.error("Error fetching registos: ", error)
+        })
+    }
+
+    /*
+    * Funcionario Info
+     */
+    const [user, setUser] = useState<UserModel>(
+        {
+            id: 0,
+            nome: "",
+            email: "",
+            morada: "",
+            func: "",
+            foto: ""
+        }
+    )
+
+    const handleGetFuncionarioInfo = (uid: number) => {
+        fetch(`/api/obras/${oid}/user/${uid}`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`,
+            },
+        })
+            .then((res) => {
+                setState({ value: "funcionarioInfo" })
+                if (res.ok) {
+                    return res.json()
+                } else {
+                    return null
+                }
+            })
+            .then((body) => {
+                if (body) {
+                    setUser(body);
+                    console.log(body)
+                    console.log(user)
+                }
+            })
+            .catch((error) => {
+                console.error("Error fetching profile:", error)
+            })
+    }
+
     if (!obra) {
         return <CircularProgress />;
     }
     // @ts-ignore
     return (
-        <Card>
+        <Card  sx={{ minWidth: '133vh', minHeight: '85vh', height: 'auto', margin: 'auto', marginTop: '2rem' }}>
             <CardContent>
                 <Box display="flex" justifyContent="flex-start">
                     <IconButton onClick={navigateBack} title={"Voltar"}>
                         <ArrowBackIcon />
                     </IconButton>
                 </Box>
-                <Typography variant="h4" component="h2" gutterBottom>
-                    Informações da Obra
-                </Typography>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-center' }}>
-                        <Typography variant="h4" color={"black"} sx={{ alignSelf: 'flex-start', mb: 2 }}>
-                            {obra.constructionAndRoleOutputModel.name}
+                    <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-center', borderRight: '1px solid #ccc' }}>
+                        <Typography variant="h4" color={"black"} sx={{ alignSelf: 'flex-center', mb: 2 }}>
+                            {obra.name}
                         </Typography>
                         <Avatar
-                            alt={obra.constructionAndRoleOutputModel.name}
-                            src={obra.constructionAndRoleOutputModel.foto || "https://t-obra.com/wp-content/uploads/2019/09/graca16.jpg"}
+                            alt={obra.name}
+                            src={obra.foto || "https://t-obra.com/wp-content/uploads/2019/09/graca16.jpg"}
                             variant="rounded"
                             sx={{
-                                width: "40%",
-                                height: "40%",
+                                width: "40vh",
+                                height: "40vh",
                                 mb: 2,
                                 cursor: isEditing ? "pointer" : "default",
                             }}
@@ -383,189 +718,79 @@ export default function ObrasInfo() {
                             indicatorColor="primary"
                             textColor="primary"
                             orientation="vertical"
+                            sx={{
+                                border: 'none'
+                            }}
                         >
-                            <Tab label="Visão Geral" />
-                            <Tab label="Registos" onClick={navigateToRegisters}/>
-                            <Tab label="Membros" onClick={navigateToMembers}/>
+                            <Tab label="Visão Geral" onClick={handleVisaoGeral} sx={{ border: 'none'}}/>
+
+                            {obra.role === "admin" && (
+                                <Tab label="Registos" onClick={handleGetRegistersAll} sx={{ border: 'none'}}/>
+                            )}
+                            {obra.role === "admin" && (
+                                <Tab label="Membros" onClick={handleGetFuncionarios} sx={{ border: 'none'}}/>
+                            )}
+                            {obra.role === "funcionario" && (
+                                <Tab label="Registos" onClick={handleGetRegistersMine} sx={{ border: 'none'}}/>
+                            )}
+
                         </Tabs>
                     </Grid>
                     <Grid item xs={12} md={8}>
-                        {obra.constructionAndRoleOutputModel.role === "admin" && !isEditing && (obra.constructionAndRoleOutputModel.status === "on going") && (
-                            <Box display="flex" justifyContent="flex-end" alignItems="center">
-                                <Tooltip title="Registos Pendentes">
-                                    <IconButton color="primary" onClick={handleClickPendingRegisters}>
-                                        <Badge badgeContent={pendingRegisters.registers.length} color="warning">
-                                            <PendingActionsIcon sx={{ color: 'black' }} />
-                                        </Badge>
-                                    </IconButton>
-                                </Tooltip>
-                            </Box>
+                        {state.value === "geral" && (
+                            <ObrasVisaoGeralForm
+                                obra={obra}
+                                editedObra={editedObra}
+                                pendingRegisters={pendingRegisters}
+                                isEditing={isEditing}
+                                handleChange={handleChange}
+                                handleSelectChange={handleSelectChange}
+                                handleFileChange={handleFileChange}
+                                handleClickPendingRegisters={handleGetPendingRegisters}
+                                handleClickEditObra={handleClickEditObra}
+                                handleSuspendOrRecover={handleSuspendOrRecover}
+                                handleSaveObra={handleSaveObra}
+                                handleCancelEdit={handleCancelEdit}
+                            />
                         )}
-                        <List>
-                            <ListItem>
-                                <ListItemText primary="Nome" secondary={
-                                    isEditing ? (
-                                        <TextField
-                                            fullWidth
-                                            name="name"
-                                            value={editedObra?.constructionAndRoleOutputModel.name || ""}
-                                            onChange={handleChange}
-                                        />
-                                    ) : (
-                                        obra.constructionAndRoleOutputModel.name
-                                    )
-                                } primaryTypographyProps={{ style: { color: '#0000FF' } }} />
-                            </ListItem>
-                            <Divider />
-                            <ListItem>
-                                <ListItemText primary="Localização" secondary={
-                                    isEditing ? (
-                                        <TextField
-                                            fullWidth
-                                            name="location"
-                                            value={editedObra?.constructionAndRoleOutputModel.location || ""}
-                                            onChange={handleChange}
-                                        />
-                                    ) : (
-                                        obra.constructionAndRoleOutputModel.location
-                                    )
-                                } primaryTypographyProps={{ style: { color: '#0000FF' } }} />
-                            </ListItem>
-                            <Divider />
-                            <ListItem>
-                                <ListItemText primary="Descrição" secondary={
-                                    isEditing ? (
-                                        <TextField
-                                            fullWidth
-                                            name="description"
-                                            value={editedObra?.constructionAndRoleOutputModel.description || ""}
-                                            onChange={handleChange}
-                                        />
-                                    ) : (
-                                        obra.constructionAndRoleOutputModel.description
-                                    )
-                                } primaryTypographyProps={{ style: { color: '#0000FF' } }} />
-                            </ListItem>
-                            <Divider />
-                            <ListItem>
-                                <ListItemText primary="Data de Início" secondary={
-                                    isEditing ? (
-                                        <TextField
-                                            fullWidth
-                                            name="startDate"
-                                            type={"date"}
-                                            value={formatDate(editedObra?.constructionAndRoleOutputModel.startDate)|| ""}
-                                            onChange={handleChange}
-                                        />
-                                    ) : (
-                                        formatDate(obra.constructionAndRoleOutputModel.startDate)
-                                    )
-                                } primaryTypographyProps={{ style: { color: '#0000FF' } }}/>
-                            </ListItem>
-                            <Divider />
-                            <ListItem>
-                                <ListItemText primary="Data de Fim" secondary={
-                                    isEditing ? (
-                                        <TextField
-                                            fullWidth
-                                            name="endDate"
-                                            type={"date"}
-                                            value={formatDate(editedObra?.constructionAndRoleOutputModel.endDate) || ""}
-                                            onChange={handleChange}
-                                        />
-                                    ) : (
-                                        formatDate(obra.constructionAndRoleOutputModel.endDate)
-                                    )
-                                } primaryTypographyProps={{ style: { color: '#0000FF' } }}/>
-                            </ListItem>
-                            <Divider />
-                            <ListItem>
-                                <ListItemText primary="Estado" secondary={
-                                        obra.constructionAndRoleOutputModel.status
-                                } primaryTypographyProps={{ style: { color: '#0000FF' } }}/>
-                            </ListItem>
-                            <Divider />
-                            <ListItem>
-                                <ListItemText primary="Função" secondary={
-                                    isEditing ? (
-                                        <>
-                                            <Select
-                                                labelId="function-label"
-                                                id="function"
-                                                name="function"
-                                                value={editedObra?.constructionAndRoleOutputModel.function || ""}
-                                                onChange={handleSelectChange}
-                                                required
-                                                fullWidth
-                                            >
-                                                {func.map((role, index) => (
-                                                    <MenuItem key={index} value={role}>
-                                                        {role}
-                                                    </MenuItem>
-                                                ))}
-                                            </Select>
-                                        </>
-                                    ) : (
-                                        obra.constructionAndRoleOutputModel.function
-                                    )
-                                } primaryTypographyProps={{ style: { color: '#0000FF' } }}/>
-                            </ListItem>
-                        </List>
-                        <Box mt={2}>
-                            {!isEditing && (
-                                <>
-                                    <Button variant="contained" color="primary" onClick={handleClickRegistos}>
-                                        Registos
-                                    </Button>
-                                    {obra.constructionAndRoleOutputModel.role === "admin" && (
-                                        <Button variant="contained" color="primary" sx={{ ml: 2 }} onClick={handleClickFuncionarios}>
-                                            Membros
-                                        </Button>
-                                    )}
-                                    {obra.constructionAndRoleOutputModel.role === "admin" && obra.constructionAndRoleOutputModel.status === "on going" && (
-                                        <>
-                                            <IconButton variant="contained" color="primary" sx={{ ml: 2 }} onClick={handleClickEditObra} title="Editar">
-                                                <EditIcon />
-                                            </IconButton>
-                                            <IconButton variant="contained" sx={{ ml: 2 }} onClick={handleSuspendObra} title="Suspender">
-                                                <ClearIcon sx={{ color: 'red' }}/>
-                                            </IconButton>
-                                            <IconButton variant="contained" sx={{ ml: 2 }} onClick={handleCompletedObra} title="Terminar" >
-                                                <CheckCircleIcon sx={{ color: 'green'}}/>
-                                            </IconButton>
-                                        </>
-                                    )}
-                                    {obra.constructionAndRoleOutputModel.role === "admin" && (obra.constructionAndRoleOutputModel.status === "on going" || obra.constructionAndRoleOutputModel.status === "completed") && (
-                                        <>
-
-
-                                        </>
-
-                                    )}
-                                    {obra.constructionAndRoleOutputModel.role === "admin" && (obra.constructionAndRoleOutputModel.status === "recoverable") && (
-                                        <>
-                                            <IconButton variant="contained" sx={{ ml: 2 }} onClick={handleRecoverObra} title="Recuperar">
-                                                <ArrowCircleUpIcon sx={{ color: 'green' }}/>
-                                            </IconButton>
-                                            <IconButton variant="contained" sx={{ ml: 2 }} onClick={handleDeleteObra} title="Apagar">
-                                                <DeleteIcon sx={{ color: 'darkred' }}/>
-                                            </IconButton>
-                                        </>
-
-                                    )}
-                                </>
-                            )}
-                            {isEditing && obra.constructionAndRoleOutputModel.role === "admin" && (
-                                <>
-                                    <Button variant="contained" color="primary" onClick={handleSaveObra} sx={{ marginRight: 1 }}>
-                                        Guardar alterações
-                                    </Button>
-                                    <Button variant="contained" color="error" onClick={handleCancelEdit}>
-                                        Cancelar
-                                    </Button>
-                                </>
-                            )}
-                        </Box>
+                        {state.value === "registo" && (
+                            <ObraRegistosForm
+                             handleClickOpenForm={handleClickOpenForm}
+                             handleCloseForm={handleCloseForm}
+                             table={tableRegisters}
+                             openForm={openForm}
+                             registo={registos}
+                             setRegistos={setRegistos}
+                             obra={obra}/>
+                        )}
+                        {state.value === "funcionarios" && obra.role === "admin" && (
+                            <ObraFuncionariosForm
+                                users={users}
+                                handleViewProfile={handleGetFuncionarioInfo}
+                                handleViewUserRecords={handleGetUserRegisters}
+                                handleViewAllRecords={handleViewAllRecords}
+                                handleClickAddFuncionario={handleClickAddFuncionario}
+                            />
+                        )}
+                        {state.value === "pendente" && obra.role === "admin" &&(
+                            <ObraRegistosOfAllPendingUsersForm
+                                table={tablePendingRegisters}
+                                handleClickOpen={handleClickOpen}
+                                handleAcceptOrRejectPendingRegister={handleAcceptOrRejectPendingRegister}
+                            />
+                        )}
+                        {state.value === "registoFuncionario" && obra.role === "admin" && (
+                            <ObraRegistosOfUserForm
+                                table={tableRegistersFuncionario}
+                                handleClickOpen={handleClickOpen}
+                                username={username}
+                            />
+                        )}
+                        {state.value === "funcionarioInfo" && obra.role === "admin" && (
+                            <ObraFuncionarioInfoForm
+                                 user={user}
+                            />
+                        )}
                     </Grid>
                 </Grid>
             </CardContent>

@@ -128,9 +128,11 @@ class RegistersController(
                     },
                     res.value.constructionStatus
                     ,
-                    "/obras/$oid/registos/me"
+                    "/api/obras/$oid/registos/me"
                     ,
-                    "/obras/$oid/registos/pendente"
+                    "/api/obras/$oid/registos/pendente"
+                    ,
+                    "/api/obras/$oid/registos"
                 )
             )
             is Failure -> when (res.value) {

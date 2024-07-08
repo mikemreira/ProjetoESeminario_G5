@@ -81,8 +81,7 @@ export default function InviteToObra() {
             if (res.status === 201) {
                 setValid(true);
                 setSuccess(true);
-                // setRedirect(<Navigate to="/obras" replace={true} />)
-                //setRedirect(<Navigate to="/obras/" state={{ success: true }} replace={true} />);
+                navigate(-1)
             } else {
                 setValid(false);
             }
