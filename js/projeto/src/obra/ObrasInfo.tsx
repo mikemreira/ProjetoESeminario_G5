@@ -246,10 +246,11 @@ export default function ObrasInfo() {
     }
 
     const handleSaveObra = () => {
-        console.log(editedObra)
+        console.log("EDIÇÃO : ", editedObra)
+        console.log(isEditing)
         if (editedObra) {
             const editedObraForUpdate = {
-                ...editedObra,
+                ...editedObra.constructionAndRoleOutputModel,
                 startDate: editedObra.constructionAndRoleOutputModel.startDate?.value$kotlinx_datetime || null,
                 endDate: editedObra.constructionAndRoleOutputModel.endDate?.value$kotlinx_datetime || null,
             };
