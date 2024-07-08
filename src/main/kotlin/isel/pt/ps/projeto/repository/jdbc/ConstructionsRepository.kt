@@ -1,5 +1,6 @@
 package isel.pt.ps.projeto.repository.jdbc
 
+import isel.pt.ps.projeto.services.UtilsServices
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.constructions.ConstructionEditInputModel
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
@@ -18,12 +19,11 @@ import java.sql.Connection
 import java.sql.Date
 import java.sql.SQLException
 import java.sql.Timestamp
-import java.util.*
 
 
 @Component
 class ConstructionsRepository(
-    private val utils: UtlisRepository,
+    private val utils: UtilsServices,
 ) : ConstructionRepository {
     private fun initializeConnection(): Connection {
         val dataSource = PGSimpleDataSource()
@@ -184,7 +184,7 @@ class ConstructionsRepository(
         description: String,
         startDate: LocalDate,
         endDate: LocalDate?,
-        foto: String?,
+        foto: ByteArray?,
         status: String?,
         function: String
     ): Int {
@@ -192,7 +192,6 @@ class ConstructionsRepository(
             it.autoCommit = false
             return try {
                 println("foto: $foto")
-                val fotoBytes = if (foto!=null) utils.base64ToByteArray(foto) else null
                 val generatedColumns = arrayOf("id")
                 val insertStatement = it.prepareStatement(
                     "INSERT INTO Obra (nome, localização, descrição, data_inicio, data_fim, foto)\n" +
@@ -203,7 +202,7 @@ class ConstructionsRepository(
                 insertStatement.setString(3,description)
                 insertStatement.setDate(4,Date.valueOf(startDate.toString()))
                 insertStatement.setDate(5, if (endDate !=null) Date.valueOf(endDate.toString()) else null)
-                insertStatement.setBytes(6, fotoBytes)
+                insertStatement.setBytes(6, foto)
                 insertStatement.executeUpdate()
                 insertStatement.generatedKeys.use { generatedKeys ->
                     if (generatedKeys.next()) {

@@ -5,7 +5,6 @@ import isel.pt.ps.projeto.domain.users.Token
 import isel.pt.ps.projeto.domain.users.UsersDomain
 import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.models.users.User
-import isel.pt.ps.projeto.models.users.UserAndToken
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
 import isel.pt.ps.projeto.utils.Either
 import isel.pt.ps.projeto.utils.failure
@@ -41,6 +40,7 @@ typealias TokenResult = Either<TokenError, TokenExternalInfo>
 class UsersService(
     private val usersRepository: UsersRepository,
     private val usersDomain: UsersDomain,
+    private val utilsService: UtilsServices,
     private val clock: Clock,
     private val utils: UtilsController
 ) {
@@ -121,7 +121,8 @@ class UsersService(
     }
 
     fun editUser(id: Int, nome: String, morada: String?, foto: String?): SimpleUserResult {
-        val res = usersRepository.editUser(id, nome, morada, foto)
+        val fotoBytes = if (foto!=null) utilsService.base64ToByteArray(foto) else null
+        val res = usersRepository.editUser(id, nome, morada, fotoBytes)
         return success(res)
     }
 

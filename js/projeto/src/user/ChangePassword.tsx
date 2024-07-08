@@ -12,7 +12,7 @@ interface UserEditPasswordInputModel {
 }
 
 export default function ChangePassword() {
-    const [values, setValues] = useState<UserEditPasswordInputModel>({password: "" })
+    const [values, setValues] = useState<UserEditPasswordInputModel>({password: null })
     const [cookies] = useCookies(["token"])
     const [submitted, setSubmitted] = useState(false)
     const [valid, setValid] = useState(false)
@@ -38,7 +38,7 @@ export default function ChangePassword() {
                 "Content-type": "application/json",
                 "Authorization": `Bearer ${cookies.token}`,
             },
-            body: JSON.stringify(values)
+            body: values.password
         }).then(res => {
             setSubmitted(true)
             console.log(res)

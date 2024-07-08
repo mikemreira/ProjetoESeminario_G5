@@ -1,5 +1,6 @@
 package isel.pt.ps.projeto.repository.jdbc
 
+import isel.pt.ps.projeto.services.UtilsServices
 import isel.pt.ps.projeto.domain.users.PasswordValidationInfo
 import isel.pt.ps.projeto.domain.users.Token
 import isel.pt.ps.projeto.domain.users.TokenValidationInfo
@@ -20,7 +21,7 @@ const val jdbcDatabaseUrl = "jdbc:postgresql://localhost/postgres?user=postgres&
 
 @Component
 class UsersRepository(
-    private val utils: UtlisRepository
+    private val utils: UtilsServices
 ) : UserRepository {
     private fun initializeConnection(): Connection {
         val dataSource = PGSimpleDataSource()
@@ -354,11 +355,10 @@ class UsersRepository(
         }
     }
 
-    override fun editUser(id: Int, nome: String, morada: String?, foto: String?): SimpleUser {
+    override fun editUser(id: Int, nome: String, morada: String?, foto: ByteArray?): SimpleUser {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val fotoBytes = utils.base64ToByteArray(foto!!)
                 val pStatement = it.prepareStatement(
                     "UPDATE Utilizador\n" +
                         "SET nome = ?,\n" +
@@ -366,14 +366,12 @@ class UsersRepository(
                         "    foto = ?\n" +
                         "WHERE id = ?;\n"
                 )
-                // TODO("MISSING FOTO UPDATE")
                 pStatement.setString(1, nome)
                 pStatement.setString(2, morada)
-                pStatement.setBytes(3, fotoBytes)
+                pStatement.setBytes(3, foto)
                 pStatement.setInt(4, id)
                 pStatement.executeUpdate()
 
-                // TODO("MISSING FOTO IN SELECT")
                 val selectStatement = it.prepareStatement(
                     "SELECT id, nome, email, morada, foto FROM Utilizador WHERE id = ?"
                 )

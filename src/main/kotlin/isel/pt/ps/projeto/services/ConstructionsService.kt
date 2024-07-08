@@ -4,9 +4,7 @@ import isel.pt.ps.projeto.domain.constructions.ConstructionsDomain
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.constructions.ConstructionAndRole
 import isel.pt.ps.projeto.models.constructions.ConstructionEditInputModel
-import isel.pt.ps.projeto.models.constructions.ConstructionInputModel
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
-import isel.pt.ps.projeto.models.registers.RegisterQuery
 import isel.pt.ps.projeto.models.users.SimpleUserAndFunc
 import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
@@ -62,6 +60,7 @@ typealias EmployeeInConstructionResult = Either<ConstructionUserError, SimpleUse
 class ConstructionsService(
     private val constructionsRepository: ConstructionsRepository,
     private val usersRepository: UsersRepository,
+    private val utilsService: UtilsServices,
     private val constructionsDomain: ConstructionsDomain
 ) {
     fun getConstruction(oid: Int): ConstructionInfoResult {
@@ -126,7 +125,8 @@ class ConstructionsService(
         if (!constructionsDomain.checkValidConstruction(name, location, description, startDate)) {
             return failure(ConstructionCreationError.InvalidConstruction)
         }
-        return success(constructionsRepository.createConstruction(userId, name, location, description, startDate, endDate, foto, status, function))
+        val fotoBytes = if (foto!=null) utilsService.resizeAndCompressImageBase64(foto, 800, 600, 0.8f) else null
+        return success(constructionsRepository.createConstruction(userId, name, location, description, startDate, endDate, fotoBytes, status, function))
     }
 
     fun getUserRoleOnConstruction(userId: Int, oid: Int): ConstructionAndRoleResult {

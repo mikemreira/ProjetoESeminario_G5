@@ -53,7 +53,7 @@ interface UserRepository {
         id: Int,
         nome: String,
         morada: String?,
-        foto: String?,
+        foto: ByteArray?,
     ): SimpleUser
 
     fun editPassword(

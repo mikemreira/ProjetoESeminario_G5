@@ -23,7 +23,7 @@ interface ConstructionRepository {
 
     fun getConstructionsOfUser(id: Int, status: String? = null): List<Construction>
 
-    fun createConstruction(userId: Int, name: String, location: String, description: String, startDate: LocalDate, endDate: LocalDate?, foto: String?, status: String?, function: String): Int
+    fun createConstruction(userId: Int, name: String, location: String, description: String, startDate: LocalDate, endDate: LocalDate?, foto: ByteArray?, status: String?, function: String): Int
 
     fun getUserRoleFromConstruction(id: Int, oid: Int): Role?
 
