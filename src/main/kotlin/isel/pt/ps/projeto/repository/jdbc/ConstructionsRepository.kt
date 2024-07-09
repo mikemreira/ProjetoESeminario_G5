@@ -364,8 +364,30 @@ class ConstructionsRepository(
     }
 
     override fun removeConstructionUser(oid: Int, uid: Int): Boolean {
-        TODO("Not yet implemented")
-    }
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val papelStatement = it.prepareStatement(
+                    "delete from papel\n" +
+                    "where id_obra = ? and id_utilizador = ?\n"
+                )
+                papelStatement.setInt(1, oid)
+                papelStatement.setInt(2, uid)
+                papelStatement.executeUpdate()
+                val registosStatement = it.prepareStatement(
+                    "delete from registo\n" +
+                        "where id_obra = ? and id_utilizador = ?\n"
+                )
+                registosStatement.setInt(1, oid)
+                registosStatement.setInt(2, uid)
+                registosStatement.executeUpdate()
+                true
+            }  catch (e: SQLException) {
+                throw e
+            } finally {
+                it.commit()
+            }
+        }    }
 
     override fun inviteToConstruction(oid: Int, email: String): Boolean {
         initializeConnection().use {
