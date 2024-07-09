@@ -25,4 +25,6 @@ export default function LogOut() {
         })
     }, [])
 
+    return null
+
 }

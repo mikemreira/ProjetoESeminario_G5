@@ -363,6 +363,10 @@ class ConstructionsRepository(
         }
     }
 
+    override fun removeConstructionUser(oid: Int, uid: Int): Boolean {
+        TODO("Not yet implemented")
+    }
+
     override fun inviteToConstruction(oid: Int, email: String): Boolean {
         initializeConnection().use {
             it.autoCommit = false

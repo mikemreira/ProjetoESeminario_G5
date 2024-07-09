@@ -1,6 +1,6 @@
 import "./styles.css";
 import { Link, useNavigate } from "react-router-dom";
-import { useAvatar, useCurrentUser } from "./context/Authn.tsx";
+import { useAvatar, useCurrentUser } from "./context/Authn";
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -171,6 +171,7 @@ export default function NavBar() {
         navigate(`/obras/${oid}`);
     };
 
+    // @ts-ignore
     return (
         <AppBar position="fixed">
             <Container maxWidth="xl">

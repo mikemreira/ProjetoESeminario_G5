@@ -49,14 +49,14 @@ export default function InviteToObra() {
         }))
     }
 
-    const handleFunctionChange = (event: ChangeEvent<{ value: unknown }>) => {
+    const handleFunctionChange = (event: { target: { value: string; }; }) => {
         setValues((values) => ({
             ...values,
             function: event.target.value as string
         }))
     }
 
-    const handleRoleChange = (event: ChangeEvent<{ value: unknown }>) => {
+    const handleRoleChange = (event: { target: { value: string; }; }) => {
         setValues((values) => ({
             ...values,
             role: event.target.value as string

@@ -14,6 +14,7 @@ import isel.pt.ps.projeto.utils.Success
 import kotlinx.datetime.toLocalDate
 import kotlinx.datetime.toLocalDateTime
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -117,7 +118,6 @@ class ConstructionsController(
         }
     }
 
-
     @GetMapping("/{oid}/users")
     fun getConstructionsUsers(
         @RequestHeader("Authorization") userToken: String,
@@ -195,6 +195,24 @@ class ConstructionsController(
         }
     }
 
+    @DeleteMapping("/{oid}/user/{uid}")
+    fun removeConstructionUser(
+        @RequestHeader("Authorization") userToken: String,
+        @PathVariable oid: Int,
+        @PathVariable uid: Int,
+    ): ResponseEntity<*> {
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        return when (val res = constructionService.removeConstructionUser(authUser.user.id, oid, uid)) {
+            is Success -> ResponseEntity.status(204).body("deleted")
+            is Failure -> when (res.value) {
+                ConstructionUserError.UserNotFound -> Problem.response(404, Problem.userNotFound)
+                ConstructionUserError.NoPermission -> Problem.response(403, Problem.userNotAdmin)
+            }
+        }
+    }
+
+
     @GetMapping("")
     fun getConstructions(
         @RequestHeader("Authorization") userToken: String,
@@ -236,13 +254,13 @@ class ConstructionsController(
         }
     }
 
-    @GetMapping("/obras/ongoing")
+    @GetMapping("/ongoing")
     fun getContructionsOnGoing(
             @RequestHeader("Authorization") userToken: String
     ): ResponseEntity<*> {
             val authUser =
                 requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-            val res = constructionService.getConstructionsOfUser(authUser.user.id)
+            val res = constructionService.getOnGoingConstructionsOfUser(authUser.user.id)
             return when (res) {
                 is Success ->
                     ResponseEntity.status(200)

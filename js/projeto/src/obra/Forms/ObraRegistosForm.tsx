@@ -88,10 +88,10 @@ export default function ObraRegistosForm({
                     }}
                 >
                     <Typography variant="h4" color={"black"}>Registos</Typography>
-                    <IconButton onClick={handleMenuOpen} color="primary">
-                        <FilterList  icon={<FilterListIcon/>}/>
-                    </IconButton>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <IconButton onClick={handleMenuOpen} color="primary">
+                            <FilterList  icon={<FilterListIcon/>} label={""} title={"Filtro"}/>
+                        </IconButton>
                         <MRT_GlobalFilterTextField table={table} />
                         {obra.role === "admin" && (
                             <Menu
@@ -99,7 +99,6 @@ export default function ObraRegistosForm({
                                 open={isMenuOpen}
                                 onClose={handleMenuClose}
                             >
-
                                 <MenuItem onClick={() => handleFilterSelect(registo.meRoute)}>Meus</MenuItem>
                                 <MenuItem onClick={() => handleFilterSelect(registo.allRoute)}>Todos</MenuItem>
                                 <MenuItem onClick={() => handleFilterSelect(registo.pendingRoute)}>Pendentes</MenuItem>
@@ -118,7 +117,7 @@ export default function ObraRegistosForm({
                         <AddIcon sx={{ fontSize: 32, color: 'white' }} />
                     </IconButton>
                 </Box>
-                <TableContainer sx={{ backgroundColor: '#cccccc',  mt: 2}}>
+                <TableContainer sx={{ backgroundColor: '#cccccc', mt: 2 }}>
                     <Table sx={{ tableLayout: 'fixed' }}>
                         <TableHead>
                             {table.getHeaderGroups().map((headerGroup) => (
@@ -134,7 +133,6 @@ export default function ObraRegistosForm({
                                                 )}
                                         </TableCell>
                                     ))}
-                                    <TableCell />
                                 </TableRow>
                             ))}
                         </TableHead>
@@ -150,14 +148,6 @@ export default function ObraRegistosForm({
                                             />
                                         </TableCell>
                                     ))}
-                                    <TableCell>
-                                        <IconButton style={{ color: '#3547a1' }} >
-                                            <Edit />
-                                        </IconButton>
-                                        <IconButton style={{ color: '#c24242' }} >
-                                            <Delete />
-                                        </IconButton>
-                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

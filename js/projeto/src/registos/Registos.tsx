@@ -31,8 +31,7 @@ const columns = [
     { accessorKey: 'nome_obra', header: 'Nome da obra' },
     { accessorKey: 'entrada', header: 'Entrada' },
     { accessorKey: 'saida', header: 'Saida' },
-    { accessorKey: 'status', header: 'Estado' },
-    { id: 'actions', header: 'Actions' },
+    { accessorKey: 'status', header: 'Estado' }
 ];
 
 const handleEdit = () => { }
@@ -152,27 +151,23 @@ export default function Registos () {
                     <AddIcon sx={{ fontSize: 32, color: 'white' }}/>
                 </IconButton>
             </Box>
-            <TableContainer sx={{ backgroundColor: '#cccccc',  }}>
+            <TableContainer sx={{ backgroundColor: '#cccccc' }}>
                 <Table sx={{ tableLayout: 'fixed' }}>
                     <TableHead>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
                                     <TableCell align="center" variant="head" key={header.id}>
-                                        {header.isPlaceholder ? null : flexRender(
-                                            header.column.columnDef.Header ?? header.column.columnDef.header,
-                                            header.getContext()
-                                        )}
+                                        {header.isPlaceholder ? null : header.column.columnDef.header}
                                     </TableCell>
                                 ))}
-                                <TableCell/>
                             </TableRow>
                         ))}
                     </TableHead>
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={columns.length + 1} align="center">
+                                <TableCell colSpan={columns.length} align="center">
                                     <CircularProgress/>
                                 </TableCell>
                             </TableRow>
@@ -182,7 +177,7 @@ export default function Registos () {
                                     {row.getVisibleCells().map((cell, _columnIndex) => (
                                         <TableCell align="center" variant="body" key={cell.id}>
                                             {cell.column.id === 'nome_obra' ? (
-                                                <Button onClick={() => handleClickOpenObra(row.original.id_obra)}  style={{ textTransform: 'none' }} >
+                                                <Button onClick={() => handleClickOpenObra(row.original.id_obra)} style={{ textTransform: 'none' }}>
                                                     {cell.row.original.nome_obra}
                                                 </Button>
                                             ) : (
@@ -194,20 +189,11 @@ export default function Registos () {
                                             )}
                                         </TableCell>
                                     ))}
-                                    <TableCell>
-                                        <IconButton style={{ color: '#3547a1' }} onClick={handleEdit}>
-                                            <Edit/>
-                                        </IconButton>
-                                        <IconButton style={{ color: '#c24242' }} onClick={() => handleDelete(row.original)}>
-                                            <Delete/>
-                                        </IconButton>
-                                    </TableCell>
                                 </TableRow>
                             ))
                         )}
                     </TableBody>
                 </Table>
-
             </TableContainer>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
             <MRT_TablePagination table={table} />

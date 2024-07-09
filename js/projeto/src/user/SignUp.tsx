@@ -4,6 +4,7 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 // @ts-ignore
 import logo from "../assets/logo-black-transparent.png";
+import signUpIn from "../assets/sign.png";
 
 export default function SignUp() {
   const [values, setValues] = useState({
@@ -65,13 +66,15 @@ export default function SignUp() {
   };
 
   return (
-      <div className="form-container">
-          <img
-              src={logo}
-              alt="Registo de acessos"
-              style={{height: '2.5rem', width: 'auto'}}
-          />
-          <form className="register-form" onSubmit={handleSubmit}>
+      <div className="login-container">
+          <div className="sign-image">
+              <img src={signUpIn} alt="Image" />
+          </div>
+          <div className="login-form">
+              <div className="login-image">
+                  <img src={logo} alt="Logo"/>
+              </div>
+              <form className="register-form" onSubmit={handleSubmit}>
               {submitted && valid && (
                   <Navigate to={"/login"} replace={true}/>
               )}
@@ -127,5 +130,6 @@ export default function SignUp() {
               {submitted && !valid && <Alert severity="error" sx={{m: 1}}>{error}</Alert>}
           </form>
       </div>
+    </div>
   );
 }

@@ -121,11 +121,7 @@ const columns = [
     {
         accessorKey: 'status',
         header: 'Estado',
-    },
-    {
-        id: 'actions',
-        header: 'Ações'
-    },
+    }
 ];
 
 export interface UserModel {
@@ -632,6 +628,24 @@ export default function ObrasInfo() {
         })
     }
 
+    const handleRemoveUser = (uid: number) => {
+        fetch(`/api/obras/${oid}/user/${uid}`, {
+            method: "DELETE",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`
+            },
+        }).then((res) => {
+            if (res.ok) {
+                console.log("User removed")
+            } else {
+                console.error("Failed to remove user")
+            }
+        }).catch((error) => {
+            console.error("Error removing user:", error)
+        })
+    }
+
     /*
     * Funcionario Info
      */
@@ -770,6 +784,7 @@ export default function ObrasInfo() {
                                 handleViewUserRecords={handleGetUserRegisters}
                                 handleViewAllRecords={handleViewAllRecords}
                                 handleClickAddFuncionario={handleClickAddFuncionario}
+                                handleRemoveUser={handleRemoveUser}
                             />
                         )}
                         {state.value === "pendente" && obra.role === "admin" &&(

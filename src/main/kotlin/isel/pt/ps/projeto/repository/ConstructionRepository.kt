@@ -41,4 +41,6 @@ interface ConstructionRepository {
 
     fun editConstruction(oid: Int, inputModel: ConstructionEditInputModel): Construction?
 
+    fun removeConstructionUser(oid: Int, uid: Int): Boolean
+
 }

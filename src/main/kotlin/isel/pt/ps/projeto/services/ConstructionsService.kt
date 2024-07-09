@@ -50,6 +50,7 @@ typealias ConstructionsInfoResult = Either<ConstructionInfoError, List<Construct
 typealias ConstructionEditResult = Either<ConstructionEditError, Construction?>
 
 typealias RegisterInfoResult = Either<ConstructionInfoError, Boolean>
+typealias RemoveUserFromConstructionResult = Either<ConstructionUserError, Boolean>
 
 typealias ListOfRegisterInfoResult = Either<ConstructionInfoError, List<RegisterAndUser>>
 
@@ -109,6 +110,14 @@ class ConstructionsService(
         } else {
             success(construction)
         }
+    }
+
+    fun removeConstructionUser(authId: Int, oid: Int, uid: Int): RemoveUserFromConstructionResult {
+        val role = constructionsRepository.getUserRoleFromConstruction(authId, oid)
+            ?: return failure(ConstructionUserError.NoPermission)
+        if (role.role != "admin") return failure(ConstructionUserError.NoPermission)
+        constructionsRepository.getConstructionUser(oid, uid) ?: return failure(ConstructionUserError.UserNotFound)
+        return success(constructionsRepository.removeConstructionUser(oid, uid))
     }
 
     fun createConstruction(

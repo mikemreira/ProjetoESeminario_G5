@@ -9,7 +9,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import {Box, InputLabel, MenuItem, Select, Typography} from "@mui/material";
 import {useEffect, useState} from "react";
 import {useCookies} from "react-cookie";
-import {useNavigate} from "react-router-dom";
 
 interface RegistoFormProps {
     open: boolean,
@@ -17,13 +16,10 @@ interface RegistoFormProps {
     onHandleClose: () => void;
 }
 
-interface Option {
-
-}
-
 interface ObraOptions {
     oid: number;
     name: string;
+    status: 'completed' | 'pending' | 'rejected';
 }
 
 interface ObrasOptionsOutputModel {
@@ -39,7 +35,7 @@ export default function RegistoForm(props: RegistoFormProps) {
     const [optionalDateTime, setOptionalDateTime] = useState<string>('');
 
     useEffect(() => {
-        fetch("/api/obras", {
+        fetch("/api/obras/ongoing", {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -70,7 +66,6 @@ export default function RegistoForm(props: RegistoFormProps) {
             });
     }, [cookies.token, props.open])
 
-    const navigate = useNavigate();
 
     return (
         <React.Fragment>

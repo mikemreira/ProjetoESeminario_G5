@@ -71,10 +71,10 @@ export default function ObraRegistosOfAllPendingUsersForm({
                                         </TableCell>
                                     ))}
                                     <TableCell>
-                                        <IconButton style={{ color: '#3547a1' }} onClick={() => handleAcceptOrRejectPendingRegister(row.original.id, row.original.uid, "completed")}>
+                                        <IconButton style={{ color: '#3547a1' }} title={"Aceitar"} onClick={() => handleAcceptOrRejectPendingRegister(row.original.id, row.original.uid, "completed")}>
                                             <CheckIcon sx={{ color: 'green' }}/>
                                         </IconButton>
-                                        <IconButton style={{ color: '#c24242' }} onClick={() => handleAcceptOrRejectPendingRegister(row.original.id, row.original.uid, "rejected")}>
+                                        <IconButton style={{ color: '#c24242' }} title={"Rejeitar"} onClick={() => handleAcceptOrRejectPendingRegister(row.original.id, row.original.uid, "rejected")}>
                                             <CloseIcon sx={{ color: 'red' }}/>
                                         </IconButton>
                                     </TableCell>

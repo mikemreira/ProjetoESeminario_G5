@@ -1,25 +1,25 @@
 import { Outlet, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from 'react-router-dom'
-import SignUp from './user/SignUp.tsx'
+import SignUp from './user/SignUp'
 import Home from './Home'
-import LogIn from './user/LogIn.tsx'
+import LogIn from './user/LogIn'
 import './App.css'
-import Success from './user/Success.jsx'
-import NavBar from './NavBar.tsx'
-import Obras from "./obra/Obras.tsx"
-import LogOut from "./user/LogOut.tsx"
-import {AuthnContainer} from "./context/Authn.tsx";
-import Profile from "./user/Profile.tsx";
-import AddObra from "./obra/AddObra.tsx";
-import ObrasInfo from "./obra/ObrasInfo.tsx";
-import Registos from "./registos/Registos.tsx";
-import ObraRegistos from "./obra/ObraRegistos.tsx";
-import ObraFuncionarios from "./obra/ObraFuncionarios.tsx";
-import ObraFuncionarioInfo from "./obra/ObraFuncionarioInfo.tsx";
-import ObraRegistosOfUser from "./obra/ObraRegistosOfUser.tsx";
-import ObraRegistosOfAllUsers from "./obra/ObraRegistosOfAllUsers.tsx";
-import InviteToObra from "./convite/InviteToObra.tsx";
-import ObraRegistosOfAllPendingUsers from "./obra/ObraRegistosOfAllPendingUsers.tsx";
-import ChangePassword from "./user/ChangePassword.tsx";
+import Success from './user/Success'
+import NavBar from './NavBar'
+import Obras from "./obra/Obras"
+import LogOut from "./user/LogOut"
+import {AuthnContainer} from "./context/Authn";
+import Profile from "./user/Profile";
+import AddObra from "./obra/AddObra";
+import ObrasInfo from "./obra/ObrasInfo";
+import Registos from "./registos/Registos";
+import ObraRegistos from "./obra/ObraRegistos";
+import ObraFuncionarios from "./obra/ObraFuncionarios";
+import ObraFuncionarioInfo from "./obra/ObraFuncionarioInfo";
+import ObraRegistosOfUser from "./obra/ObraRegistosOfUser";
+import ObraRegistosOfAllUsers from "./obra/ObraRegistosOfAllUsers";
+import InviteToObra from "./convite/InviteToObra";
+import ObraRegistosOfAllPendingUsers from "./obra/ObraRegistosOfAllPendingUsers";
+import ChangePassword from "./user/ChangePassword";
 
 const AppLayout = () => {
   return (

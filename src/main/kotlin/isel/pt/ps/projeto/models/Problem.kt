@@ -56,5 +56,7 @@ class Problem(
         val invalidConstructionInput = Problem("Invalid construction input")
 
         val constructionSuspended = Problem("Construction is suspended")
+
+        val userNotAdmin = Problem("User does not have permission")
     }
 }
