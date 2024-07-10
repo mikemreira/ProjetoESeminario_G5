@@ -8,5 +8,4 @@ data class User(
     val email: String,
     val passwordValidation: PasswordValidationInfo,
     val morada: String?,
-    val foto: ByteArray?
 )

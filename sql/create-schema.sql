@@ -1,8 +1,10 @@
 DROP TABLE IF EXISTS Registo;
 DROP TABLE IF EXISTS Convite;
 DROP TABLE IF EXISTS Papel;
+DROP TABLE IF EXISTS ObraImagem;
 DROP TABLE IF EXISTS Obra;
 DROP TABLE IF EXISTS Token;
+DROP TABLE IF EXISTS UtilizadorImagem;
 DROP TABLE IF EXISTS Utilizador;
 
 create table if not exists Utilizador (
@@ -10,8 +12,15 @@ create table if not exists Utilizador (
                             password varchar(64),
                             nome varchar(64),
                             email varchar(64) unique,
-                            morada varchar(64) default null,
-                            foto bytea default null
+                            morada varchar(64) default null
+);
+
+Create table if not exists UtilizadorImagem (
+	id_utilizador int references Utilizador(id),
+	thumbnail bytea default null,
+	infoList bytea default null,
+	icon bytea default null,
+	PRIMARY KEY (id_utilizador)
 );
 
 create table if not exists Token(
@@ -28,8 +37,14 @@ create table if not exists Obra (
                       descrição varchar(260),
                       data_inicio date not null default current_date,
                       data_fim date default null,
-                      foto bytea default null,
                       status VARCHAR(64) check (status in ('deleted', 'recoverable', 'on going', 'completed')) default 'on going'
+);
+
+Create table if not exists ObraImagem(
+	id_obra int references Obra(id),
+	thumbnail bytea default null,
+	infoList bytea default null,
+	PRIMARY KEY (id_obra)
 );
 
 create table if not exists Papel (
@@ -75,6 +90,7 @@ BEGIN
 
         INSERT INTO Papel (id_utilizador, id_obra, papel, funcao)
         VALUES (user_id, NEW.id_obra, NEW.papel, NEW.funcao);
+		DELETE FROM Convite WHERE email = NEW.email AND id_obra = NEW.id_obra;
 
 
     -- Check if the status is being updated to 'rejected'
@@ -126,3 +142,33 @@ AFTER UPDATE OF status ON Obra
 FOR EACH ROW
 WHEN (NEW.status = 'deleted')
 EXECUTE FUNCTION delete_related_records();
+
+-- Create the trigger function
+CREATE OR REPLACE FUNCTION create_utilizador_imagem()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO UtilizadorImagem (id_utilizador) VALUES (NEW.id);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create the trigger
+CREATE TRIGGER after_utilizador_insert
+AFTER INSERT ON Utilizador
+FOR EACH ROW
+EXECUTE FUNCTION create_utilizador_imagem();
+
+-- Create the trigger function
+CREATE OR REPLACE FUNCTION create_obra_imagem()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO ObraImagem (id_obra) VALUES (NEW.id);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create the trigger
+CREATE TRIGGER after_obra_insert
+AFTER INSERT ON Obra
+FOR EACH ROW
+EXECUTE FUNCTION create_obra_imagem();

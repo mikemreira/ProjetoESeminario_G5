@@ -3,10 +3,8 @@ package isel.pt.ps.projeto.controllers
 import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
 import isel.pt.ps.projeto.models.Problem
 import isel.pt.ps.projeto.models.constructions.*
-import isel.pt.ps.projeto.models.registers.RegisterQuery
 import isel.pt.ps.projeto.models.registers.RegisterInputModelWeb
 import isel.pt.ps.projeto.models.users.ListOfSimpleUserAndFunc
-import isel.pt.ps.projeto.models.users.SimpleUserAndFunc
 import isel.pt.ps.projeto.models.users.SimpleUserAndFuncOutput
 import isel.pt.ps.projeto.services.*
 import isel.pt.ps.projeto.utils.Failure
@@ -14,16 +12,7 @@ import isel.pt.ps.projeto.utils.Success
 import kotlinx.datetime.toLocalDate
 import kotlinx.datetime.toLocalDateTime
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/obras")
@@ -103,7 +92,8 @@ class ConstructionsController(
                             res.value.descricao,
                             res.value.data_inicio,
                             res.value.data_fim,
-                            fotoString,
+                            "obras/$oid/imagem?type=thumbnail",
+                            null,
                             res.value.status
                         )
                     )
@@ -115,6 +105,25 @@ class ConstructionsController(
                 ConstructionEditError.InvalidInput -> Problem.response(400, Problem.invalidConstructionInput)
 
             }
+        }
+    }
+
+    @GetMapping("/{oid}/imagem")
+    fun getConstructionImage(
+        @RequestHeader("Authorization") token : String,
+        @RequestParam type: String,
+        @PathVariable oid: Int
+    ): ResponseEntity<*> {
+        requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
+        val res = constructionService.getImages(oid, type)
+        return when (res) {
+            is Success ->
+                ResponseEntity.status(201)
+                    .body(res.value)
+            is Failure ->
+                when (res.value) {
+                    ImageError.InvalidQuery -> Problem.response(400, Problem.invalidQuery)
+                }
         }
     }
 
@@ -137,14 +146,14 @@ class ConstructionsController(
                     .body(
                         ListOfSimpleUserAndFunc(
                             res.value.map {
-                                val fotoString = if (it.foto != null) utils.byteArrayToBase64(it.foto) else null
                                 SimpleUserAndFuncOutput(
                                     it.id,
                                     it.nome,
                                     it.email,
                                     it.morada,
                                     it.func,
-                                    fotoString
+                                    null,
+                                    "api/users/${it.id}/image?type=infoList"
                                 )
                             }
                         )
@@ -175,7 +184,6 @@ class ConstructionsController(
         val res = constructionService.getConstructionUser(authUser.user.id, oid, uid)
         return when (res) {
             is Success -> {
-                val fotoString = if (res.value.foto != null) utils.byteArrayToBase64(res.value.foto) else null
                 ResponseEntity.status(200)
                     .body(
                         SimpleUserAndFuncOutput(
@@ -184,7 +192,8 @@ class ConstructionsController(
                             res.value.email,
                             res.value.morada,
                             res.value.func,
-                            fotoString
+                            "api/users/$uid/image?type=thumbnail",
+                            null
                         )
                     )
             }
@@ -212,7 +221,6 @@ class ConstructionsController(
         }
     }
 
-
     @GetMapping("")
     fun getConstructions(
         @RequestHeader("Authorization") userToken: String,
@@ -226,7 +234,6 @@ class ConstructionsController(
                     .body(
                         ListOfConstructionsOutputModel(
                             res.value.map {
-                                val fotoString = if (it.foto != null) utils.byteArrayToBase64(it.foto) else null
                                 ConstructionOutputModel(
                                     it.oid,
                                     it.nome,
@@ -234,7 +241,8 @@ class ConstructionsController(
                                     it.descricao,
                                     it.data_inicio,
                                     it.data_fim,
-                                    fotoString,
+                                    null,
+                                    "obras/${it.oid}/imagem?type=infoList",
                                     it.status
                                 )
                             }
@@ -267,7 +275,6 @@ class ConstructionsController(
                         .body(
                             ListOfConstructionsOutputModel(
                                 res.value.map {
-                                    val fotoString = if (it.foto != null) utils.byteArrayToBase64(it.foto) else null
                                     ConstructionOutputModel(
                                         it.oid,
                                         it.nome,
@@ -275,7 +282,8 @@ class ConstructionsController(
                                         it.descricao,
                                         it.data_inicio,
                                         it.data_fim,
-                                        fotoString,
+                                        null,
+                                        "obras/${it.oid}/imagem?type=thumbnail",
                                         it.status
                                     )
                                 }

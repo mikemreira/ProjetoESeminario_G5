@@ -58,5 +58,7 @@ class Problem(
         val constructionSuspended = Problem("Construction is suspended")
 
         val userNotAdmin = Problem("User does not have permission")
+
+        val invalidQuery = Problem("Query has invalid value")
     }
 }

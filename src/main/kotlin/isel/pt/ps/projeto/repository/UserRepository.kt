@@ -6,6 +6,7 @@ import isel.pt.ps.projeto.domain.users.TokenValidationInfo
 import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.models.users.UserAndToken
+import isel.pt.ps.projeto.models.users.UserImage
 import kotlinx.datetime.Instant
 
 interface UserRepository {
@@ -53,7 +54,7 @@ interface UserRepository {
         id: Int,
         nome: String,
         morada: String?,
-        foto: ByteArray?,
+        foto: UserImage?,
     ): SimpleUser
 
     fun editPassword(
@@ -65,4 +66,6 @@ interface UserRepository {
      * Delete
      */
     fun deleteUser(id: Int): User
+
+    fun getImage(userId: Int, typeOfImage: String): String?
 }

@@ -6,5 +6,6 @@ data class SimpleUserAndFuncOutput(
     val email: String,
     val morada: String?,
     val func: String?,
-    val foto: String?
+    val thumbnailHref: String?,
+    val infoListHref: String?
 )

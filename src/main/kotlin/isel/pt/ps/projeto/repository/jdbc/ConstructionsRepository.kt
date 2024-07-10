@@ -3,6 +3,7 @@ package isel.pt.ps.projeto.repository.jdbc
 import isel.pt.ps.projeto.services.UtilsServices
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.constructions.ConstructionEditInputModel
+import isel.pt.ps.projeto.models.constructions.ConstructionImage
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterQuery
 import isel.pt.ps.projeto.models.role.Role
@@ -81,17 +82,40 @@ class ConstructionsRepository(
                 val result = pStatement.executeQuery()
                 val list = mutableListOf<SimpleUserAndFunc>()
                 while (result.next()) {
+                    val uid = result.getInt("id")
                     list.add(SimpleUserAndFunc(
-                        result.getInt("id"),
+                        uid,
                         result.getString("nome"),
                         result.getString("email"),
                         result.getString("morada"),
                         result.getString("funcao"),
-                        result.getBytes("foto")
                     ))
                 }
                 list
             } catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun getImage(oid: Int, typeOfImage: String): String? {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement(
+                    "Select * \n" +
+                        "From ObraImagem\n" +
+                        "Where id_obra = ? "
+                )
+
+                pStatement.setInt(1, oid)
+                val result = pStatement.executeQuery()
+                result.next()
+                result.getString(typeOfImage)
+            } catch (e: SQLException) {
                 it.rollback()
                 throw e
             } finally {
@@ -106,7 +130,7 @@ class ConstructionsRepository(
             return try {
                 val pStatement =
                     it.prepareStatement(
-                        "select ut.id, ut.nome, ut.email, ut.morada, ut.foto, pa.funcao from utilizador ut\n" +
+                        "select ut.id, ut.nome, ut.email, ut.morada, pa.funcao from utilizador ut\n" +
                             "inner join papel pa on pa.id_utilizador = ut.id\n" +
                             "inner join obra o on o.id = pa.id_obra\n" +
                             "where o.id = ? and ut.id = ?",
@@ -123,7 +147,6 @@ class ConstructionsRepository(
                         result.getString("email"),
                         result.getString("morada"),
                         result.getString("funcao"),
-                        result.getBytes("foto")
                     )
             } catch (e: Exception) {
                 it.rollback()
@@ -184,7 +207,7 @@ class ConstructionsRepository(
         description: String,
         startDate: LocalDate,
         endDate: LocalDate?,
-        foto: ByteArray?,
+        foto: ConstructionImage?,
         status: String?,
         function: String
     ): Int {
@@ -194,15 +217,14 @@ class ConstructionsRepository(
                 println("foto: $foto")
                 val generatedColumns = arrayOf("id")
                 val insertStatement = it.prepareStatement(
-                    "INSERT INTO Obra (nome, localização, descrição, data_inicio, data_fim, foto)\n" +
-                    "VALUES (?,?,?,?,?,?) ", generatedColumns
+                    "INSERT INTO Obra (nome, localização, descrição, data_inicio, data_fim)\n" +
+                    "VALUES (?,?,?,?,?) ", generatedColumns
                 )
                 insertStatement.setString(1,name)
                 insertStatement.setString(2,location)
                 insertStatement.setString(3,description)
                 insertStatement.setDate(4,Date.valueOf(startDate.toString()))
                 insertStatement.setDate(5, if (endDate !=null) Date.valueOf(endDate.toString()) else null)
-                insertStatement.setBytes(6, foto)
                 insertStatement.executeUpdate()
                 insertStatement.generatedKeys.use { generatedKeys ->
                     if (generatedKeys.next()) {
@@ -215,6 +237,15 @@ class ConstructionsRepository(
                         insertStatementRole.setInt(2, oid)
                         insertStatementRole.setString(3, function)
                         insertStatementRole.executeUpdate()
+                        if (foto != null) {
+                            val imagemStatement = it.prepareStatement(
+                                "INSERT INTO ObraImagem values (?,?)\n" +
+                                    "Values (?,?)"
+                            )
+                            imagemStatement.setBytes(1, foto.thumbnail)
+                            imagemStatement.setBytes(2, foto.infoList)
+                            imagemStatement.executeUpdate()
+                        }
                         oid
                     } else {
                         throw SQLException("Creating Obra failed, no ID obtained.")
@@ -263,7 +294,7 @@ class ConstructionsRepository(
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pStatement = it.prepareStatement("select u.id, u.nome, u.email, u.morada, u.foto from utilizador u\n" +
+                val pStatement = it.prepareStatement("select u.id, u.nome, u.email, u.morada from utilizador u\n" +
                     "inner join papel p on p.id_utilizador = u.id\n" +
                     "inner join obra o on o.id = p.id_obra\n" +
                     "where u.email = ?  and o.id = ?")
@@ -278,7 +309,6 @@ class ConstructionsRepository(
                         result.getString("nome"),
                         result.getString("email"),
                         result.getString("morada"),
-                        result.getString("foto")
                     )
             }  catch (e: Exception) {
                 it.rollback()
