@@ -9,6 +9,7 @@ import Alert from "@mui/material/Alert";
 // @ts-ignore
 import logo from '../assets/logo-black-transparent.png';
 import '../Login.css';
+// @ts-ignore
 import signUpIn from '../assets/sign.png';
 
 
@@ -46,13 +47,17 @@ export default function LogIn() {
         body: JSON.stringify(values)
     }).then(res => {
         setSubmitted(true)
-        if (res.status == 201) return res.json()
+        if (res.status == 201) {
+            return res.json()
+        }
         else {
             setValid(false)
             return { error: "Invalid email or password" }
         }
     }).then(body => {
-        if (body.error) setError(body.error)
+        if (body.error) {
+            setError(body.error)
+        }
         else {
             setValid(true)
             setCookies("token", body.token, { path: '/' })
@@ -64,17 +69,7 @@ export default function LogIn() {
     }).catch(error => {
         setError(error.message)
     })
-  };
-    const handleClick = () => {
-        setOpen(true);
-    };
-
-    const handleClose = (event: any, reason: string) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpen(false);
-    }
+  }
 
     return (
         <div className="login-container">
@@ -87,7 +82,7 @@ export default function LogIn() {
                 </div>
                 <form className="register-form" onSubmit={handleSubmit}>
                     {submitted && valid && (
-                        <Navigate to={"/success"} replace={true}/>
+                        <Navigate to={"/"} replace={true}/>
                     )}
                     {!valid && (
                         <>
@@ -113,17 +108,10 @@ export default function LogIn() {
                             {submitted && !values.password && (
                                 <span id="password-error">Please enter a password</span>
                             )}
-                            <button className="form-field" type="submit" onClick={handleClick}>
+                            <button className="form-field" type="submit" >
                                 Log In
                             </button>
                             <p style={{color: 'black'}}>Esqueceu-se da password? <a href="#!">Clique aqui.</a></p>
-                            <Snackbar
-                                open={open}
-                                autoHideDuration={5000}
-                                onClose={handleClose}
-                                message={error}
-                                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-                            />
                             {submitted && !valid && <Alert severity="error" sx={{m: 1}}>{error}</Alert>}
                         </>
                     )}

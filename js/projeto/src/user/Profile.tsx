@@ -13,7 +13,7 @@ import {
     Avatar,
     Button,
     Box,
-    Divider,
+    Divider, Stack,
 } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import {useSetAvatar} from "../context/Authn";
@@ -126,6 +126,18 @@ export default function Profile() {
 
     const handleChangePass = () => {
         navigate("/profile/changePassword")
+    }
+
+    if (!cookies.token) {
+        return (
+            <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
+                <Typography variant="h4" color="error">Erro de autenticação</Typography>
+                <Typography variant="body1" color="error">Precisa de estar autenticado para acessar a esta página.</Typography>
+                <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
+                    Login
+                </Button>
+            </Stack>
+        )
     }
 
     return (

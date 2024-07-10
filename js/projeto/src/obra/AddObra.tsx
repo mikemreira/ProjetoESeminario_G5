@@ -7,10 +7,11 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import {colors, FormControl, InputLabel, MenuItem, Select, Snackbar} from "@mui/material";
+import {colors, FormControl, InputLabel, MenuItem, Select, Snackbar, Stack} from "@mui/material";
 import {Navigate, useNavigate} from "react-router-dom"
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import {colorTransformations} from "@mui/material/Link/getTextDecoration";
+import Typography from "@mui/material/Typography";
 
 interface ObraValues {
     name: string
@@ -80,7 +81,7 @@ export default function AddObra() {
         }
     };
 
-    const handleSelectChange = (event: ChangeEvent<{ value: unknown }>) => {
+    const handleSelectChange = (event: { target: { value: string; }; }) => {
         setValues((values) => ({
             ...values,
             function: event.target.value as string
@@ -129,15 +130,17 @@ export default function AddObra() {
         navigate(-1)
     }
 
-/*
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpen(false);
+    if (!cookies.token) {
+        return (
+            <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
+                <Typography variant="h4" color="error">Erro de autenticação</Typography>
+                <Typography variant="body1" color="error">Precisa de estar autenticado para acessar a esta página.</Typography>
+                <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
+                    Login
+                </Button>
+            </Stack>
+        )
     }
-
- */
 
     return (
         <div className="form-obras">

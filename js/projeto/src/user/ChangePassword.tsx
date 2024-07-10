@@ -6,6 +6,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Alert from "@mui/material/Alert";
 // @ts-ignore
 import logo from '../assets/logo-black-transparent.png';
+import {Stack, Typography} from "@mui/material";
 
 interface UserEditPasswordInputModel {
     password: string
@@ -69,6 +70,18 @@ export default function ChangePassword() {
 
     const handleCancel = () => {
         navigate(-1)
+    }
+
+    if (!cookies.token) {
+        return (
+            <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
+                <Typography variant="h4" color="error">Erro de autenticação</Typography>
+                <Typography variant="body1" color="error">Precisa de estar autenticado para acessar a esta página.</Typography>
+                <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
+                    Login
+                </Button>
+            </Stack>
+        )
     }
 
     return (

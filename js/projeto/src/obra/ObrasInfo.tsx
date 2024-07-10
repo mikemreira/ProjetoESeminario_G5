@@ -17,7 +17,7 @@ import {
     Box,
     Divider, Badge, InputLabel, Select, MenuItem,
     Tabs,
-    Tab
+    Tab, Stack
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
@@ -686,6 +686,18 @@ export default function ObrasInfo() {
             .catch((error) => {
                 console.error("Error fetching profile:", error)
             })
+    }
+
+    if (!cookies.token) {
+        return (
+            <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
+                <Typography variant="h4" color="error">Erro de autenticação</Typography>
+                <Typography variant="body1" color="error">Precisa de estar autenticado para acessar a esta página.</Typography>
+                <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
+                    Login
+                </Button>
+            </Stack>
+        )
     }
 
     if (!obra) {

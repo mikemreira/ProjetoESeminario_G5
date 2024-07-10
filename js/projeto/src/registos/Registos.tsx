@@ -128,6 +128,18 @@ export default function Registos () {
         paginationDisplayMode: 'pages',
     });
 
+    if (!cookies.token) {
+        return (
+            <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
+                <Typography variant="h4" color="error">Erro de autenticação</Typography>
+                <Typography variant="body1" color="error">Precisa de estar autenticado para acessar a esta página.</Typography>
+                <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
+                    Login
+                </Button>
+            </Stack>
+        )
+    }
+
     return (
         <Stack sx={{ m: '2rem 0' }}>
             <Box

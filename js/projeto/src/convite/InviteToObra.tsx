@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import {colors, FormControl, InputLabel, MenuItem, Select, Snackbar} from "@mui/material";
+import {colors, FormControl, InputLabel, MenuItem, Select, Snackbar, Stack, Typography} from "@mui/material";
 import {Navigate, useNavigate, useParams} from "react-router-dom"
 
 interface InviteValues {
@@ -78,7 +78,7 @@ export default function InviteToObra() {
             body: JSON.stringify(values)
         }).then(res => {
             setSubmitted(true);
-            if (res.status === 201) {
+            if (res.ok) {
                 setValid(true);
                 setSuccess(true);
                 navigate(-1)
@@ -100,6 +100,18 @@ export default function InviteToObra() {
 
     const handleCancel = () => {
         navigate(-1)
+    }
+
+    if (!cookies.token) {
+        return (
+            <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
+                <Typography variant="h4" color="error">Erro de autenticação</Typography>
+                <Typography variant="body1" color="error">Precisa de estar autenticado para acessar a esta página.</Typography>
+                <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
+                    Login
+                </Button>
+            </Stack>
+        )
     }
 
     return (

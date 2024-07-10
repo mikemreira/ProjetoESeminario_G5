@@ -13,6 +13,7 @@ import { Avatar, Box, CircularProgress, Snackbar, Stack, Typography } from "@mui
 import AddIcon from "@mui/icons-material/Add";
 import InfoIcon from "@mui/icons-material/Info";
 import { useLocation, useNavigate } from "react-router-dom";
+import Button from "@mui/material/Button";
 
 interface DateObject {
     year: number;
@@ -94,6 +95,18 @@ export default function Obras() {
     const handleCloseSnackbar = () => {
         setSnackbarOpen(false);
     };
+
+    if (!cookies.token) {
+        return (
+            <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
+                <Typography variant="h4" color="error">Erro de autenticação</Typography>
+                <Typography variant="body1" color="error">Precisa de estar autenticado para acessar a esta página.</Typography>
+                <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
+                   Login
+                </Button>
+            </Stack>
+        )
+    }
 
     return (
         <Stack sx={{ m: '5rem 0' }}>
