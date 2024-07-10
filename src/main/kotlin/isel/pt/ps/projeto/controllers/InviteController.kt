@@ -49,7 +49,7 @@ class InviteController(
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         return when(val res = inviteService.invited(authUser.user.email)) {
-            is Success -> ResponseEntity.status(201)
+            is Success -> ResponseEntity.status(200)
                 .body(
                     ListOfConstructionAndRoleOutputModel(
                         res.value.map {
