@@ -73,7 +73,9 @@ class UsersService(
         }
 
         val passwordValidationInfo = usersDomain.createPasswordValidationInformation(password)
-        return success(usersRepository.signUp(name, email, passwordValidationInfo))
+        val signed = usersRepository.signUp(name, email, passwordValidationInfo)
+        emailSenderService.sendEmail(email, "Bem vindo", "Seja bem vindo aos Registos de acessos ISEL")
+        return success(signed)
     }
 
     fun signIn(
