@@ -7,4 +7,5 @@ data class SimpleUser(
     val nome: String,
     val email: String,
     val morada: String?,
+    val foto: String?
 )

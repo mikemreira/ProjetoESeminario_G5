@@ -6,4 +6,5 @@ data class SimpleUserAndFunc(
     val email: String,
     val morada: String?,
     val func: String?,
+    val foto: ByteArray?
 )

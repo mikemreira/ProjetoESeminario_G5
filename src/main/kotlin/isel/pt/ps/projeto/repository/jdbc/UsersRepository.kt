@@ -7,7 +7,6 @@ import isel.pt.ps.projeto.domain.users.TokenValidationInfo
 import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.models.users.UserAndToken
-import isel.pt.ps.projeto.models.users.UserImage
 import isel.pt.ps.projeto.repository.UserRepository
 import kotlinx.datetime.Instant
 import org.postgresql.ds.PGSimpleDataSource
@@ -43,6 +42,7 @@ class UsersRepository(
                     result.getString("email"),
                     PasswordValidationInfo(result.getString("password")),
                     result.getString("morada"),
+                    result.getBytes("foto")
                 )
             )
         }
@@ -74,6 +74,7 @@ class UsersRepository(
                         result.getString("email"),
                         PasswordValidationInfo(result.getString("password")),
                         "",
+                        result.getBytes("foto")
                     )
                 }
             } catch (e: SQLException) {
@@ -85,12 +86,30 @@ class UsersRepository(
         }
     }
 
+    /**
+     *  override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? =
+     *         handle.createQuery(
+     *             """
+     *                 select id, username, password_validation, token_validation, created_at, last_used_at
+     *                 from Users as users
+     *                 inner join Token as token
+     *                 on users.id = token.user_id
+     *                 where token_validation = :validation_information
+     *             """
+     *         )
+     *             .bind("validation_information", tokenValidationInfo.validationInfo)
+     *             .mapTo<UserAndTokenModel>()
+     *             .singleOrNull()
+     *             ?.userAndToken
+     *
+     */
+
     override fun getTokenByTokenValidationInfo(token: TokenValidationInfo): Pair<User, Token>? {
         initializeConnection().use {
             it.autoCommit = false
             return try {
                 val pStatement = it.prepareStatement(
-                    "select id, nome, email, password, morada, token_validation, created_at, last_used_at\n" +
+                    "select id, nome, email, password, morada, foto, token_validation, created_at, last_used_at\n" +
                         "    from utilizador u \n" +
                         "    inner join Token t\n" +
                         "    on u.id = t.id_utilizador\n" +
@@ -105,6 +124,7 @@ class UsersRepository(
                     result.getString("email"),
                     PasswordValidationInfo(result.getString("password")),
                     result.getString("morada"),
+                    result.getBytes("foto"),
                     TokenValidationInfo(result.getString("token_validation")),
                     result.getLong("created_at"),
                     result.getLong("last_used_at")
@@ -119,6 +139,20 @@ class UsersRepository(
         }
     }
 
+    /**
+     * override fun updateTokenLastUsed(token: Token, now: Instant) {
+     *         handle.createUpdate(
+     *             """
+     *                 update Token
+     *                 set last_used_at = :last_used_at
+     *                 where token_validation = :validation_information
+     *             """.trimIndent()
+     *         )
+     *             .bind("last_used_at", now.epochSeconds)
+     *             .bind("validation_information", token.tokenValidationInfo.validationInfo)
+     *             .execute()
+     *     }
+     */
 
     override fun updateTokenLastUsed(token: Token, now: Instant) {
         initializeConnection().use {
@@ -153,6 +187,7 @@ class UsersRepository(
                         result.getString("email"),
                         PasswordValidationInfo(result.getString("password")),
                         "",
+                        result.getBytes("foto")
                     )
                 }
             } catch (e: SQLException) {
@@ -214,6 +249,7 @@ class UsersRepository(
                     result.getString("email"),
                     PasswordValidationInfo(result.getString("password")),
                     "",
+                    result.getBytes("foto")
                 )
             } catch (e: SQLException) {
                 it.rollback()
@@ -249,6 +285,7 @@ class UsersRepository(
                     result.getString("email"),
                     PasswordValidationInfo(result.getString("password")),
                     "",
+                    result.getBytes("foto")
                 )
                 UserAndToken(user, token.toString())
             } catch (e: SQLException) {
@@ -318,50 +355,38 @@ class UsersRepository(
         }
     }
 
-    override fun editUser(id: Int, nome: String, morada: String?, foto: UserImage?): SimpleUser {
+    override fun editUser(id: Int, nome: String, morada: String?, foto: ByteArray?): SimpleUser {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                    val pStatement = it.prepareStatement(
-                        "UPDATE Utilizador\n" +
-                            "SET nome = ?,\n" +
-                            "    morada = ?,\n" +
-                            "WHERE id = ?;\n"
-                    )
-                    pStatement.setString(1, nome)
-                    pStatement.setString(2, morada)
-                    pStatement.setInt(3, id)
-                    pStatement.executeUpdate()
-                    if (foto != null) {
-                        val imageStatement = it.prepareStatement(
-                            "Update UtilizadorImagem\n" +
-                                "SET thumbnail = ?\n" +
-                                "    listInfo = ?\n" +
-                                "    icon = ?\n" +
-                                "WHERE id_utilizador = ? "
-                        )
-                        imageStatement.setBytes(1, foto.thumbnail)
-                        imageStatement.setBytes(2, foto.infoList)
-                        imageStatement.setBytes(3, foto.icon)
-                        imageStatement.setInt(4, id)
-                        imageStatement.executeUpdate()
-                    }
+                val pStatement = it.prepareStatement(
+                    "UPDATE Utilizador\n" +
+                        "SET nome = ?,\n" +
+                        "    morada = ?,\n" +
+                        "    foto = ?\n" +
+                        "WHERE id = ?;\n"
+                )
+                pStatement.setString(1, nome)
+                pStatement.setString(2, morada)
+                pStatement.setBytes(3, foto)
+                pStatement.setInt(4, id)
+                pStatement.executeUpdate()
 
-                    val selectStatement = it.prepareStatement(
-                        "SELECT id as id, nome, email, morada \n" +
-                            "FROM Utilizador \n" +
-                            "WHERE id = ?"
-                    )
-                    selectStatement.setInt(1, id)
+                val selectStatement = it.prepareStatement(
+                    "SELECT id, nome, email, morada, foto FROM Utilizador WHERE id = ?"
+                )
+                selectStatement.setInt(1, id)
 
-                    val resultSet = selectStatement.executeQuery()
-                    resultSet.next()
-                    SimpleUser(
-                            id = resultSet.getInt("id"),
-                            nome = resultSet.getString("nome"),
-                            email = resultSet.getString("email"),
-                            morada = resultSet.getString("morada"),
-                    )
+                val resultSet = selectStatement.executeQuery()
+                resultSet.next()
+                SimpleUser(
+                        id = resultSet.getInt("id"),
+                        nome = resultSet.getString("nome"),
+                        email = resultSet.getString("email"),
+                        morada = resultSet.getString("morada"),
+                        foto = resultSet.getString("foto")
+                )
+
             } catch (e: SQLException) {
                 it.rollback()
                 throw e
@@ -397,42 +422,20 @@ class UsersRepository(
         TODO("Not yet implemented")
     }
 
-    override fun getImage(userId: Int, typeOfImage: String): String? {
-        initializeConnection().use {
-            it.autoCommit = false
-            return try {
-                val pStatement = it.prepareStatement(
-                    "Select * " +
-                        "From UtilizadorImagem " +
-                        "Where id_utilizador = ? "
-                )
-
-                pStatement.setInt(1, userId)
-                val result = pStatement.executeQuery()
-                result.next()
-                result.getString(typeOfImage)
-            } catch (e: SQLException) {
-                it.rollback()
-                throw e
-            } finally {
-                it.commit()
-            }
-        }
-    }
-
     private data class UserAndTokenModel(
         val id: Int,
         val nome: String,
         val email: String,
         val passwordValidation: PasswordValidationInfo,
         val morada: String?,
+        val foto: ByteArray?,
         val tokenValidation: TokenValidationInfo,
         val createdAt: Long,
         val lastUsedAt: Long
     ) {
         val userAndToken: Pair<User, Token>
             get() = Pair(
-                User(id, nome, email, passwordValidation, morada),
+                User(id, nome, email, passwordValidation, morada, foto),
                 Token(
                     tokenValidation,
                     id,

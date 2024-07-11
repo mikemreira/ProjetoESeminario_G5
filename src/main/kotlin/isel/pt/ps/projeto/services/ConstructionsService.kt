@@ -4,10 +4,8 @@ import isel.pt.ps.projeto.domain.constructions.ConstructionsDomain
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.constructions.ConstructionAndRole
 import isel.pt.ps.projeto.models.constructions.ConstructionEditInputModel
-import isel.pt.ps.projeto.models.constructions.ConstructionImage
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.users.SimpleUserAndFunc
-import isel.pt.ps.projeto.models.users.UserImage
 import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
 import isel.pt.ps.projeto.utils.Either
@@ -123,7 +121,7 @@ class ConstructionsService(
 
         if (userToBeRemoved.role == "admin") return failure(ConstructionUserError.NoPermission)
         if (role.role != "admin") return failure(ConstructionUserError.NoPermission)
-
+        
         return success(constructionsRepository.removeConstructionUser(oid, uid))
     }
 
@@ -141,20 +139,8 @@ class ConstructionsService(
         if (!constructionsDomain.checkValidConstruction(name, location, description, startDate)) {
             return failure(ConstructionCreationError.InvalidConstruction)
         }
-        val fotoBytes = if (foto!=null){
-            val thumbnail = utilsService.resizeAndCompressImageBase64(foto, 1280,720, 0.99f)
-            val infoList = utilsService.resizeAndCompressImageBase64(foto, 640,360, 0.99f)
-            ConstructionImage(thumbnail, infoList)
-        } else
-            null
+        val fotoBytes = if (foto!=null) utilsService.resizeAndCompressImageBase64(foto, 800, 600, 0.8f) else null
         return success(constructionsRepository.createConstruction(userId, name, location, description, startDate, endDate, fotoBytes, status, function))
-    }
-
-    fun getImages(oid: Int, query: String): UserImageResult {
-        return if (query == "thumbnail" || query == "infoResult")
-            success(constructionsRepository.getImage(oid, query))
-        else
-            failure(ImageError.InvalidQuery)
     }
 
     fun getUserRoleOnConstruction(userId: Int, oid: Int): ConstructionAndRoleResult {
@@ -184,6 +170,29 @@ class ConstructionsService(
         val updatedConstruction = constructionsRepository.editConstruction(oid, inputModel)
         return success(updatedConstruction)
     }
+/*
+    fun inviteToConstruction(userId: Int, oid: Int, invite: Invite): InviteInfoResult {
+        val construction = constructionsRepository.getConstruction(oid)
+            ?: return failure(ConstructionInfoError.ConstructionNotFound)
+
+        val role = constructionsRepository.getUserRoleFromConstruction(userId, construction.oid)
+            ?: return failure(ConstructionInfoError.NoAccessToConstruction)
+
+        if (role.role != "admin")
+            return failure(ConstructionInfoError.NoPermission)
+
+        val user = constructionsRepository.getUserByEmailFromConstructions(oid, invite.email)
+
+        if (user != null)
+            return failure(ConstructionInfoError.AlreadyInConstruction)
+
+        // TODO(SEND MAIL)
+
+        val res = constructionsRepository.inviteToConstruction(oid, invite.email)
+        return success(res)
+    }
+
+ */
 
     fun registerIntoConstruction(userId: Int, oid: Int, startTime: LocalDateTime, endTime: LocalDateTime): RegisterInfoResult {
         val construction = constructionsRepository.getConstruction(oid)

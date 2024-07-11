@@ -39,6 +39,7 @@ class InviteRepository() : InviteRepository {
                             result.getString("nome"),
                             result.getString("email"),
                             result.getString("morada"),
+                            result.getString("foto")
                         )
                     )
                 }
