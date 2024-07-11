@@ -1,6 +1,4 @@
-import {Avatar, Box, Card, CardContent, Divider, Grid, List, ListItem, ListItemText, Typography} from "@mui/material";
-import IconButton from "@mui/material/IconButton";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import {Avatar, Card, CardContent, Divider, Grid, List, ListItem, ListItemText, Typography} from "@mui/material";
 import * as React from "react";
 import { UserModel } from '../ObrasInfo';
 

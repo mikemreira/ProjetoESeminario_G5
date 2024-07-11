@@ -12,8 +12,7 @@ import {useCookies} from "react-cookie";
 
 interface RegistoFormProps {
     open: boolean,
-    onHandleOpen: () => void;
-    onHandleClose: () => void;
+    onHandleClose: (reload: boolean) => void;
 }
 
 interface ObraOptions {
@@ -25,7 +24,6 @@ interface ObraOptions {
 interface ObrasOptionsOutputModel {
     obras: ObraOptions[];
 }
-
 
 export default function RegistoForm(props: RegistoFormProps) {
     const [cookies] = useCookies(["token"]);
@@ -71,15 +69,11 @@ export default function RegistoForm(props: RegistoFormProps) {
         <React.Fragment>
             <Dialog
                 open={props.open}
-                onClose={props.onHandleClose}
+                onClose={() => props.onHandleClose(false)}
                 PaperProps={{
                     component: 'form',
                     onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
                         event.preventDefault();
-                        const formData = new FormData(event.currentTarget);
-                        const formJson = Object.fromEntries((formData as any).entries());
-                        const id = formJson.obra;
-                        console.log(selectedObras + " -> " + requiredDateTime + " -> " + optionalDateTime);
                         fetch(`/api/obras/${selectedObras}/register`, {
                             method: "POST",
                             headers: {
@@ -91,8 +85,11 @@ export default function RegistoForm(props: RegistoFormProps) {
                                 endTime: optionalDateTime
                             })
                         }).then(res => {
-                            if (res.ok) props.onHandleClose()
-                            props.onHandleClose()
+                            if (res.ok) {
+                                props.onHandleClose(true);
+                            } else {
+                                props.onHandleClose(false);
+                            }
                         })
                         event.stopPropagation()
                     },
@@ -156,7 +153,7 @@ export default function RegistoForm(props: RegistoFormProps) {
 
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={props.onHandleClose}>Cancelar</Button>
+                    <Button onClick={() => props.onHandleClose(false)}>Cancelar</Button>
                     <Button type="submit">Submeter</Button>
                 </DialogActions>
             </Dialog>

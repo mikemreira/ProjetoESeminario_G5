@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useState} from "react";
+import React, { useState} from "react";
 import {Box, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography} from "@mui/material";
 import {
     flexRender,
@@ -9,7 +9,6 @@ import {
 } from "material-react-table";
 import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
-import {Delete, Edit} from "@mui/icons-material";
 import RegistoForm from "../../registos/RegistoForm";
 import Menu from "@mui/material/Menu";
 import {FilterList} from "react-admin";
@@ -21,7 +20,7 @@ import {Obra, RegistosOutputModel} from "../ObrasInfo";
 interface ObraRegistosFormProps {
     obra: Obra;
     handleClickOpenForm: () => void;
-    handleCloseForm: () => void;
+    handleCloseForm: (reload: boolean) => void;
     table: any;
     openForm: boolean;
     registo: RegistosOutputModel;
@@ -61,7 +60,6 @@ export default function ObraRegistosForm({
             else return null
         }).then((body) => {
             if (body) {
-                console.log("asd: "+JSON.stringify(body))
                 setRegistos({
                     ...body,
                     meRoute: registo.meRoute,
@@ -157,7 +155,7 @@ export default function ObraRegistosForm({
                     <MRT_TablePagination table={table} />
                 </Box>
                 <MRT_ToolbarAlertBanner stackAlertBanner table={table} />
-                <RegistoForm open={openForm} onHandleClose={handleCloseForm} onHandleOpen={handleClickOpenForm} />
+                <RegistoForm open={openForm} onHandleClose={handleCloseForm} />
             </Stack>
         </>
     );

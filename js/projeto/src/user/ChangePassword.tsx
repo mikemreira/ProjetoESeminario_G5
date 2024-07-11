@@ -57,9 +57,6 @@ export default function ChangePassword() {
             setError(error.message)
         })
     };
-    const handleClick = () => {
-        setOpen(true);
-    };
 
     const handleClose = (event: any, reason: string) => {
         if (reason === 'clickaway') {

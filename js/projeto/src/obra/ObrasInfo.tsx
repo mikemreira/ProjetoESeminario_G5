@@ -1,35 +1,21 @@
 import {ChangeEvent, useEffect, useState} from "react";
 import { useCookies } from "react-cookie";
 import * as React from "react";
-import {useTheme} from "@mui/material/styles";
-import {Navigate, useNavigate, useParams, useSearchParams} from "react-router-dom";
+import { useNavigate, useParams, useSearchParams} from "react-router-dom";
 import {
     Card,
     CardContent,
     Typography,
-    List,
-    ListItem,
-    ListItemText,
     CircularProgress,
     Grid,
     Avatar,
     Button,
     Box,
-    Divider, Badge, InputLabel, Select, MenuItem,
     Tabs,
     Tab, Stack
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
-import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import Tooltip from "@mui/material/Tooltip";
-import TextField from "@mui/material/TextField";
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import ClearIcon from '@mui/icons-material/Clear';
-import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ObrasVisaoGeralForm from "./Forms/ObrasVisaoGeralForm";
 import ObraRegistosForm from "./Forms/ObraRegistosForm";
 import {useMaterialReactTable} from "material-react-table";
@@ -61,29 +47,23 @@ export interface Obra {
     function: string;
 }
 
-    interface Registo {
-        id: number;
-        id_utilizador: number;
-        id_obra: number;
-        nome: string;
-        entrada: DateObject;
-        saida: DateObject | null;
-        status: string | null;
-    }
-
-    export interface RegistosOutputModel {
-        registers: Registo[],
-        meRoute: string,
-        pendingRoute: string,
-        allRoute: string
-    }
-
-const formatDate = (dateObj: DateObject | null | undefined): string => {
-    if (!dateObj || !dateObj.value$kotlinx_datetime) {
-        return "";
-    }
-    return dateObj.value$kotlinx_datetime.split('T')[0];
+interface Registo {
+    id: number;
+    id_utilizador: number;
+    id_obra: number;
+    nome: string;
+    entrada: DateObject;
+    saida: DateObject | null;
+    status: string | null;
 }
+
+export interface RegistosOutputModel {
+    registers: Registo[],
+    meRoute: string,
+    pendingRoute: string,
+    allRoute: string
+}
+
 const parseDate = (dateStr: string): DateObject | null => {
     if (!dateStr) return null
     const date = new Date(dateStr)
@@ -100,10 +80,6 @@ const parseDate = (dateStr: string): DateObject | null => {
         value$kotlinx_datetime: date.toISOString(),
     }
 }
-
-const func = [
-    'Ajudante', 'Apontador', 'Armador de ferro', 'Arvorado', 'Calceteiro', 'Canalisador', 'Carpinteiro', 'Chefe de equipa', 'Condutor Manobrador', 'Diretor de serviços', 'Eletricista', 'Encarregado', 'Escriturário', 'Estucador',  'Ferramenteiro', 'Gruista', 'Impermiabilizador', 'Ladrilhador', 'Marteleiro', 'Montador de andaimes', 'Pedreiro', 'Pintor', 'Serralheiro', 'Servente', 'Soldador', 'Técnico de manutenção', 'Tubista', 'Outro'
-]
 
 const columns = [
     {
@@ -168,7 +144,6 @@ export default function ObrasInfo() {
                 }
             })
             .then((body) => {
-                console.log("Obra fetched:", body);
                 setObra(body);
                 setEditedObra(body);
             })
@@ -223,18 +198,6 @@ export default function ObrasInfo() {
             });
     }
 
-    const handleClickRegistos = () => {
-        navigate(`/obras/${oid}/registers`)
-    }
-
-    const handleClickFuncionarios = () => {
-        navigate(`/obras/${oid}/funcionarios`)
-    }
-
-    const handleClickPendingRegisters = () => {
-        navigate(`/obras/${oid}/registers/pending`);
-    }
-
     const handleClickEditObra = () => {
         setIsEditing(true)
     }
@@ -279,8 +242,6 @@ export default function ObrasInfo() {
     }
 
     const handleSaveObra = () => {
-        console.log("EDIÇÃO : ", editedObra)
-        console.log(isEditing)
         if (editedObra) {
             const editedObraForUpdate = {
                 ...editedObra,
@@ -340,37 +301,12 @@ export default function ObrasInfo() {
             })
     }
 
-    const handleDeleteObra = () => {
-        handleSuspendOrRecover("deleted")
-        navigate("/obras")
-    }
-
-    const handleRecoverObra = () => {
-        handleSuspendOrRecover("on going")
-    }
-
-    const handleSuspendObra = () => {
-        handleSuspendOrRecover("recoverable")
-    }
-
-    const handleCompletedObra = () => {
-        handleSuspendOrRecover("completed")
-    }
-
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
         setTabIndex(newValue);
     };
 
-    const navigateToRegisters = () => {
-        navigate(`/obras/${oid}/registers`)
-    }
-
-    const navigateToMembers = () => {
-        navigate(`/obras/${oid}/funcionarios`)
-    }
-
     /*
-    *  Registers
+     *  Registers
      */
     const [registos, setRegistos] = useState<RegistosOutputModel>({
         allRoute: "",
@@ -388,17 +324,13 @@ export default function ObrasInfo() {
                 "Authorization": `Bearer ${cookies.token}`
             },
         }).then((res) => {
-            console.log(oid)
-            console.log(status)
             setState({ value: "registo" })
             if (res.ok) return res.json()
             else return null
         }).then((body) => {
             if (body) {
-                //console.log("registos: "+ JSON.stringify(body.registers))
                 setRegistos(body)
                 setLoading(false)
-                //console.log(JSON.stringify(body))
             }
         }).catch(error => {
             console.error("Error fetching registos: ", error)
@@ -414,33 +346,30 @@ export default function ObrasInfo() {
                 "Authorization": `Bearer ${cookies.token}`
             },
         }).then((res) => {
-            console.log(oid)
-            console.log(status)
             setState({ value: "registo" })
             if (res.ok) return res.json()
             else return null
         }).then((body) => {
             if (body) {
-                //console.log("registos: "+ JSON.stringify(body.registers))
-                console.log(body)
                 setRegistos(body)
                 setLoading(false)
-                //console.log(JSON.stringify(body))
             }
         }).catch(error => {
             console.error("Error fetching registos: ", error)
         })
     }
 
-    console.log("registos: " + registos.pendingRoute)
-
-
     const handleClickOpenForm = () => {
         setOpenForm(true);
     };
 
-    const handleCloseForm = () => {
+    const handleCloseForm = (reload: boolean) => {
         setOpenForm(false);
+        if (reload) {
+            handleGetRegistersMine()
+            handleGetRegistersAll()
+            handleGetPendingRegisters()
+        }
     };
 
     const tableRegisters = useMaterialReactTable({
@@ -467,6 +396,7 @@ export default function ObrasInfo() {
         pendingRoute: "",
         registers: [] });
     const [open, setOpen] = useState(false);
+
     const handleGetPendingRegisters = () => {
         const page = searchParams.get('page') || '0'
         fetch(`/api/obras/${oid}/registos/pendente?page=${page}`, {
@@ -483,7 +413,6 @@ export default function ObrasInfo() {
             if (body) {
                 setPendingRegisters(body)
                 setLoading(false)
-                console.log(JSON.stringify(body))
             }
         }).catch(error => {
             console.error("Error fetching registos: ", error)
@@ -504,7 +433,6 @@ export default function ObrasInfo() {
                 else return null;
             })
             .then((body) => {
-                console.log(body);
                 setPendingRegisters((prevRegistos) => ({
                     ...prevRegistos,
                     registers: prevRegistos.registers.map((registo) =>
@@ -517,6 +445,7 @@ export default function ObrasInfo() {
                 console.error("Error fetching: ", error);
             });
     };
+
     const handleClickOpen = () => {
         setOpen(true);
     };
@@ -544,7 +473,7 @@ export default function ObrasInfo() {
         meRoute: "",
         pendingRoute: "",
         registers: [] })
-    const [username, setUsername] = useState<string>("as")
+    const [username, setUsername] = useState<string>("")
 
     const handleGetUserRegisters = (uid: number) => {
         const page = searchParams.get('page') || '0'
@@ -585,24 +514,12 @@ export default function ObrasInfo() {
     });
 
     /*
-    *  Funcionarios
+     *  Funcionarios
      */
     const [users, setUsers] = useState<UserOutputModel>({ users: [] });
 
-    const handleViewAllRecords = () => {
-        navigate(`/obras/${oid}/registers/all`)
-    }
-
     const handleClickAddFuncionario = () => {
         navigate(`/obras/${oid}/funcionario/invite`)
-    }
-
-    const handleViewProfile = (uid: number) => {
-        navigate(`/obras/${oid}/funcionarios/${uid}`)
-    }
-
-    const handleViewUserRecords = (uid: number) => {
-        navigate(`/obras/${oid}/registers/${uid}`)
     }
 
     const handleGetFuncionarios = () => {
@@ -618,10 +535,8 @@ export default function ObrasInfo() {
             else return null
         }).then((body) => {
             if (body) {
-                //console.log(JSON.stringify(body))
                 setUsers(body)
                 setLoading(false)
-                //console.log(users)
             }
         }).catch(error => {
             console.error("Error fetching registos: ", error)
@@ -647,7 +562,7 @@ export default function ObrasInfo() {
     }
 
     /*
-    * Funcionario Info
+     * Funcionario Info
      */
     const [user, setUser] = useState<UserModel>(
         {
@@ -794,7 +709,6 @@ export default function ObrasInfo() {
                                 users={users}
                                 handleViewProfile={handleGetFuncionarioInfo}
                                 handleViewUserRecords={handleGetUserRegisters}
-                                handleViewAllRecords={handleViewAllRecords}
                                 handleClickAddFuncionario={handleClickAddFuncionario}
                                 handleRemoveUser={handleRemoveUser}
                             />

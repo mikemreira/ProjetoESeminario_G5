@@ -7,10 +7,8 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import {colors, FormControl, InputLabel, MenuItem, Select, Snackbar, Stack} from "@mui/material";
+import {FormControl, InputLabel, MenuItem, Select, Snackbar, Stack} from "@mui/material";
 import {Navigate, useNavigate} from "react-router-dom"
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import {colorTransformations} from "@mui/material/Link/getTextDecoration";
 import Typography from "@mui/material/Typography";
 
 interface ObraValues {
@@ -91,8 +89,6 @@ export default function AddObra() {
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
 
-        console.log("Form values:", values);
-
         fetch("/api/obras", {
             method: "POST",
             headers: {
@@ -104,7 +100,6 @@ export default function AddObra() {
             setSubmitted(true);
             if (res.status === 201) {
                 setValid(true);
-                // setRedirect(<Navigate to="/obras" replace={true} />)
                 setRedirect(<Navigate to="/obras" state={{ success: true }} replace={true} />);
             } else {
                 setValid(false);
@@ -113,17 +108,12 @@ export default function AddObra() {
         }).then(body => {
             if (!valid) {
                 setError(body.error);
-                console.log(body.error);
             } else {
                 setRedirect(<Navigate to="/obras" replace={true} />)
             }
         }).catch(error => {
             setError(error.message);
         });
-    };
-
-    const handleClick = () => {
-        setOpen(true);
     };
 
     const handleCancel = () => {
@@ -256,14 +246,3 @@ export default function AddObra() {
         </div>
     );
 }
-
-/*
-{submitted && valid && <Alert severity="success" sx={{ m: 1 }}>Obra adicionada com sucesso!</Alert>}
-<TextField
-    id="foto"
-    label="Foto"
-    value={values.foto}
-    onChange={handleInputChange}
-    name="foto"
-/>
- */

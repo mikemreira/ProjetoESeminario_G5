@@ -1,11 +1,9 @@
 import React, { ChangeEvent } from "react";
 import {
-    Avatar,
     Badge,
     Box,
     Button,
     Divider,
-    Grid,
     IconButton,
     List,
     ListItem,
@@ -27,7 +25,7 @@ import {RegistosOutputModel, DateObject, Obra} from '../ObrasInfo';
 
 interface VisaoGeralProps {
     obra: Obra;
-    editedObra: Obra | null;
+    editedObra: Obra | undefined;
     pendingRegisters: RegistosOutputModel;
     isEditing: boolean;
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -58,7 +56,6 @@ export default function ObraVisaoGeralForm({
     isEditing,
     handleChange,
     handleSelectChange,
-    handleFileChange,
     handleClickPendingRegisters,
     handleClickEditObra,
     handleSuspendOrRecover,

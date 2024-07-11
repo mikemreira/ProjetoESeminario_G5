@@ -7,7 +7,6 @@ import {
     MRT_ToolbarAlertBanner
 } from "material-react-table";
 import IconButton from "@mui/material/IconButton";
-import AddIcon from "@mui/icons-material/Add";
 import {Delete, Edit} from "@mui/icons-material";
 import * as React from "react";
 
@@ -36,10 +35,8 @@ export default function ObraRegistosOfUserForm({
                     <Typography variant="h5" color={"black"}>Registos de {username}</Typography>
                     <MRT_GlobalFilterTextField table={table} />
                 </Box>
-                {/* Using Vanilla Material-UI Table components here */}
                 <TableContainer sx={{ backgroundColor: '#cccccc',  }}>
                     <Table sx={{ tableLayout: 'fixed' }}>
-                        {/* Use your own markup, customize however you want using the power of TanStack Table */}
                         <TableHead>
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <TableRow key={headerGroup.id}>
@@ -64,11 +61,10 @@ export default function ObraRegistosOfUserForm({
                                 <TableRow key={row.id} selected={row.getIsSelected()}>
                                     {row.getVisibleCells().map((cell, _columnIndex) => (
                                         <TableCell align="center" variant="body" key={cell.id}>
-                                            {/* Use MRT's cell renderer that provides better logic than flexRender */}
                                             <MRT_TableBodyCellValue
                                                 cell={cell}
                                                 table={table}
-                                                staticRowIndex={rowIndex} //just for batch row selection to work
+                                                staticRowIndex={rowIndex}
                                             />
                                         </TableCell>
                                     ))}

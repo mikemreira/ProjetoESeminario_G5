@@ -19,7 +19,6 @@ import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 
 
 interface ObraFuncionariosFormProps {
-    handleViewAllRecords: () => void;
     handleClickAddFuncionario: () => void;
     handleViewProfile: (id: number) => void;
     handleViewUserRecords: (id: number) => void;
@@ -28,7 +27,6 @@ interface ObraFuncionariosFormProps {
 }
 
 export default function ObraFuncionariosForm({
-    handleViewAllRecords,
     handleClickAddFuncionario,
     handleViewProfile,
     handleViewUserRecords,

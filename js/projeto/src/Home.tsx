@@ -9,7 +9,7 @@ export default function Home() {
             <div className="form-home">
                 <h1>Bem vindo ao Registo de Acessos</h1>
                 <p>
-                    Esta aplicação foi desenvolvida para a disciplina Projeto e Seminário do curso de Licenciatura em Engenharia Informática e  de Computadores do Isel no ano letivo 2023/2024.
+                    Esta aplicação foi desenvolvida no âmbito da disciplina Projeto e Seminário do curso de Licenciatura em Engenharia Informática e  de Computadores do Isel no ano letivo 2023/2024.
                 </p>
                 <p>
                     Foi desenvolvida por:

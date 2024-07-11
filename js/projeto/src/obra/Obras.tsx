@@ -8,11 +8,10 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
-import { useTheme } from '@mui/material/styles';
 import { Avatar, Box, CircularProgress, Snackbar, Stack, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import InfoIcon from "@mui/icons-material/Info";
-import { useLocation, useNavigate } from "react-router-dom";
+import {useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 
 interface DateObject {
@@ -38,11 +37,6 @@ interface Obra {
 
 interface ObrasOutputModel {
     obras: Obra[];
-}
-
-// Utility function to convert date object to string
-const formatDate = (dateObj: DateObject | null): string => {
-    return dateObj ? dateObj.value$kotlinx_datetime : "N/A";
 }
 
 export default function Obras() {

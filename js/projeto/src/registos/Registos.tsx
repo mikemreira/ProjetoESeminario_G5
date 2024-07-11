@@ -2,7 +2,6 @@ import {
     MRT_GlobalFilterTextField,
     MRT_TableBodyCellValue,
     MRT_TablePagination,
-    flexRender,
     useMaterialReactTable
 } from 'material-react-table';
 import {
@@ -21,7 +20,6 @@ import {
 import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import * as React from "react";
-import { Delete, Edit } from "@mui/icons-material";
 import RegistoForm from "./RegistoForm";
 import AddIcon from "@mui/icons-material/Add";
 import {useNavigate} from "react-router-dom";
@@ -33,11 +31,6 @@ const columns = [
     { accessorKey: 'saida', header: 'Saida' },
     { accessorKey: 'status', header: 'Estado' }
 ];
-
-const handleEdit = () => { }
-const handleDelete = (row: Registo) => {
-    console.log("ID" + row.id)
-}
 
 interface DateObject {
     year: number;
@@ -59,10 +52,6 @@ interface Registo {
     status: string | null;
 }
 
-interface RegistosOutputModel {
-    registos: Registo[];
-}
-
 export default function Registos () {
     const [cookies] = useCookies(["token"]);
     const [registos, setRegistos] = useState<Registo[]>([])
@@ -71,7 +60,7 @@ export default function Registos () {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const navigate = useNavigate();
 
-    useEffect(() => {
+    const fetchRegistos = () => {
         fetch("/api/registos", {
             method: "GET",
             headers: {
@@ -95,14 +84,21 @@ export default function Registos () {
         }).catch(error => {
             console.error("Error fetching registos: ", error);
         })
+    }
+
+    useEffect(() => {
+        fetchRegistos()
     }, [cookies.token])
 
     const handleClickOpenForm = () => {
         setOpenForm(true);
     };
 
-    const handleCloseForm = () => {
+    const handleCloseForm = (reload: boolean) => {
         setOpenForm(false);
+        if (reload) {
+            fetchRegistos();
+        }
     };
 
     const handleCloseSnackbar = () => {
@@ -210,7 +206,7 @@ export default function Registos () {
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
             <MRT_TablePagination table={table} />
             </Box>
-            <RegistoForm open={openForm} onHandleClose={handleCloseForm} onHandleOpen={handleClickOpenForm} />
+            <RegistoForm open={openForm} onHandleClose={handleCloseForm} />
 
             <Snackbar
                 open={snackbarOpen}

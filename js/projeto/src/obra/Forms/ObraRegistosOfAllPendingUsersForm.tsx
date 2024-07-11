@@ -7,7 +7,6 @@ import {
     MRT_ToolbarAlertBanner
 } from "material-react-table";
 import IconButton from "@mui/material/IconButton";
-import AddIcon from "@mui/icons-material/Add";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import * as React from "react";
@@ -20,7 +19,6 @@ interface ObraRegistosOfAllPendingUsersFormProps {
 
 export default function ObraRegistosOfAllPendingUsersForm({
                                                                 table,
-                                                                handleClickOpen,
                                                                 handleAcceptOrRejectPendingRegister,
                                                             }: ObraRegistosOfAllPendingUsersFormProps) {
 
