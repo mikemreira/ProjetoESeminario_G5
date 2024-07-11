@@ -258,6 +258,7 @@ export default function ObrasInfo() {
             })
                 .then((res) => {
                     if (res.ok) {
+                        console.log("edit: "+editedObraForUpdate.function)
                         setObra(editedObra)
                         setIsEditing(false)
                     } else {

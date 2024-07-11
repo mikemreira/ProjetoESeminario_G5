@@ -80,44 +80,49 @@ export default function NavBar() {
     const [pendingRegisters, setPendingRegisters] = useState<RegistosOutputModel>({ registers: [] });
 
     useEffect(() => {
-        fetch(`/api/convites`, {
-            method: "GET",
-            headers: {
-                "Content-type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
-            },
-        }).then((res) => {
-            if (res.ok) return res.json();
-            else return null;
-        }).then((body) => {
-            if (body) {
-                setInvites(body);
-            }
-        }).catch(error => {
-            console.error("Error fetching notifications: ", error);
-        });
+        if (cookies.token !== undefined) {
+            fetch(`/api/convites`, {
+                method: "GET",
+                headers: {
+                    "Content-type": "application/json",
+                    "Authorization": `Bearer ${cookies.token}`
+                },
+            }).then((res) => {
+                if (res.ok) return res.json();
+                else return null;
+            }).then((body) => {
+                if (body) {
+                    setInvites(body);
+                }
+            }).catch(error => {
+                console.error("Error fetching notifications: ", error);
+            });
+        }
     }, [cookies.token]);
 
     useEffect(() => {
-        fetch(`/api/registos/pendente`, {
-            method: "GET",
-            headers: {
-                "Content-type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`,
-            },
-        }).then((res) => {
-            if (res.ok) {
-                return res.json();
-            } else {
-                throw new Error('Failed to fetch registos pendentes');
-            }
-        }).then((body) => {
-            console.log("Registos pendentes: ", body);
-            setPendingRegisters(body);
+        if (cookies.token !== undefined) {
+            fetch(`/api/registos/pendente`, {
+                method: "GET",
+                headers: {
+                    "Content-type": "application/json",
+                    "Authorization": `Bearer ${cookies.token}`,
+                },
+            }).then((res) => {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to fetch registos pendentes');
+                }
+            }).then((body) => {
+                console.log("Registos pendentes: ", body);
+                setPendingRegisters(body);
 
-        }).catch((error) => {
-            console.error("Error fetching registos pendentes:", error);
-        });
+            }).catch((error) => {
+                console.error("Error fetching registos pendentes:", error);
+            });
+        }
+
     }, [cookies.token]);
 
     const handleOpenUserMenu = (event) => {

@@ -13,6 +13,8 @@ import ObrasInfo from "./obra/ObrasInfo";
 import Registos from "./registos/Registos";
 import InviteToObra from "./convite/InviteToObra";
 import ChangePassword from "./user/ChangePassword";
+import ForgotPassword from "./user/ForgotPassword";
+import ResetPassword from "./user/ResetPassword";
 
 const AppLayout = () => {
   return (
@@ -73,6 +75,14 @@ const router = createBrowserRouter([
       {
         "path": "/registos",
         "element": <Registos/>
+      },
+      {
+        "path": "/forgotPassword",
+        "element": <ForgotPassword/>
+      },
+      {
+        "path": "/set-password",
+        "element": <ResetPassword/>
       }
   ]}
 ])

@@ -206,7 +206,7 @@ export default function Registos () {
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
             <MRT_TablePagination table={table} />
             </Box>
-            <RegistoForm open={openForm} onHandleClose={handleCloseForm} />
+            <RegistoForm open={openForm} onHandleClose={handleCloseForm} obra={undefined}/>
 
             <Snackbar
                 open={snackbarOpen}

@@ -9,16 +9,18 @@ import DialogTitle from '@mui/material/DialogTitle';
 import {Box, InputLabel, MenuItem, Select, Typography} from "@mui/material";
 import {useEffect, useState} from "react";
 import {useCookies} from "react-cookie";
+import {Obra} from "../obra/ObrasInfo";
 
 interface RegistoFormProps {
     open: boolean,
     onHandleClose: (reload: boolean) => void;
+    obra: Obra | undefined;
 }
 
 interface ObraOptions {
     oid: number;
     name: string;
-    status: 'completed' | 'pending' | 'rejected';
+    status: string;
 }
 
 interface ObrasOptionsOutputModel {
@@ -33,35 +35,46 @@ export default function RegistoForm(props: RegistoFormProps) {
     const [optionalDateTime, setOptionalDateTime] = useState<string>('');
 
     useEffect(() => {
-        fetch("/api/obras/ongoing", {
-            method: "GET",
-            headers: {
-                "Content-type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`,
-            },
-        })
-            .then(res => {
-                console.log(res);
-                if (res.ok) {
-                    return res.json();
-                } else if (res.status == 404) {
-                    return { obras: []}
-                } else {
-                    return null;
-                }
+        if (props.obra !== undefined) {
+            setObras( {
+                    obras: [{
+                        oid: props.obra.oid,
+                        name: props.obra.name,
+                        status: ""
+                    }]
+            })
+            setSelectedObras(props.obra.oid)
+        } else {
+            fetch("/api/obras/ongoing", {
+                method: "GET",
+                headers: {
+                    "Content-type": "application/json",
+                    "Authorization": `Bearer ${cookies.token}`,
+                },
+            })
+                .then(res => {
+                    console.log("fez o fetch");
+                    if (res.ok) {
+                        return res.json();
+                    } else if (res.status == 404) {
+                        return {obras: []}
+                    } else {
+                        return null;
+                    }
 
-            })
-            .then(body => {
-                if (body) {
-                    setObras(body);
-                } else {
-                    setObras({ obras: [] });
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching obras: ", error);
-                setObras({ obras: [] });
-            });
+                })
+                .then(body => {
+                    if (body) {
+                        setObras(body);
+                    } else {
+                        setObras({obras: []});
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching obras: ", error);
+                    setObras({obras: []});
+                });
+        }
     }, [cookies.token, props.open])
 
 

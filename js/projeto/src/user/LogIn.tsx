@@ -111,7 +111,7 @@ export default function LogIn() {
                             <button className="form-field" type="submit" >
                                 Log In
                             </button>
-                            <p style={{color: 'black'}}>Esqueceu-se da password? <a href="#!">Clique aqui.</a></p>
+                            <p style={{color: 'black'}}>Esqueceu-se da password? <a href={"/forgotPassword"}>Clique aqui.</a></p>
                             {submitted && !valid && <Alert severity="error" sx={{m: 1}}>{error}</Alert>}
                         </>
                     )}

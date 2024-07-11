@@ -1,26 +1,33 @@
-import React, { useState } from "react";
-import {Navigate, useNavigate} from "react-router-dom";
-import { useCookies } from "react-cookie"
-import Button from '@mui/material/Button';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from "@mui/material/Alert";
-// @ts-ignore
-import logo from '../assets/logo-black-transparent.png';
-import {Stack, Typography} from "@mui/material";
+import {Navigate, useNavigate, useParams} from "react-router-dom";
+import React, {useEffect, useState} from "react";
+import {useCookies} from "react-cookie";
 import signUpIn from "../assets/sign.png";
+import logo from "../assets/logo-black-transparent.png";
+import Alert from "@mui/material/Alert";
 
-interface UserEditPasswordInputModel {
+interface UserResetPasswordInputModel {
     password: string
 }
 
-export default function ChangePassword() {
-    const [values, setValues] = useState<UserEditPasswordInputModel>({password: null })
-    const [cookies] = useCookies(["token"])
+export default function ResetPassword() {
+    const [values, setValues] = useState<UserResetPasswordInputModel>({ password: "" })
     const [submitted, setSubmitted] = useState(false)
     const [valid, setValid] = useState(false)
     const [error, setError] = useState("")
-    const [open, setOpen] = React.useState(false)
+    const [open, setOpen] = useState(false)
     const navigate = useNavigate()
+
+    // Extract email and token from query parameters
+    const queryParams = new URLSearchParams(location.search)
+    const email = queryParams.get("email")
+    const token = queryParams.get("token")
+
+    useEffect(() => {
+        if (!email || !token) {
+            setError("Missing email or token")
+        }
+    }, [email, token])
+
 
     const handleInputChange = (event: { preventDefault: () => void; target: { name: any; value: any; }; }) => {
         event.preventDefault()
@@ -34,11 +41,10 @@ export default function ChangePassword() {
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         console.log("values: " + values.password)
-        fetch("/api/users/me/changepassword", {
+        fetch(`/api/set-password?email=${email}&token=${token}`, {
             method: "PUT",
             headers: {
                 "Content-type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`,
             },
             body: values.password
         }).then(res => {
@@ -70,18 +76,6 @@ export default function ChangePassword() {
         navigate(-1)
     }
 
-    if (!cookies.token) {
-        return (
-            <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
-                <Typography variant="h4" color="error">Erro de autenticação</Typography>
-                <Typography variant="body1" color="error">Precisa de estar autenticado para acessar a esta página.</Typography>
-                <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
-                    Login
-                </Button>
-            </Stack>
-        )
-    }
-
     return (
         <div className="login-container">
             <div className="sign-image">
@@ -100,13 +94,13 @@ export default function ChangePassword() {
                             <input
                                 className="form-field"
                                 type="password"
-                                placeholder="Nova password"
+                                placeholder="Nova Password"
                                 name="password"
                                 value={values.password}
                                 onChange={handleInputChange}
                             />
                             {submitted && !values.password && (
-                                <span id="last-name-error">Introduza uma nova password</span>
+                                <span id="last-name-error">Please enter password</span>
                             )}
                             <button className="form-field" type="submit" >
                                 Alterar password
@@ -121,5 +115,5 @@ export default function ChangePassword() {
             </div>
         </div>
     );
-    
+
 }

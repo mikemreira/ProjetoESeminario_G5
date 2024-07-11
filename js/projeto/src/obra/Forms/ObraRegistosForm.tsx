@@ -155,7 +155,7 @@ export default function ObraRegistosForm({
                     <MRT_TablePagination table={table} />
                 </Box>
                 <MRT_ToolbarAlertBanner stackAlertBanner table={table} />
-                <RegistoForm open={openForm} onHandleClose={handleCloseForm} />
+                <RegistoForm open={openForm} onHandleClose={handleCloseForm} obra={obra}/>
             </Stack>
         </>
     );

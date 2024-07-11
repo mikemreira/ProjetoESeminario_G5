@@ -1,25 +1,24 @@
-import React, { useState } from "react";
-import {Navigate, useNavigate} from "react-router-dom";
-import { useCookies } from "react-cookie"
-import Button from '@mui/material/Button';
-import Snackbar from '@mui/material/Snackbar';
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import {Snackbar} from "@mui/material";
 import Alert from "@mui/material/Alert";
-// @ts-ignore
-import logo from '../assets/logo-black-transparent.png';
-import {Stack, Typography} from "@mui/material";
+import {useCookies} from "react-cookie";
+import React, {useState} from "react";
+import {Navigate, useNavigate} from "react-router-dom";
 import signUpIn from "../assets/sign.png";
+import logo from "../assets/logo-black-transparent.png";
 
-interface UserEditPasswordInputModel {
-    password: string
+interface UserForgotPasswordInputModel {
+    email: string
 }
 
-export default function ChangePassword() {
-    const [values, setValues] = useState<UserEditPasswordInputModel>({password: null })
+export default function ForgotPassword() {
+    const [values, setValues] = useState<UserForgotPasswordInputModel>({ email: "" })
     const [cookies] = useCookies(["token"])
     const [submitted, setSubmitted] = useState(false)
     const [valid, setValid] = useState(false)
     const [error, setError] = useState("")
-    const [open, setOpen] = React.useState(false)
+    const [open, setOpen] = useState(false)
     const navigate = useNavigate()
 
     const handleInputChange = (event: { preventDefault: () => void; target: { name: any; value: any; }; }) => {
@@ -33,14 +32,13 @@ export default function ChangePassword() {
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        console.log("values: " + values.password)
-        fetch("/api/users/me/changepassword", {
-            method: "PUT",
+        console.log("values: " + values.email)
+        fetch("/api/forget-password", {
+            method: "POST",
             headers: {
                 "Content-type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`,
             },
-            body: values.password
+            body: values.email
         }).then(res => {
             setSubmitted(true)
             console.log(res)
@@ -51,7 +49,7 @@ export default function ChangePassword() {
             }
             else {
                 setValid(false)
-                setError("Invalid password")
+                setError("Invalid email")
                 return res.json()
             }
         }).catch(error => {
@@ -68,18 +66,6 @@ export default function ChangePassword() {
 
     const handleCancel = () => {
         navigate(-1)
-    }
-
-    if (!cookies.token) {
-        return (
-            <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
-                <Typography variant="h4" color="error">Erro de autenticação</Typography>
-                <Typography variant="body1" color="error">Precisa de estar autenticado para acessar a esta página.</Typography>
-                <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
-                    Login
-                </Button>
-            </Stack>
-        )
     }
 
     return (
@@ -99,17 +85,17 @@ export default function ChangePassword() {
                         <>
                             <input
                                 className="form-field"
-                                type="password"
-                                placeholder="Nova password"
-                                name="password"
-                                value={values.password}
+                                type="email"
+                                placeholder="E-mail"
+                                name="email"
+                                value={values.email}
                                 onChange={handleInputChange}
                             />
-                            {submitted && !values.password && (
-                                <span id="last-name-error">Introduza uma nova password</span>
+                            {submitted && !values.email && (
+                                <span id="last-name-error">Please enter an email</span>
                             )}
                             <button className="form-field" type="submit" >
-                                Alterar password
+                                Recuperar password
                             </button>
                             <button className={"form-field"} onClick={handleCancel}>
                                 Cancelar
@@ -121,5 +107,41 @@ export default function ChangePassword() {
             </div>
         </div>
     );
-    
+/*
+    return (
+        <div>
+            <form onSubmit={handleSubmit}>
+                <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    name="email"
+                    label="email"
+                    type="email"
+                    id="email"
+                    onChange={handleInputChange}
+                />
+                <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                >
+                    Enviar para email
+                </Button>
+            </form>
+
+            <Button
+                fullWidth
+                variant="contained"
+                color="secondary"
+                onClick={handleCancel}
+            >
+                Cancelar
+            </Button>
+        </div>
+    )
+
+ */
 }
