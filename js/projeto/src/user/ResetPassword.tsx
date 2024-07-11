@@ -7,10 +7,11 @@ import Alert from "@mui/material/Alert";
 
 interface UserResetPasswordInputModel {
     password: string
+    confirmPassword: string
 }
 
 export default function ResetPassword() {
-    const [values, setValues] = useState<UserResetPasswordInputModel>({ password: "" })
+    const [values, setValues] = useState<UserResetPasswordInputModel>({ password: "", confirmPassword: "" })
     const [submitted, setSubmitted] = useState(false)
     const [valid, setValid] = useState(false)
     const [error, setError] = useState("")
@@ -40,7 +41,12 @@ export default function ResetPassword() {
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        console.log("values: " + values.password)
+        if (values.password !== values.confirmPassword) {
+            setError("Passwords não coincidem")
+            setValid(false)
+            setSubmitted(true)
+            return
+        }
         fetch(`/api/set-password?email=${email}&token=${token}`, {
             method: "PUT",
             headers: {
@@ -57,19 +63,12 @@ export default function ResetPassword() {
             }
             else {
                 setValid(false)
-                setError("Invalid password")
+                setError("A password deve ter pelo menos 8 caracteres, um número e uma letra maiúscula.")
                 return res.json()
             }
         }).catch(error => {
             setError(error.message)
         })
-    };
-
-    const handleClose = (event: any, reason: string) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpen(false);
     }
 
     const handleCancel = () => {
@@ -99,10 +98,22 @@ export default function ResetPassword() {
                                 value={values.password}
                                 onChange={handleInputChange}
                             />
+                            <input
+                                className="form-field"
+                                type="password"
+                                placeholder="Confirmar a nova password"
+                                name="confirmPassword"
+                                value={values.confirmPassword}
+                                onChange={handleInputChange}
+                            />
                             {submitted && !values.password && (
-                                <span id="last-name-error">Please enter password</span>
+                                <span id="last-name-error">Adicione uma password</span>
                             )}
-                            <button className="form-field" type="submit" >
+                            {values.password !== values.confirmPassword && (
+                                <span id="confirm-password-error">As passwords não coincidem</span>
+                            )}
+                            <button className="form-field" type="submit"
+                                    disabled={!values.password || values.password !== values.confirmPassword}>
                                 Alterar password
                             </button>
                             <button className={"form-field"} onClick={handleCancel}>

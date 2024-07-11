@@ -7,14 +7,16 @@ import Alert from "@mui/material/Alert";
 // @ts-ignore
 import logo from '../assets/logo-black-transparent.png';
 import {Stack, Typography} from "@mui/material";
+// @ts-ignore
 import signUpIn from "../assets/sign.png";
 
 interface UserEditPasswordInputModel {
     password: string
+    confirmPassword: string
 }
 
 export default function ChangePassword() {
-    const [values, setValues] = useState<UserEditPasswordInputModel>({password: null })
+    const [values, setValues] = useState<UserEditPasswordInputModel>({password: "", confirmPassword: ""})
     const [cookies] = useCookies(["token"])
     const [submitted, setSubmitted] = useState(false)
     const [valid, setValid] = useState(false)
@@ -22,7 +24,7 @@ export default function ChangePassword() {
     const [open, setOpen] = React.useState(false)
     const navigate = useNavigate()
 
-    const handleInputChange = (event: { preventDefault: () => void; target: { name: any; value: any; }; }) => {
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         event.preventDefault()
         const { name, value } = event.target;
         setValues((values) => ({
@@ -33,7 +35,12 @@ export default function ChangePassword() {
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        console.log("values: " + values.password)
+        if (values.password !== values.confirmPassword) {
+            setError("Passwords não coincidem");
+            setValid(false);
+            setSubmitted(true);
+            return;
+        }
         fetch("/api/users/me/changepassword", {
             method: "PUT",
             headers: {
@@ -51,20 +58,13 @@ export default function ChangePassword() {
             }
             else {
                 setValid(false)
-                setError("Invalid password")
+                setError("A password deve ter pelo menos 8 caracteres, um número e uma letra maiúscula.")
                 return res.json()
             }
         }).catch(error => {
             setError(error.message)
         })
     };
-
-    const handleClose = (event: any, reason: string) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpen(false);
-    }
 
     const handleCancel = () => {
         navigate(-1)
@@ -105,10 +105,21 @@ export default function ChangePassword() {
                                 value={values.password}
                                 onChange={handleInputChange}
                             />
+                            <input
+                                className="form-field"
+                                type="password"
+                                placeholder="Confirmar a nova password"
+                                name="confirmPassword"
+                                value={values.confirmPassword}
+                                onChange={handleInputChange}
+                            />
                             {submitted && !values.password && (
                                 <span id="last-name-error">Introduza uma nova password</span>
                             )}
-                            <button className="form-field" type="submit" >
+                            {values.password !== values.confirmPassword && (
+                                <span id="confirm-password-error">As passwords não coincidem</span>
+                            )}
+                            <button className="form-field" type="submit" disabled={!values.password || values.password !== values.confirmPassword}>
                                 Alterar password
                             </button>
                             <button className={"form-field"} onClick={handleCancel}>
@@ -121,5 +132,5 @@ export default function ChangePassword() {
             </div>
         </div>
     );
-    
+
 }
