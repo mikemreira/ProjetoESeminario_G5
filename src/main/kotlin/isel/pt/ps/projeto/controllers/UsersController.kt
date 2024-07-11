@@ -4,9 +4,7 @@ import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
 import isel.pt.ps.projeto.domain.users.AuthenticatedUser
 import isel.pt.ps.projeto.models.Problem
 import isel.pt.ps.projeto.models.users.*
-import isel.pt.ps.projeto.services.TokenError
-import isel.pt.ps.projeto.services.UserError
-import isel.pt.ps.projeto.services.UsersService
+import isel.pt.ps.projeto.services.*
 import isel.pt.ps.projeto.utils.Failure
 import isel.pt.ps.projeto.utils.Success
 import jakarta.servlet.http.HttpServletResponse
@@ -18,7 +16,7 @@ import java.util.*
 
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping()
 class UsersController(
     private val usersService: UsersService,
     private val requestTokenProcessor: RequestTokenProcessor,
@@ -27,7 +25,7 @@ class UsersController(
 ) {
     private val logger: Logger = LoggerFactory.getLogger(UsersController::class.java)
 
-    @GetMapping("/me")
+    @GetMapping("/users/me")
     fun getUserByToken(@RequestHeader("Authorization") token : String): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
         val fotoString = if (authUser.user.foto != null) utils.byteArrayToBase64(authUser.user.foto) else null
@@ -42,7 +40,43 @@ class UsersController(
                 )
     }
 
-    @PutMapping("/me")
+    @PostMapping("/forget-password")
+    fun forgetPassword(
+        @RequestBody email: String
+    ): ResponseEntity<*> {
+        val res = usersService.forgetPassword(email)
+        return when (res) {
+            is Success ->
+                ResponseEntity.status(201)
+                    .body(res.value)
+            is Failure ->
+                when (res.value) {
+                    ForgetPasswordError.InvalidEmail -> Problem.response(404, Problem.emailDoesntExists)
+                }
+        }
+    }
+
+    @PutMapping("/set-password")
+    fun setNewPassword(
+        @RequestParam email: String,
+        @RequestParam token: String,
+        @RequestBody password: String
+    ): ResponseEntity<*> {
+        val res = usersService.setNewPassword(email, token, password)
+        return when (res) {
+            is Success ->
+                ResponseEntity.status(201)
+                    .body(res.value)
+            is Failure ->
+                when (res.value) {
+                    SetNewPasswordError.InvalidQuery-> Problem.response(404, Problem.invalidQuery)
+                    SetNewPasswordError.NoUserWithThatEmail -> Problem.response(404, Problem.emailDoesntExists)
+                    SetNewPasswordError.InsecurePassword -> Problem.response(422, Problem.insecurePassword)
+                }
+        }
+    }
+
+    @PutMapping("/users/me")
     fun editUserByToken(
         @RequestHeader("Authorization") token : String,
         @RequestBody input: UserEditInputModel
@@ -64,7 +98,7 @@ class UsersController(
         }
     }
 
-    @PutMapping("/me/changepassword")
+    @PutMapping("/users/me/changepassword")
     fun editPassword(
         @RequestHeader("Authorization") token : String,
         @RequestBody password: String
@@ -93,7 +127,7 @@ class UsersController(
         return ResponseEntity.status(200).body(listOfUsers)
     }
 
-    @PostMapping("/signup", consumes = ["application/json", "text/plain;charset=UTF-8"], produces = ["application/json"])
+    @PostMapping("/users/signup", consumes = ["application/json", "text/plain;charset=UTF-8"], produces = ["application/json"])
     fun signUp(
         @RequestBody input: UserSignUp,
     ): ResponseEntity<*> {
@@ -111,7 +145,7 @@ class UsersController(
         }
     }
 
-    @PostMapping("/signin")
+    @PostMapping("/users/signin")
     fun signIn(
         @RequestBody input: UserSignIn,
         response: HttpServletResponse,
@@ -127,7 +161,7 @@ class UsersController(
         }
     }
 
-    @PostMapping("/signout")
+    @PostMapping("/users/signout")
     fun signOut(
         user: AuthenticatedUser,
         response: HttpServletResponse,

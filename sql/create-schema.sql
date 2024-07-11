@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS Convite;
 DROP TABLE IF EXISTS Papel;
 DROP TABLE IF EXISTS Obra;
 DROP TABLE IF EXISTS Token;
+DROP TABLE IF EXISTS PasswordEsquecida;
 DROP TABLE IF EXISTS Utilizador;
 
 create table if not exists Utilizador (
@@ -13,6 +14,13 @@ create table if not exists Utilizador (
                             morada varchar(64) default null,
                             foto bytea default null
 );
+
+create table if not exists PasswordEsquecida (
+        email varchar(64) references Utilizador(email),
+		token_check VARCHAR(256),
+		primary key (email, token_check)
+);
+
 
 create table if not exists Token(
     token_validation VARCHAR(256) primary key,

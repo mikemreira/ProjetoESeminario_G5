@@ -23,6 +23,8 @@ class Problem(
 
         val emailAlreadyExists = Problem("Email already exists")
 
+        val emailDoesntExists = Problem("Email doesn't exists")
+
         val insecurePassword = Problem("Insecure Password")
 
         val userOrPasswordAreInvalid = Problem("User or password invalid")
@@ -58,5 +60,8 @@ class Problem(
         val constructionSuspended = Problem("Construction is suspended")
 
         val userNotAdmin = Problem("User does not have permission")
+
+        val invalidQuery = Problem("Invalid Query")
+
     }
 }

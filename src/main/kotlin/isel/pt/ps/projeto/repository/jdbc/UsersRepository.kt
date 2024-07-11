@@ -316,6 +316,81 @@ class UsersRepository(
         }
     }
 
+    override fun setForgetPassword(email: String, token: String) {
+        initializeConnection().use {
+            it.autoCommit = false
+            try {
+                val pStatement = it.prepareStatement(
+                    "Insert into PasswordEsquecida values (?,?)"
+                )
+                pStatement.setString(1, email)
+                pStatement.setString(2, token)
+                pStatement.executeUpdate()
+            } catch (e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun validateEmailAndTokenForForgottenPassword(email: String, token: String): Boolean {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement(
+                    "select exists (" +
+                        "select * " +
+                        "from PasswordEsquecida " +
+                        "where email = ? and token_check = ? " +
+                        ")"
+                )
+                pStatement.setString(1, email)
+                pStatement.setString(2, token)
+                val result = pStatement.executeQuery()
+                result.next()
+                result.getBoolean("exists")
+            } catch (e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun editPasswordIfForgotten(userId: Int, email: String, pass: PasswordValidationInfo) {
+        initializeConnection().use {
+            it.autoCommit = false
+            try {
+                val pStatement = it.prepareStatement(
+                    "UPDATE Utilizador\n" +
+                        "SET password = ?\n" +
+                        "WHERE id = ? \n"
+                )
+                pStatement.setString(1, pass.validationInfo)
+                pStatement.setInt(2, userId)
+                pStatement.executeUpdate()
+                val tokenStatement = it.prepareStatement(
+                    "delete from token where id_utilizador = ?"
+                )
+                tokenStatement.setInt(1, userId)
+                tokenStatement.executeUpdate()
+                val forgetPasswordStatement = it.prepareStatement(
+                    "delete from PasswordEsquecida where email = ?"
+                )
+                forgetPasswordStatement.setString(1, email)
+                forgetPasswordStatement.executeUpdate()
+            } catch (e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
 
     override fun createToken(
         token: Token,

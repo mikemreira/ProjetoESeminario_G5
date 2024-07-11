@@ -29,10 +29,23 @@ sealed class TokenError {
     object UserOrPasswordAreInvalid : TokenError()
 }
 
+sealed class ForgetPasswordError {
+    object InvalidEmail : ForgetPasswordError()
+}
+
+sealed class SetNewPasswordError {
+    object InvalidQuery : SetNewPasswordError()
+    object NoUserWithThatEmail : SetNewPasswordError()
+    object InsecurePassword : SetNewPasswordError()
+}
+
+typealias SetNewPasswordResult = Either<SetNewPasswordError, String>
+
+typealias ForgetPasswordResult = Either<ForgetPasswordError, String>
+
 typealias UserResult = Either<UserError, User>
 typealias SimpleUserResult = Either<UserError, SimpleUser>
 typealias ChangePasswordResult = Either<UserError, Boolean>
-
 
 typealias TokenResult = Either<TokenError, TokenExternalInfo>
 
@@ -42,6 +55,7 @@ class UsersService(
     private val usersDomain: UsersDomain,
     private val utilsService: UtilsServices,
     private val clock: Clock,
+    private val emailSenderService: EmailSenderService,
     private val utils: UtilsController
 ) {
     fun getUsers(): List<User> = usersRepository.getUsers()
@@ -106,6 +120,32 @@ class UsersService(
         return true
     }
 
+    fun forgetPassword(email: String): ForgetPasswordResult {
+        println(email)
+        println(usersRepository.checkUserByEmail(email))
+        if (!usersRepository.checkUserByEmail(email)) {
+            return failure(ForgetPasswordError.InvalidEmail)
+        }
+        val token = usersDomain.generateTokenValue()
+        usersRepository.setForgetPassword(email, token)
+        emailSenderService.sendEmail(email, "Forgot Password", "Hello $email, \n" +
+            "Click in this link to reset your password http://localhost:5173/set-password?email=$email&token=$token"
+        )
+        return success("To reset your pass go to your email")
+    }
+
+    fun setNewPassword(email: String, token: String, password: String): SetNewPasswordResult {
+        if (!usersRepository.validateEmailAndTokenForForgottenPassword(email, token))
+            return failure(SetNewPasswordError.InvalidQuery)
+        val user = usersRepository.getUserByEmail(email) ?: return failure(SetNewPasswordError.NoUserWithThatEmail)
+        if (!usersDomain.isSafePassword(password)) {
+            println("Insecure password")
+            return failure(SetNewPasswordError.InsecurePassword)
+        }
+        val passVal = usersDomain.createPasswordValidationInformation(password)
+        usersRepository.editPasswordIfForgotten(user.id, email, passVal)
+        return success("Password changed")
+    }
     fun getUserByToken(token: String): User? {
         if(!usersDomain.canBeToken(token)) {
             return null
