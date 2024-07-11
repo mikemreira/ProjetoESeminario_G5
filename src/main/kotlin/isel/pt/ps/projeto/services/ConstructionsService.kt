@@ -167,7 +167,7 @@ class ConstructionsService(
         if (inputModel.name.isEmpty() || inputModel.location.isEmpty() || inputModel.description.isEmpty())
             return failure(ConstructionEditError.InvalidInput)
 
-        val updatedConstruction = constructionsRepository.editConstruction(oid, inputModel)
+        val updatedConstruction = constructionsRepository.editConstruction(userId, oid, inputModel)
         return success(updatedConstruction)
     }
 /*

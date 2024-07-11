@@ -39,7 +39,7 @@ interface ConstructionRepository {
 
     fun isUserAssociatedWithConstructionByEmail(oid: Int, email: String): Boolean
 
-    fun editConstruction(oid: Int, inputModel: ConstructionEditInputModel): Construction?
+    fun editConstruction(uid:Int, oid: Int, inputModel: ConstructionEditInputModel): Construction?
 
     fun removeConstructionUser(oid: Int, uid: Int): Boolean
 

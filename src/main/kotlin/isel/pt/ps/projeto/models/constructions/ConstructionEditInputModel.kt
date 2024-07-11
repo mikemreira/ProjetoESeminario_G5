@@ -10,4 +10,5 @@ data class ConstructionEditInputModel (
     val endDate: LocalDate?,
     val foto: String?,
     val status: String?,
+    val function: String
 )

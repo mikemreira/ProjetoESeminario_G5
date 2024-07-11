@@ -317,7 +317,7 @@ class ConstructionsRepository(
         }
     }
 
-    override fun editConstruction(oid: Int, inputModel: ConstructionEditInputModel): Construction? {
+    override fun editConstruction(uid: Int, oid: Int, inputModel: ConstructionEditInputModel): Construction? {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -336,6 +336,17 @@ class ConstructionsRepository(
                 pStatement.setString(7, inputModel.status)
                 pStatement.setInt(8, oid)
                 pStatement.executeUpdate()
+
+                val pStatement2 = it.prepareStatement(
+                    "UPDATE Papel\n" +
+                        "SET funcao = ?\n" +
+                        "WHERE id_utilizador = ? AND id_obra = ?"
+                )
+                pStatement2.setString(1, inputModel.function)
+                pStatement2.setInt(2, uid)
+                pStatement2.setInt(3, oid)
+                pStatement2.executeUpdate()
+
                 if (inputModel.status == "deleted")
                     return null
                 val selectConst = it.prepareStatement("SELECT * FROM Obra WHERE id = ?")
