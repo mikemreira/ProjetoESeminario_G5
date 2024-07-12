@@ -77,6 +77,30 @@ class RegistersController(
         }
     }
 
+    @PostMapping("/registos/nfc")
+    fun addRegisterEntryByNfc(
+        @RequestHeader("Authorization") userToken: String,
+        @RequestBody register: RegisterByNfcInputModel
+    ): ResponseEntity<*> {
+        val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        println("Registo NFC")
+        val res = registersService.addRegisterEntryByNFC(authUser.user.id, register.nfcId, register.time)
+        return when (res) {
+            is Success ->
+                ResponseEntity.status(201)
+                    .body(RegisterInfoModel("Successful"))
+            is Failure ->
+                when (res.value) {
+                    RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                    RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                    RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
+                    RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                    RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                    RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                }
+        }
+    }
+
     @PutMapping("/registos")
     fun addUsersRegisterExit(
         @RequestHeader("Authorization") userToken: String,

@@ -64,6 +64,21 @@ class RegistersService(
         }
     }
 
+    fun addRegisterEntryByNFC(uid: Int, nfcId: String, entry: LocalDateTime) : EntryRegisterResult {
+        val construction = constructionRepository.getConstructionByNFCID(nfcId)
+            ?: return failure(RegistersInfoError.NoConstruction)
+
+        if (construction.status == "recoverable")
+            return failure(RegistersInfoError.ConstructionSuspended)
+
+        val res = registersRepository.addUserRegisterEntry(uid, construction.oid, entry)
+        return if (res) {
+            success(true)
+        } else {
+            failure(RegistersInfoError.InvalidRegister)
+        }
+    }
+
     fun addUserRegisterExit(uid: Int, obraId: Int, exit: LocalDateTime) : EntryRegisterResult {
 
         val construction = constructionRepository.getConstruction(obraId)

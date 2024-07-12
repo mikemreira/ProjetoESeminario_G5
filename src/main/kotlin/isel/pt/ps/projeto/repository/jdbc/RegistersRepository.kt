@@ -70,16 +70,37 @@ class RegistersRepository : RegistersRepository {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pStatement = it.prepareStatement(
-                    "insert into registo(id_utilizador, id_obra, entrada) values(?, ?, ?)"
+                val checkEntryStatement = it.prepareStatement("" +
+                    "select exists ( " +
+                    "select * from registo\n" +
+                    "Where id_utilizador = ? and saida = null"
                 )
-                pStatement.setInt(1, userId)
-                pStatement.setInt(2, obraId)
 
-                val stamp = Timestamp.valueOf(time)
-                pStatement.setTimestamp(3, stamp)
+                checkEntryStatement.setInt(1 ,userId)
+                val check = checkEntryStatement.executeQuery()
+                if(check.next()){
+                    val saidaStatement = it.prepareStatement("" +
+                        "update registo\n" +
+                        "set saida = ?\n" +
+                        "where id_utilizador = ? and id_obra = ? "
+                    )
+                    saidaStatement.setInt(1, userId)
+                    saidaStatement.setInt(2, obraId)
+                    saidaStatement.executeUpdate()
+                }
+                else {
+                    val pStatement = it.prepareStatement(
+                        "insert into registo(id_utilizador, id_obra, entrada) values(?, ?, ?)"
+                    )
+                    pStatement.setInt(1, userId)
+                    pStatement.setInt(2, obraId)
 
-                pStatement.executeUpdate()
+                    val stamp = Timestamp.valueOf(time)
+                    pStatement.setTimestamp(3, stamp)
+
+                    pStatement.executeUpdate()
+
+                }
                 true
             } catch (e: Exception) {
                 it.rollback()

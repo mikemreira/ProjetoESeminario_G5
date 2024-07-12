@@ -17,6 +17,8 @@ interface ConstructionRepository {
      */
     fun getConstruction(oid: Int): Construction?
 
+    fun getConstructionByNFCID(nfcId: String): Construction?
+
     fun getConstructionsUsers(oid: Int): List<SimpleUserAndFunc>
 
     fun getConstructionUser(oid: Int, uid: Int): SimpleUserAndFunc?

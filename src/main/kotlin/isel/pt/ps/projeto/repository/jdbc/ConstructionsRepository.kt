@@ -66,6 +66,41 @@ class ConstructionsRepository(
         }
     }
 
+    override fun getConstructionByNFCID(nfcId: String): Construction? {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement =
+                    it.prepareStatement(
+                        "select id, nome, localização, descrição, data_inicio, data_fim, status, foto from obra \n" +
+                            "where id_nfc = ?",
+                    )
+                pStatement.setString(1, nfcId)
+                val result = pStatement.executeQuery()
+                if (!result.next())
+                    null
+                else {
+                    val dateFim = result.getDate("data_fim")
+                    Construction(
+                        result.getInt("id"),
+                        result.getString("nome"),
+                        result.getString("localização"),
+                        result.getString("descrição"),
+                        result.getDate("data_inicio").toString().toLocalDate(),
+                        if (dateFim == null) dateFim else dateFim.toString().toLocalDate(),
+                        result.getString("status"),
+                        result.getBytes("foto")
+                    )
+                }
+            } catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
     override fun getConstructionsUsers(oid: Int): List<SimpleUserAndFunc> {
         initializeConnection().use {
             it.autoCommit = false
