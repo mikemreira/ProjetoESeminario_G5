@@ -17,7 +17,7 @@ export default function LogOut() {
             const expirationDate = new Date();
             setUser(undefined)
             setAvatar(undefined)
-            sessionStorage.clear()
+            localStorage.clear()
             expirationDate.setHours(expirationDate.getHours() - 1);
             document.cookie = `token=; expires=${expirationDate.toUTCString()}; path=/`;
             document.cookie = `username=; expires=${expirationDate.toUTCString()}; path=/`;

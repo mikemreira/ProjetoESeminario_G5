@@ -63,8 +63,8 @@ export default function LogIn() {
             setCookies("token", body.token, { path: '/' })
             setUser(body.token)
             setAvatar(body.foto)
-            sessionStorage.setItem("token", body.token)
-            sessionStorage.setItem("avatar", body.foto)
+            localStorage.setItem("token", body.token)
+            localStorage.setItem("avatar", body.foto)
         }
     }).catch(error => {
         setError(error.message)

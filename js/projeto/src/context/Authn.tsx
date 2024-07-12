@@ -22,7 +22,7 @@ const LoggedInContext = createContext<ContextType>({
 const getTokenFromCookie = () => document.cookie.split('; ').find(row => row.startsWith('token='))==undefined ? document.cookie.split('; ').find(row => row.startsWith('token=')) : document.cookie.split('; ').find(row => row.startsWith('token=')).split('=')[1]+"="
 // @ts-ignore
 const getAvatarFromCookie = () => document.cookie.split('; ').find(row => row.startsWith('avatar='))==undefined ? document.cookie.split('; ').find(row => row.startsWith('avatar=')) : document.cookie.split('; ').find(row => row.startsWith('avatar=')).split('=')[1]+"="
-const getAvatarFromSession = () => sessionStorage.getItem('avatar')
+const getAvatarFromSession = () => localStorage.getItem('avatar')
 
 export function AuthnContainer({ children }: { children: React.ReactNode }) {
     const [user, setUserState] = useState(getTokenFromCookie())
