@@ -58,7 +58,7 @@ export default function ChangePassword() {
             }
             else {
                 setValid(false)
-                setError("A password deve ter pelo menos 8 caracteres, um número e uma letra maiúscula.")
+                setError("A password deve ter pelo menos 5 caracteres, uma letra maiúscula, uma letra minúscula e um número.")
                 return res.json()
             }
         }).catch(error => {

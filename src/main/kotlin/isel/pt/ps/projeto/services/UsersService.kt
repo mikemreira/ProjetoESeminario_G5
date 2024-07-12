@@ -74,7 +74,7 @@ class UsersService(
 
         val passwordValidationInfo = usersDomain.createPasswordValidationInformation(password)
         val signed = usersRepository.signUp(name, email, passwordValidationInfo)
-        emailSenderService.sendEmail(email, "Bem vindo", "Seja bem vindo aos Registos de acessos ISEL")
+        emailSenderService.sendEmail(email, "Bem vindo(a)", "Seja bem vindo(a) aos Registos de acessos ISEL do grupo 5")
         return success(signed)
     }
 
@@ -85,13 +85,11 @@ class UsersService(
         require(email.isNotEmpty() && password.isNotEmpty()) { return failure(TokenError.UserOrPasswordAreInvalid) }
         val user: User = usersRepository.getUserByEmail(email) ?: return failure(TokenError.UserOrPasswordAreInvalid)
         println("SIGN IN USER : $user")
-        println(usersDomain.createPasswordValidationInformation(password))
         if (!usersDomain.validatePassword(password, user.passwordValidation)) {
             println("PASS DIDNT MATCH")
             return failure(TokenError.UserOrPasswordAreInvalid)
         }
         val tokenValue = usersDomain.generateTokenValue()
-        println("1 :"+tokenValue)
         val now = clock.now()
         val newToken = Token(
             usersDomain.createTokenValidationInformation(tokenValue),
@@ -99,7 +97,6 @@ class UsersService(
             createdAt = now,
             lastUsedAt = now
         )
-        println("2 :"+newToken.tokenValidationInfo.validationInfo)
 
         usersRepository.createToken(newToken, usersDomain.maxNumberOfTokensPerUser)
 
@@ -116,15 +113,12 @@ class UsersService(
     }
 
     fun signOut(token: String): Boolean {
-        println("Hello")
         val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
         usersRepository.signOut(tokenValidationInfo)
         return true
     }
 
     fun forgetPassword(email: String): ForgetPasswordResult {
-        println(email)
-        println(usersRepository.checkUserByEmail(email))
         if (!usersRepository.checkUserByEmail(email)) {
             return failure(ForgetPasswordError.InvalidEmail)
         }
@@ -133,7 +127,7 @@ class UsersService(
         emailSenderService.sendEmail(email, "Forgot Password", "Hello $email, \n" +
             "Click in this link to reset your password http://localhost:5173/set-password?email=$email&token=$token"
         )
-        return success("To reset your pass go to your email")
+        return success("To reset your password go to your email")
     }
 
     fun setNewPassword(email: String, token: String, password: String): SetNewPasswordResult {
@@ -175,7 +169,6 @@ class UsersService(
         }
         println("Safe password")
         val passwordValidationInfo = usersDomain.createPasswordValidationInformation(password)
-        println("Password validation info: $passwordValidationInfo")
         val res = usersRepository.editPassword(id, passwordValidationInfo)
         return success(res)
     }

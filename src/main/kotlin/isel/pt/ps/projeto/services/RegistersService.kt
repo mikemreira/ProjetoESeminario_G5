@@ -21,7 +21,13 @@ sealed class RegistersInfoError {
     object NoAccessToConstruction : RegistersInfoError()
     object ConstructionSuspended : RegistersInfoError()
 }
-typealias RegistersInfoResult = Either<RegistersInfoError, List<RegisterOutputModel>>
+
+sealed class RegistersUserInfoError {
+    object NoRegisters : RegistersUserInfoError()
+    object InvalidRegister : RegistersUserInfoError()
+}
+
+typealias RegistersInfoResult = Either<RegistersUserInfoError, List<RegisterOutputModel>>
 typealias ListOfUsersRegistersInfoResult = Either<RegistersInfoError, List<RegisterAndUser>>
 typealias ListOfUsersRegistersAndConstructionStatusInfoResult = Either<RegistersInfoError, ConstructionStatusAndUserRegisters>
 typealias EntryRegisterResult = Either<RegistersInfoError, Boolean>
@@ -37,7 +43,7 @@ class RegistersService(
 
         val register = registersRepository.getUserRegisters(uid)
         return if (register.isEmpty()) {
-            failure(RegistersInfoError.NoRegisters)
+            failure(RegistersUserInfoError.NoRegisters)
         } else {
             success(register)
         }

@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RestController
 class ConstructionsController(
     private val constructionService: ConstructionsService,
     private val requestTokenProcessor: RequestTokenProcessor,
-   // private val authorizationService: AuthorizationService,
     private val utils: UtilsController
 ) {
     @GetMapping("/{oid}")
@@ -38,13 +37,8 @@ class ConstructionsController(
         @RequestHeader("Authorization") userToken: String,
         @PathVariable oid: Int,
     ): ResponseEntity<*> {
-        // add process to get user by token
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        // TODO(Find a way to return null and then the error maybe ?)
-
         val res = constructionService.getUserRoleOnConstruction(authUser.user.id, oid)
-
-        // add everything in a new OutputModel with role and construction
         return when (res) {
             is Success -> {
                 val fotoString = if (res.value.construction.foto != null) utils.byteArrayToBase64(res.value.construction.foto) else null
@@ -72,10 +66,8 @@ class ConstructionsController(
                     ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                     ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
                     ConstructionInfoError.NoAccessToConstruction -> Problem.response(401, Problem.unauthorizedUser)
-                    ConstructionInfoError.InvalidRegister -> TODO()
                     ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                    ConstructionInfoError.AlreadyInConstruction -> TODO()
-                    ConstructionInfoError.ConstructionSuspended -> TODO()
+                    ConstructionInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
                 }
         }
     }
@@ -130,7 +122,6 @@ class ConstructionsController(
             )
 
         val res = constructionService.getConstructionUsers(authUser.user.id, oid)
-        //return ResponseEntity.status(200).body(users)
         return when (res) {
             is Success -> {
                 ResponseEntity.status(200)
@@ -156,10 +147,8 @@ class ConstructionsController(
                 ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                 ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
                 ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
-                ConstructionInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                ConstructionInfoError.AlreadyInConstruction -> TODO()
-                ConstructionInfoError.ConstructionSuspended -> TODO()
+                ConstructionInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }
@@ -245,11 +234,9 @@ class ConstructionsController(
                     ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
                     ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                     ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
-                    ConstructionInfoError.NoAccessToConstruction -> TODO()
-                    ConstructionInfoError.InvalidRegister -> TODO()
-                    ConstructionInfoError.NoPermission -> TODO()
-                    ConstructionInfoError.AlreadyInConstruction -> TODO()
-                    ConstructionInfoError.ConstructionSuspended -> TODO()
+                    ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noAccessToConstruction)
+                    ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                    ConstructionInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
                 }
         }
     }
@@ -287,10 +274,8 @@ class ConstructionsController(
                         ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                         ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
                         ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noAccessToConstruction)
-                        ConstructionInfoError.InvalidRegister -> TODO()
-                        ConstructionInfoError.NoPermission -> TODO()
-                        ConstructionInfoError.AlreadyInConstruction -> TODO()
-                        ConstructionInfoError.ConstructionSuspended -> TODO()
+                        ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                        ConstructionInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
                     }
             }
     }
@@ -320,7 +305,6 @@ class ConstructionsController(
                     .body(ConstructionIdOutputModel(res.value))
             is Failure ->
                 when (res.value) {
-                    //ConstructionCreationError.ConstructionAlreadyExists -> Problem.response(400, Problem.constructionAlreadyExists)
                     ConstructionCreationError.InvalidConstruction -> Problem.response(400, Problem.invalidConstruction)
                 }
         }
@@ -347,9 +331,7 @@ class ConstructionsController(
                 ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                 ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
                 ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noAccessToConstruction)
-                ConstructionInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                ConstructionInfoError.AlreadyInConstruction -> TODO()
                 ConstructionInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }

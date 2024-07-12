@@ -146,8 +146,9 @@ export default function SignUp() {
               <form className="info-pass-form">
                   <p>A password deve ter pelo menos:</p>
                   <ul>
-                      <li>8 caracteres;</li>
+                      <li>5 caracteres;</li>
                       <li>uma letra maiúscula;</li>
+                      <li>uma letra minúscula;</li>
                       <li>um número.</li>
                   </ul>
               </form>

@@ -5,6 +5,7 @@ import isel.pt.ps.projeto.models.Problem
 import isel.pt.ps.projeto.models.registers.*
 import isel.pt.ps.projeto.services.RegistersInfoError
 import isel.pt.ps.projeto.services.RegistersService
+import isel.pt.ps.projeto.services.RegistersUserInfoError
 import isel.pt.ps.projeto.utils.Failure
 import isel.pt.ps.projeto.utils.Success
 import jakarta.servlet.http.HttpServletResponse
@@ -47,12 +48,8 @@ class RegistersController(
                     )
             is Failure ->
                 when (res.value) {
-                    RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
-                    RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
-                    RegistersInfoError.NoAccessToConstruction -> TODO()
-                    RegistersInfoError.NoConstruction -> TODO()
-                    RegistersInfoError.NoPermission -> TODO()
-                    RegistersInfoError.ConstructionSuspended -> TODO()
+                    RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                    RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 }
         }
     }
@@ -73,9 +70,9 @@ class RegistersController(
                     RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                     RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                     RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
-                    RegistersInfoError.NoConstruction -> TODO()
-                    RegistersInfoError.NoPermission -> TODO()
-                    RegistersInfoError.ConstructionSuspended -> TODO()
+                    RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                    RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                    RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
                 }
         }
     }
@@ -96,9 +93,9 @@ class RegistersController(
                     RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                     RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                     RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
-                    RegistersInfoError.NoConstruction -> TODO()
-                    RegistersInfoError.NoPermission -> TODO()
-                    RegistersInfoError.ConstructionSuspended -> TODO()
+                    RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                    RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                    RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
                 }
         }
     }
@@ -139,9 +136,9 @@ class RegistersController(
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                RegistersInfoError.InvalidRegister -> TODO()
-                RegistersInfoError.NoRegisters -> TODO()
-                RegistersInfoError.ConstructionSuspended -> TODO()
+                RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }
@@ -161,9 +158,9 @@ class RegistersController(
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                RegistersInfoError.InvalidRegister -> TODO()
-                RegistersInfoError.NoRegisters -> TODO()
-                RegistersInfoError.ConstructionSuspended -> TODO()
+                RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }
@@ -197,9 +194,9 @@ class RegistersController(
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                RegistersInfoError.InvalidRegister -> TODO()
-                RegistersInfoError.NoRegisters -> TODO()
-                RegistersInfoError.ConstructionSuspended -> TODO()
+                RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }
@@ -232,9 +229,9 @@ class RegistersController(
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                RegistersInfoError.InvalidRegister -> TODO()
-                RegistersInfoError.NoRegisters -> TODO()
-                RegistersInfoError.ConstructionSuspended -> TODO()
+                RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }
@@ -266,9 +263,9 @@ class RegistersController(
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                RegistersInfoError.InvalidRegister -> TODO()
-                RegistersInfoError.NoRegisters -> TODO()
-                RegistersInfoError.ConstructionSuspended -> TODO()
+                RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }
@@ -299,9 +296,9 @@ class RegistersController(
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                RegistersInfoError.InvalidRegister -> TODO()
-                RegistersInfoError.NoRegisters -> TODO()
-                RegistersInfoError.ConstructionSuspended -> TODO()
+                RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }

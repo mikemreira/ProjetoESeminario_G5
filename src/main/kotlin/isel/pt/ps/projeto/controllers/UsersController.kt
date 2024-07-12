@@ -82,9 +82,7 @@ class UsersController(
         @RequestBody input: UserEditInputModel
     ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
-        println("entrou 1")
         val res = usersService.editUser(authUser.user.id, input.nome, input.morada, input.foto)
-        println("entrou 2")
         return when (res) {
             is Success ->
                 ResponseEntity.status(201)
@@ -103,9 +101,7 @@ class UsersController(
         @RequestHeader("Authorization") token : String,
         @RequestBody password: String
     ): ResponseEntity<*> {
-        println("entrou")
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
-        println("PASS : "+password)
         val res = usersService. editPassword(authUser.user.id, password)
         return when (res) {
             is Success ->
@@ -122,7 +118,6 @@ class UsersController(
 
     @GetMapping
     fun getUsers(): ResponseEntity<*> {
-        println(usersService.getUsers())
         val listOfUsers = usersService.getUsers()
         return ResponseEntity.status(200).body(listOfUsers)
     }
@@ -166,7 +161,6 @@ class UsersController(
         user: AuthenticatedUser,
         response: HttpServletResponse,
     ){
-        println("USER : $user")
         usersService.signOut(user.token)
     }
 

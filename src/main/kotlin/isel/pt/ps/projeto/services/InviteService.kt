@@ -1,6 +1,5 @@
 package isel.pt.ps.projeto.services
 
-import isel.pt.ps.projeto.domain.constructions.ConstructionsDomain
 import isel.pt.ps.projeto.models.invite.Invite
 import isel.pt.ps.projeto.models.constructions.ConstructionAndRole
 import isel.pt.ps.projeto.repository.InviteRepository
