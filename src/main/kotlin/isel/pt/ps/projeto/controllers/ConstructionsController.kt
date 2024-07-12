@@ -93,7 +93,7 @@ class ConstructionsController(
     }
 
     @PutMapping("/{oid}/nfc")
-    fun getNfc(
+    fun editNfc(
         @RequestHeader("Authorization") userToken: String,
         @RequestBody nfc: String,
         @PathVariable oid: Int,
