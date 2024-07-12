@@ -72,6 +72,47 @@ class ConstructionsController(
         }
     }
 
+    @GetMapping("/{oid}/nfc")
+    fun getNfc(
+        @RequestHeader("Authorization") userToken: String,
+        @PathVariable oid: Int,
+    ): ResponseEntity<*> {
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        val res = constructionService.getNfc(authUser.user.id, oid)
+        return when (res) {
+            is Success -> {
+                ResponseEntity.status(200)
+                    .body(NfcOutputModel(res.value))
+            }
+            is Failure -> when (res.value) {
+                NfcError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                NfcError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+            }
+        }
+    }
+
+    @PutMapping("/{oid}/nfc")
+    fun getNfc(
+        @RequestHeader("Authorization") userToken: String,
+        @RequestBody nfc: String,
+        @PathVariable oid: Int,
+    ): ResponseEntity<*> {
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        val res = constructionService.editNfc(authUser.user.id, oid, nfc)
+        return when (res) {
+            is Success -> {
+                ResponseEntity.status(200)
+                    .body(NfcOutputModel(res.value))
+            }
+            is Failure -> when (res.value) {
+                NfcError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                NfcError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+            }
+        }
+    }
+
     @PutMapping("/{oid}")
     fun editConstruction(
         @RequestBody input: ConstructionEditInputModel,

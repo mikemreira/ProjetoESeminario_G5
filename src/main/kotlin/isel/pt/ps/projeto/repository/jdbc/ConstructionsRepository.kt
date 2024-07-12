@@ -435,6 +435,51 @@ class ConstructionsRepository(
             }
         }    }
 
+    override fun getNfc(oid: Int): String? {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement =
+                    it.prepareStatement(
+                        "select * from obra \n" +
+                            "where id = ?",
+                    )
+                pStatement.setInt(1, oid)
+                val result = pStatement.executeQuery()
+                result.next()
+                result.getString("id_nfc")
+            } catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun editNfc(oid: Int, nfcId: String): String {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement =
+                    it.prepareStatement(
+                        "update obra " +
+                            "set id_nfc = ? \n" +
+                            "where id = ?",
+                    )
+                pStatement.setString(1, nfcId)
+                pStatement.setInt(2, oid)
+                pStatement.executeQuery()
+                nfcId
+            } catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
     override fun inviteToConstruction(oid: Int, email: String): Boolean {
         initializeConnection().use {
             it.autoCommit = false

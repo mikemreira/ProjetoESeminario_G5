@@ -44,5 +44,7 @@ interface ConstructionRepository {
     fun editConstruction(uid:Int, oid: Int, inputModel: ConstructionEditInputModel): Construction?
 
     fun removeConstructionUser(oid: Int, uid: Int): Boolean
+    fun getNfc(oid: Int): String?
+    fun editNfc(oid: Int, nfcId: String): String
 
 }

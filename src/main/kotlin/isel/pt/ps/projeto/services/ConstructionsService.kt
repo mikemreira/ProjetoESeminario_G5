@@ -40,6 +40,13 @@ sealed class ConstructionEditError {
     object InvalidInput: ConstructionEditError()
 }
 
+sealed class NfcError {
+    object NoPermission: NfcError()
+    object NoConstruction: NfcError()
+}
+
+typealias NfcResult = Either<NfcError, String?>
+
 typealias ConstructionAndRoleResult = Either<ConstructionInfoError, ConstructionAndRole>
 typealias ConstructionCreationResult = Either<ConstructionCreationError, Int>
 typealias ConstructionsInfoResult = Either<ConstructionInfoError, List<Construction>>
@@ -124,6 +131,32 @@ class ConstructionsService(
         }
         val fotoBytes = if (foto!=null) utilsService.resizeAndCompressImageBase64(foto, 800, 600, 0.8f) else null
         return success(constructionsRepository.createConstruction(userId, name, location, description, startDate, endDate, fotoBytes, status, function))
+    }
+
+    fun getNfc(userId: Int, oid: Int): NfcResult {
+        val construction = constructionsRepository.getConstruction(oid)
+            ?: return failure(NfcError.NoConstruction)
+
+        val role = constructionsRepository.getUserRoleFromConstruction(userId, construction.oid)
+            ?: return failure(NfcError.NoPermission)
+
+        if (role.role != "admin")
+            return failure(NfcError.NoPermission)
+
+        return success(constructionsRepository.getNfc(oid))
+    }
+
+    fun editNfc(userId: Int, oid: Int, nfc: String): NfcResult {
+        val construction = constructionsRepository.getConstruction(oid)
+            ?: return failure(NfcError.NoConstruction)
+
+        val role = constructionsRepository.getUserRoleFromConstruction(userId, construction.oid)
+            ?: return failure(NfcError.NoPermission)
+
+        if (role.role != "admin")
+            return failure(NfcError.NoPermission)
+
+        return success(constructionsRepository.getNfc(oid))
     }
 
     fun getUserRoleOnConstruction(userId: Int, oid: Int): ConstructionAndRoleResult {
