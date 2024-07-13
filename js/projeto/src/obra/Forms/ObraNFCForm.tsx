@@ -8,6 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import CancelIcon from '@mui/icons-material/Cancel';
 import SaveIcon from '@mui/icons-material/Save';
+import {path} from "../../App";
 
 interface ObraNFCFormProps {
     nfc: string | null;
@@ -30,7 +31,7 @@ export default function ObraNFCForm({
 
     const handleEditNFC = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        fetch(`/api/obras/${oid}/nfc`, {
+        fetch(`${path}/obras/${oid}/nfc`, {
             method: 'PUT',
             headers: {
                 'Content-type': 'application/json',

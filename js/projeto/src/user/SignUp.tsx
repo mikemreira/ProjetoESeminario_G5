@@ -5,6 +5,7 @@ import Alert from "@mui/material/Alert";
 import logo from "../assets/logo-black-transparent.png";
 // @ts-ignore
 import signUpIn from "../assets/sign.png";
+import {path} from "../App";
 
 export default function SignUp() {
   const [values, setValues] = useState({
@@ -42,7 +43,7 @@ export default function SignUp() {
         setSubmitted(true);
         return;
     }
-    fetch("/api/users/signup", {
+    fetch(`${path}/users/signup`, {
         method: "POST",
         headers: {
             'Content-type': 'application/json'

@@ -24,6 +24,7 @@ import ObraRegistosOfAllPendingUsersForm from "./Forms/ObraRegistosOfAllPendingU
 import ObraRegistosOfUserForm from "./Forms/ObraRegistosOfUserForm";
 import ObraFuncionarioInfoForm from "./Forms/ObraFuncionarioInfoForm";
 import ObraNFCForm from "./Forms/ObraNFCForm";
+import {path} from "../App";
 
 export interface DateObject {
     year: number;
@@ -133,7 +134,7 @@ export default function ObrasInfo() {
      */
 
     useEffect(() => {
-        fetch(`/api/obras/${oid}`, {
+        fetch(`${path}/obras/${oid}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -157,7 +158,7 @@ export default function ObrasInfo() {
     }, [cookies.token, oid]);
 
     useEffect(() => {
-        fetch(`/api/obras/${oid}/registos/pendente`, {
+        fetch(`${path}/obras/${oid}/registos/pendente`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -178,7 +179,7 @@ export default function ObrasInfo() {
     }, [cookies.token, oid]);
 
     const handleVisaoGeral = () => {
-        fetch(`/api/obras/${oid}`, {
+        fetch(`${path}/obras/${oid}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -252,7 +253,7 @@ export default function ObrasInfo() {
                 startDate: editedObra.startDate?.value$kotlinx_datetime || null,
                 endDate: editedObra.endDate?.value$kotlinx_datetime || null,
             };
-            fetch(`/api/obras/${oid}`, {
+            fetch(`${path}/obras/${oid}`, {
                 method: "PUT",
                 headers: {
                     "Content-type": "application/json",
@@ -282,7 +283,7 @@ export default function ObrasInfo() {
             endDate: obra.endDate?.value$kotlinx_datetime || null,
             status: status || "on going",
         };
-        fetch(`/api/obras/${oid}`, {
+        fetch(`${path}/obras/${oid}`, {
             method: "PUT",
             headers: {
                 "Content-type": "application/json",
@@ -321,7 +322,7 @@ export default function ObrasInfo() {
 
     const handleGetRegistersMine = () => {
         const page = searchParams.get('page') || '0'
-        fetch(`/api/obras/${oid}/registos/me?page=${page}`, {
+        fetch(`${path}/obras/${oid}/registos/me?page=${page}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -343,7 +344,7 @@ export default function ObrasInfo() {
 
     const handleGetRegistersAll = () => {
         const page = searchParams.get('page') || '0'
-        fetch(`/api/obras/${oid}/registos?page=${page}`, {
+        fetch(`${path}/obras/${oid}/registos?page=${page}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -403,7 +404,7 @@ export default function ObrasInfo() {
 
     const handleGetPendingRegisters = () => {
         const page = searchParams.get('page') || '0'
-        fetch(`/api/obras/${oid}/registos/pendente?page=${page}`, {
+        fetch(`${path}/obras/${oid}/registos/pendente?page=${page}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -424,7 +425,7 @@ export default function ObrasInfo() {
     }
 
     const handleAcceptOrRejectPendingRegister = (registerId: number, userId: number, response: string) => {
-        fetch(`/api/obras/${oid}/registos`, {
+        fetch(`${path}/obras/${oid}/registos`, {
             method: 'PUT',
             headers: {
                 'Content-type': 'application/json',
@@ -481,7 +482,7 @@ export default function ObrasInfo() {
 
     const handleGetUserRegisters = (uid: number) => {
         const page = searchParams.get('page') || '0'
-        fetch(`/api/obras/${oid}/registos/${uid}?page=${page}`, {
+        fetch(`${path}/obras/${oid}/registos/${uid}?page=${page}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -527,7 +528,7 @@ export default function ObrasInfo() {
     }
 
     const handleGetFuncionarios = () => {
-        fetch(`/api/obras/${oid}/users`, {
+        fetch(`${path}/obras/${oid}/users`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -548,7 +549,7 @@ export default function ObrasInfo() {
     }
 
     const handleRemoveUser = (uid: number) => {
-        fetch(`/api/obras/${oid}/user/${uid}`, {
+        fetch(`${path}/obras/${oid}/user/${uid}`, {
             method: "DELETE",
             headers: {
                 "Content-type": "application/json",
@@ -580,7 +581,7 @@ export default function ObrasInfo() {
     )
 
     const handleGetFuncionarioInfo = (uid: number) => {
-        fetch(`/api/obras/${oid}/user/${uid}`, {
+        fetch(`${path}/obras/${oid}/user/${uid}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -624,7 +625,7 @@ export default function ObrasInfo() {
     const [nfc, setNfc] = useState<string>("");
 
     const handleNFC = () => {
-        fetch(`/api/obras/${oid}/nfc`, {
+        fetch(`${path}/obras/${oid}/nfc`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",

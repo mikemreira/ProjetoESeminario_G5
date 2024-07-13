@@ -9,6 +9,7 @@ import logo from '../assets/logo-black-transparent.png';
 import '../Login.css';
 // @ts-ignore
 import signUpIn from '../assets/sign.png';
+import {path} from "../App";
 
 
 export default function LogIn() {
@@ -36,7 +37,7 @@ export default function LogIn() {
   const handleSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
 
-    fetch("/api/users/signin", {
+    fetch(`${path}/users/signin`, {
         method: "POST",
         headers: {
             'Content-type': 'application/json'

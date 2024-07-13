@@ -16,6 +16,9 @@ import ChangePassword from "./user/ChangePassword";
 import ForgotPassword from "./user/ForgotPassword";
 import ResetPassword from "./user/ResetPassword";
 
+//export const path = "https://spring-api-ps-isel.test.azuremicroservices.io/spring-app-api/default"
+export const path = "https://spring-api-ps-isel-spring-app-api.azuremicroservices.io"
+
 const AppLayout = () => {
   return (
   <>

@@ -5,10 +5,9 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { styled } from '@mui/material/styles';
-import {colors, FormControl, InputLabel, MenuItem, Select, Snackbar, Stack, Typography} from "@mui/material";
+import {FormControl, InputLabel, MenuItem, Select, Snackbar, Stack, Typography} from "@mui/material";
 import {Navigate, useNavigate, useParams} from "react-router-dom"
+import {path} from "../App";
 
 interface InviteValues {
     email: string
@@ -69,7 +68,7 @@ export default function InviteToObra() {
         console.log("Form values:", values);
         console.log("id obra:", oid);
 
-        fetch(`/api/obras/${oid}/convite`, {
+        fetch(`${path}/obras/${oid}/convite`, {
             method: "POST",
             headers: {
                 'Content-type': 'application/json',

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*
 class RegistersController(
     private val registersService: RegistersService,
     private val requestTokenProcessor: RequestTokenProcessor,
+    private val utils: UtilsController
 ) {
 
     @GetMapping("/registos")
@@ -149,11 +150,11 @@ class RegistersController(
                     },
                     res.value.constructionStatus
                     ,
-                    "/api/obras/$oid/registos/me"
+                    "${utils.path}/obras/$oid/registos/me"
                     ,
-                    "/api/obras/$oid/registos/pendente"
+                    "${utils.path}/obras/$oid/registos/pendente"
                     ,
-                    "/api/obras/$oid/registos"
+                    "${utils.path}/obras/$oid/registos"
                 )
             )
             is Failure -> when (res.value) {

@@ -8,6 +8,7 @@ import logo from '../assets/logo-black-transparent.png';
 import {Stack, Typography} from "@mui/material";
 // @ts-ignore
 import signUpIn from "../assets/sign.png";
+import {path} from "../App";
 
 interface UserEditPasswordInputModel {
     password: string
@@ -40,7 +41,7 @@ export default function ChangePassword() {
             setSubmitted(true);
             return;
         }
-        fetch("/api/users/me/changepassword", {
+        fetch(`${path}/users/me/changepassword`, {
             method: "PUT",
             headers: {
                 "Content-type": "application/json",

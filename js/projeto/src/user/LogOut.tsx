@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import { useEffect } from "react";
 import {useSetAvatar, useSetUser} from "../context/Authn";
+import {path} from "../App";
 
 export default function LogOut() {
     const navigate = useNavigate()
@@ -8,7 +9,7 @@ export default function LogOut() {
     const setAvatar = useSetAvatar()
 
     useEffect(() => {
-        fetch("/api/users/signout", {
+        fetch(`${path}/users/signout`, {
             method: "POST",
             headers: {
                 'Content-type': 'application/json'

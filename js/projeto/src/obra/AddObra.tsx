@@ -10,6 +10,7 @@ import { styled } from '@mui/material/styles';
 import {FormControl, InputLabel, MenuItem, Select, Snackbar, Stack} from "@mui/material";
 import {Navigate, useNavigate} from "react-router-dom"
 import Typography from "@mui/material/Typography";
+import {path} from "../App";
 
 interface ObraValues {
     name: string
@@ -88,7 +89,7 @@ export default function AddObra() {
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
 
-        fetch("/api/obras", {
+        fetch(`${path}/obras`, {
             method: "POST",
             headers: {
                 'Content-type': 'application/json',

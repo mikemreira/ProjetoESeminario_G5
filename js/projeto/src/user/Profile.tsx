@@ -17,6 +17,7 @@ import {
 import TextField from "@mui/material/TextField";
 import {useSetAvatar} from "../context/Authn";
 import {useNavigate} from "react-router-dom";
+import {path} from "../App";
 
 export interface UserModel {
     id: number
@@ -35,7 +36,7 @@ export default function Profile() {
     const [editedUser, setEditedUser] = useState<UserModel | null>(null)
 
     useEffect(() => {
-        fetch("/api/users/me", {
+        fetch(`${path}/users/me`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -66,7 +67,7 @@ export default function Profile() {
 
     const handleSaveProfile = () => {
         if (editedUser) {
-            fetch("/api/users/me", {
+            fetch(`${path}/users/me`, {
                 method: "PUT",
                 headers: {
                     "Content-type": "application/json",

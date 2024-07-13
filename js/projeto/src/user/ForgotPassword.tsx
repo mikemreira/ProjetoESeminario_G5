@@ -6,6 +6,7 @@ import {Navigate, useNavigate} from "react-router-dom";
 import signUpIn from "../assets/sign.png";
 // @ts-ignore
 import logo from "../assets/logo-black-transparent.png";
+import {path} from "../App";
 
 interface UserForgotPasswordInputModel {
     email: string
@@ -31,7 +32,7 @@ export default function ForgotPassword() {
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        fetch("/api/forget-password", {
+        fetch(`${path}/forget-password`, {
             method: "POST",
             headers: {
                 "Content-type": "application/json",

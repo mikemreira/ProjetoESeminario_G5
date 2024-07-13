@@ -5,6 +5,7 @@ import signUpIn from "../assets/sign.png";
 // @ts-ignore
 import logo from "../assets/logo-black-transparent.png";
 import Alert from "@mui/material/Alert";
+import {path} from "../App";
 
 interface UserResetPasswordInputModel {
     password: string
@@ -47,7 +48,7 @@ export default function ResetPassword() {
             setSubmitted(true)
             return
         }
-        fetch(`/api/set-password?email=${email}&token=${token}`, {
+        fetch(`${path}/set-password?email=${email}&token=${token}`, {
             method: "PUT",
             headers: {
                 "Content-type": "application/json",

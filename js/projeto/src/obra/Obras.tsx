@@ -13,6 +13,7 @@ import AddIcon from "@mui/icons-material/Add";
 import InfoIcon from "@mui/icons-material/Info";
 import {useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
+import {path} from "../App";
 
 interface DateObject {
     year: number;
@@ -46,7 +47,7 @@ export default function Obras() {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
 
     useEffect(() => {
-        fetch("/api/obras", {
+        fetch(`${path}/obras`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",

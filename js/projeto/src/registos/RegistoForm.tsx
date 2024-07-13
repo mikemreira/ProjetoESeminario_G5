@@ -10,6 +10,7 @@ import {Box, InputLabel, MenuItem, Select, Typography} from "@mui/material";
 import {useEffect, useState} from "react";
 import {useCookies} from "react-cookie";
 import {Obra} from "../obra/ObrasInfo";
+import {path} from "../App";
 
 interface RegistoFormProps {
     open: boolean,
@@ -45,7 +46,7 @@ export default function RegistoForm(props: RegistoFormProps) {
             })
             setSelectedObras(props.obra.oid)
         } else {
-            fetch("/api/obras/ongoing", {
+            fetch(`${path}/obras/ongoing`, {
                 method: "GET",
                 headers: {
                     "Content-type": "application/json",

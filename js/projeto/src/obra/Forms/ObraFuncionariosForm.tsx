@@ -18,6 +18,7 @@ import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import {useCookies} from "react-cookie";
 import {useEffect, useState} from "react";
 import {UserModel} from "../../user/Profile";
+import {path} from "../../App";
 
 
 interface ObraFuncionariosFormProps {
@@ -39,7 +40,7 @@ export default function ObraFuncionariosForm({
     const [currUser, setCurrUser] = useState<UserModel>()
 
     useEffect(() => {
-        fetch("/api/users/me", {
+        fetch(`${path}/users/me`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",

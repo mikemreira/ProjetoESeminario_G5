@@ -21,6 +21,7 @@ import ReplyIcon from '@mui/icons-material/Reply';
 import CloseIcon from '@mui/icons-material/Close';
 // @ts-ignore
 import logo from './assets/logo-no-background.png';
+import {path} from "./App";
 
 
 interface DateObject {
@@ -79,7 +80,7 @@ export default function NavBar() {
 
     useEffect(() => {
         if (cookies.token !== undefined) {
-            fetch(`/api/convites`, {
+            fetch(`${path}/convites`, {
                 method: "GET",
                 headers: {
                     "Content-type": "application/json",
@@ -100,7 +101,7 @@ export default function NavBar() {
 
     useEffect(() => {
         if (cookies.token !== undefined) {
-            fetch(`/api/registos/pendente`, {
+            fetch(`${path}/registos/pendente`, {
                 method: "GET",
                 headers: {
                     "Content-type": "application/json",
@@ -146,7 +147,7 @@ export default function NavBar() {
     };
 
     const handleAcceptOrRejectInvite = (oid: number, response: string) => {
-        fetch(`/api/convites`, {
+        fetch(`${path}/convites`, {
             method: 'PUT',
             headers: {
                 'Content-type': 'application/json',

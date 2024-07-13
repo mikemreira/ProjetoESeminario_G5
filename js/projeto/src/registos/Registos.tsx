@@ -24,6 +24,7 @@ import RegistoForm from "./RegistoForm";
 import AddIcon from "@mui/icons-material/Add";
 import {useNavigate} from "react-router-dom";
 import Button from "@mui/material/Button";
+import {path} from "../App";
 
 const columns = [
     { accessorKey: 'nome_obra', header: 'Nome da obra' },
@@ -61,7 +62,7 @@ export default function Registos () {
     const navigate = useNavigate();
 
     const fetchRegistos = () => {
-        fetch("/api/registos", {
+        fetch(`${path}/registos`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
