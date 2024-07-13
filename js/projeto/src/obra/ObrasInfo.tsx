@@ -23,6 +23,7 @@ import ObraFuncionariosForm from "./Forms/ObraFuncionariosForm";
 import ObraRegistosOfAllPendingUsersForm from "./Forms/ObraRegistosOfAllPendingUsersForm";
 import ObraRegistosOfUserForm from "./Forms/ObraRegistosOfUserForm";
 import ObraFuncionarioInfoForm from "./Forms/ObraFuncionarioInfoForm";
+import ObraNFCForm from "./Forms/ObraNFCForm";
 
 export interface DateObject {
     year: number;
@@ -127,6 +128,9 @@ export default function ObrasInfo() {
     const [tabIndex, setTabIndex] = useState(0);
     const [state, setState] = useState<states>({ value: "geral" })
 
+    /*
+     * Obras
+     */
 
     useEffect(() => {
         fetch(`/api/obras/${oid}`, {
@@ -613,6 +617,37 @@ export default function ObrasInfo() {
         )
     }
 
+    /*
+     *  NFC
+     */
+
+    const [nfc, setNfc] = useState<string>("");
+
+    const handleNFC = () => {
+        fetch(`/api/obras/${oid}/nfc`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`,
+            },
+        })
+            .then((res) => {
+                setState({ value: "nfc" })
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to fetch nfc');
+                }
+            })
+            .then((body) => {
+                console.log(body.nfcResponse)
+                setNfc(body.nfcResponse)
+            })
+            .catch((error) => {
+                console.error("Error fetching nfc:", error);
+            });
+    }
+
     if (!obra) {
         return <CircularProgress />;
     }
@@ -682,10 +717,12 @@ export default function ObrasInfo() {
                                 editedObra={editedObra}
                                 pendingRegisters={pendingRegisters}
                                 isEditing={isEditing}
+                                nfc={nfc}
                                 handleChange={handleChange}
                                 handleSelectChange={handleSelectChange}
                                 handleFileChange={handleFileChange}
                                 handleClickPendingRegisters={handleGetPendingRegisters}
+                                handleNFC={handleNFC}
                                 handleClickEditObra={handleClickEditObra}
                                 handleSuspendOrRecover={handleSuspendOrRecover}
                                 handleSaveObra={handleSaveObra}
@@ -728,6 +765,13 @@ export default function ObrasInfo() {
                         {state.value === "funcionarioInfo" && obra.role === "admin" && (
                             <ObraFuncionarioInfoForm
                                  user={user}
+                            />
+                        )}
+                        {state.value === "nfc" && obra.role === "admin" && (
+                            <ObraNFCForm
+                                nfc={nfc ? nfc : "Sem NFC associado"}
+                                oid={obra.oid.toString()}
+                                setNfc={setNfc}
                             />
                         )}
                     </Grid>

@@ -469,7 +469,7 @@ class ConstructionsRepository(
                     )
                 pStatement.setString(1, nfcId)
                 pStatement.setInt(2, oid)
-                pStatement.executeQuery()
+                pStatement.executeUpdate()
                 nfcId
             } catch (e: Exception) {
                 it.rollback()

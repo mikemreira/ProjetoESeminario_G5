@@ -95,15 +95,15 @@ class ConstructionsController(
     @PutMapping("/{oid}/nfc")
     fun editNfc(
         @RequestHeader("Authorization") userToken: String,
-        @RequestBody nfc: String,
+        @RequestBody newNfc: String,
         @PathVariable oid: Int,
     ): ResponseEntity<*> {
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        val res = constructionService.editNfc(authUser.user.id, oid, nfc)
+        val res = constructionService.editNfc(authUser.user.id, oid, newNfc)
         return when (res) {
             is Success -> {
-                ResponseEntity.status(200)
+                ResponseEntity.status(201)
                     .body(NfcOutputModel(res.value))
             }
             is Failure -> when (res.value) {

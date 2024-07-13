@@ -156,7 +156,7 @@ class ConstructionsService(
         if (role.role != "admin")
             return failure(NfcError.NoPermission)
 
-        return success(constructionsRepository.getNfc(oid))
+        return success(constructionsRepository.editNfc(oid, nfc))
     }
 
     fun getUserRoleOnConstruction(userId: Int, oid: Int): ConstructionAndRoleResult {

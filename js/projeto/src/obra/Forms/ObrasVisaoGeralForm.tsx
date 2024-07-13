@@ -20,6 +20,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import EditIcon from '@mui/icons-material/Edit';
 import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import DeleteIcon from '@mui/icons-material/Delete';
+import NfcIcon from '@mui/icons-material/Nfc';
 
 import {RegistosOutputModel, DateObject, Obra} from '../ObrasInfo';
 
@@ -28,10 +29,12 @@ interface VisaoGeralProps {
     editedObra: Obra | undefined;
     pendingRegisters: RegistosOutputModel;
     isEditing: boolean;
+    nfc: string;
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleSelectChange: (event: ChangeEvent<{ name?: string; value: unknown }>) => void;
     handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleClickPendingRegisters: () => void;
+    handleNFC: () => void;
     handleClickEditObra: () => void;
     handleSuspendOrRecover: (status: string) => void;
     handleSaveObra: () => void;
@@ -54,9 +57,11 @@ export default function ObraVisaoGeralForm({
     editedObra,
     pendingRegisters,
     isEditing,
+    nfc,
     handleChange,
     handleSelectChange,
     handleClickPendingRegisters,
+    handleNFC,
     handleClickEditObra,
     handleSuspendOrRecover,
     handleSaveObra,
@@ -218,6 +223,11 @@ export default function ObraVisaoGeralForm({
                                     <DeleteIcon sx={{ color: 'red' }} />
                                 </IconButton>
                             </>
+                        )}
+                        {obra.role === "admin" && (
+                            <IconButton variant="contained" sx={{ ml: 2 }} onClick={handleNFC} title="NFC">
+                                <NfcIcon sx={{ color: 'black' }} />
+                            </IconButton>
                         )}
                     </>
                 )}
