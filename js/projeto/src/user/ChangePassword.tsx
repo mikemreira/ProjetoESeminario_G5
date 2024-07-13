@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {Navigate, useNavigate} from "react-router-dom";
 import { useCookies } from "react-cookie"
 import Button from '@mui/material/Button';
-import Snackbar from '@mui/material/Snackbar';
 import Alert from "@mui/material/Alert";
 // @ts-ignore
 import logo from '../assets/logo-black-transparent.png';

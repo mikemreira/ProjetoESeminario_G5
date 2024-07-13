@@ -3,8 +3,6 @@ import { Navigate } from "react-router-dom";
 import { useCookies } from "react-cookie"
 // @ts-ignore
 import {useSetAvatar, useSetUser} from "../context/Authn.tsx";
-import Button from '@mui/material/Button';
-import Snackbar from '@mui/material/Snackbar';
 import Alert from "@mui/material/Alert";
 // @ts-ignore
 import logo from '../assets/logo-black-transparent.png';
@@ -34,7 +32,6 @@ export default function LogIn() {
   const [error, setError] = useState(undefined)
   const setUser = useSetUser()
   const setAvatar = useSetAvatar()
-  const [open, setOpen] = React.useState(false)
 
   const handleSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();

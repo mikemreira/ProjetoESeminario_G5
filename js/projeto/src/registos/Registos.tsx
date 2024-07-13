@@ -69,7 +69,6 @@ export default function Registos () {
             },
         }).then((res) => {
             if (res.ok) {
-                console.log("Registos: " + res)
                 return res.json()
             }
             else {

@@ -32,7 +32,6 @@ export default function AddObra() {
     const [valid, setValid] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
     const [redirect, setRedirect] = useState<JSX.Element | null>(null);
-    const [open, setOpen] = React.useState(false);
     const navigate = useNavigate();
     const [values, setValues] = useState<ObraValues>({
         name: "",

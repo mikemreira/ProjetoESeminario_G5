@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
-import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 // @ts-ignore
 import logo from "../assets/logo-black-transparent.png";
@@ -58,9 +57,7 @@ export default function SignUp() {
     }).then(body => {
         if (!valid){
             setError(body.error)
-            console.log(body.error)
         }
-
     }).catch(error => {
         setError(error.message)
     })

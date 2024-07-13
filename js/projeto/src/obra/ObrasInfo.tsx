@@ -640,7 +640,6 @@ export default function ObrasInfo() {
                 }
             })
             .then((body) => {
-                console.log(body.nfcResponse)
                 setNfc(body.nfcResponse)
             })
             .catch((error) => {
@@ -717,7 +716,6 @@ export default function ObrasInfo() {
                                 editedObra={editedObra}
                                 pendingRegisters={pendingRegisters}
                                 isEditing={isEditing}
-                                nfc={nfc}
                                 handleChange={handleChange}
                                 handleSelectChange={handleSelectChange}
                                 handleFileChange={handleFileChange}
@@ -751,14 +749,12 @@ export default function ObrasInfo() {
                         {state.value === "pendente" && obra.role === "admin" &&(
                             <ObraRegistosOfAllPendingUsersForm
                                 table={tablePendingRegisters}
-                                handleClickOpen={handleClickOpen}
                                 handleAcceptOrRejectPendingRegister={handleAcceptOrRejectPendingRegister}
                             />
                         )}
                         {state.value === "registoFuncionario" && obra.role === "admin" && (
                             <ObraRegistosOfUserForm
                                 table={tableRegistersFuncionario}
-                                handleClickOpen={handleClickOpen}
                                 username={username}
                             />
                         )}

@@ -8,7 +8,6 @@ import {
     List,
     ListItem,
     ListItemText,
-    CircularProgress,
     Grid,
     Avatar,
     Button,
@@ -19,7 +18,7 @@ import TextField from "@mui/material/TextField";
 import {useSetAvatar} from "../context/Authn";
 import {useNavigate} from "react-router-dom";
 
-interface UserModel {
+export interface UserModel {
     id: number
     nome: string
     email: string
@@ -66,7 +65,6 @@ export default function Profile() {
     }
 
     const handleSaveProfile = () => {
-        console.log(JSON.stringify(editedUser))
         if (editedUser) {
             fetch("/api/users/me", {
                 method: "PUT",

@@ -1,11 +1,10 @@
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import {Snackbar} from "@mui/material";
 import Alert from "@mui/material/Alert";
 import {useCookies} from "react-cookie";
 import React, {useState} from "react";
 import {Navigate, useNavigate} from "react-router-dom";
+// @ts-ignore
 import signUpIn from "../assets/sign.png";
+// @ts-ignore
 import logo from "../assets/logo-black-transparent.png";
 
 interface UserForgotPasswordInputModel {
@@ -32,7 +31,6 @@ export default function ForgotPassword() {
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        console.log("values: " + values.email)
         fetch("/api/forget-password", {
             method: "POST",
             headers: {
@@ -41,7 +39,6 @@ export default function ForgotPassword() {
             body: values.email
         }).then(res => {
             setSubmitted(true)
-            console.log(res)
             if (res.status == 201) {
                 setValid(true)
                 setOpen(true)
@@ -56,13 +53,6 @@ export default function ForgotPassword() {
             setError(error.message)
         })
     };
-
-    const handleClose = (event: any, reason: string) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpen(false);
-    }
 
     const handleCancel = () => {
         navigate(-1)
@@ -107,41 +97,4 @@ export default function ForgotPassword() {
             </div>
         </div>
     );
-/*
-    return (
-        <div>
-            <form onSubmit={handleSubmit}>
-                <TextField
-                    variant="outlined"
-                    margin="normal"
-                    required
-                    fullWidth
-                    name="email"
-                    label="email"
-                    type="email"
-                    id="email"
-                    onChange={handleInputChange}
-                />
-                <Button
-                    type="submit"
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                >
-                    Enviar para email
-                </Button>
-            </form>
-
-            <Button
-                fullWidth
-                variant="contained"
-                color="secondary"
-                onClick={handleCancel}
-            >
-                Cancelar
-            </Button>
-        </div>
-    )
-
- */
 }

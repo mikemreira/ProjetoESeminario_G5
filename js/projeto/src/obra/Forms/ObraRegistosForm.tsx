@@ -28,14 +28,14 @@ interface ObraRegistosFormProps {
 }
 
 export default function ObraRegistosForm({
-                                             obra,
-                                             handleClickOpenForm,
-                                             handleCloseForm,
-                                             table,
-                                             openForm,
-                                             registo,
-                                             setRegistos
-                                         }: ObraRegistosFormProps) {
+     obra,
+     handleClickOpenForm,
+     handleCloseForm,
+     table,
+     openForm,
+     registo,
+     setRegistos
+}: ObraRegistosFormProps) {
     const [cookies] = useCookies(["token"]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const [selectedFilter, setSelectedFilter] = useState<string | null>(null)

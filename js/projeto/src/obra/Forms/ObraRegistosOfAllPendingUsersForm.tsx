@@ -13,14 +13,13 @@ import * as React from "react";
 
 interface ObraRegistosOfAllPendingUsersFormProps {
     table: any;
-    handleClickOpen: () => void;
     handleAcceptOrRejectPendingRegister: (id: number, uid: number, status: string) => void;
 }
 
 export default function ObraRegistosOfAllPendingUsersForm({
-                                                                table,
-                                                                handleAcceptOrRejectPendingRegister,
-                                                            }: ObraRegistosOfAllPendingUsersFormProps) {
+    table,
+    handleAcceptOrRejectPendingRegister
+}: ObraRegistosOfAllPendingUsersFormProps) {
 
     return (
         <>

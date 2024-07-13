@@ -29,7 +29,6 @@ interface VisaoGeralProps {
     editedObra: Obra | undefined;
     pendingRegisters: RegistosOutputModel;
     isEditing: boolean;
-    nfc: string;
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleSelectChange: (event: ChangeEvent<{ name?: string; value: unknown }>) => void;
     handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -57,7 +56,6 @@ export default function ObraVisaoGeralForm({
     editedObra,
     pendingRegisters,
     isEditing,
-    nfc,
     handleChange,
     handleSelectChange,
     handleClickPendingRegisters,

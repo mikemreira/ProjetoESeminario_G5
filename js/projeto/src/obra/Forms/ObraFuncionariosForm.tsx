@@ -1,7 +1,6 @@
 import {
     Avatar,
     Box,
-    Button,
     IconButton,
     Stack,
     Table, TableBody,
@@ -16,6 +15,9 @@ import * as React from "react";
 import { UserOutputModel } from '../ObrasInfo';
 import TapAndPlayIcon from '@mui/icons-material/TapAndPlay';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
+import {useCookies} from "react-cookie";
+import {useEffect, useState} from "react";
+import {UserModel} from "../../user/Profile";
 
 
 interface ObraFuncionariosFormProps {
@@ -33,6 +35,30 @@ export default function ObraFuncionariosForm({
     users,
     handleRemoveUser
 }: ObraFuncionariosFormProps) {
+    const [cookies] = useCookies(['token']);
+    const [currUser, setCurrUser] = useState<UserModel>()
+
+    useEffect(() => {
+        fetch("/api/users/me", {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`,
+            },
+        }).then((res) => {
+            if (res.ok) {
+                return res.json();
+            } else if (res.status === 404) {
+                console.log("404")
+            }
+        }).then((body) => {
+            setCurrUser(body)
+            console.log(body);
+        }).catch((error) => {
+            console.error("Error fetching: ", error);
+        })
+    }, [cookies.token]);
+
     return (
         <Stack sx={{ m: '2rem 0' }}>
             <Box
@@ -75,7 +101,7 @@ export default function ObraFuncionariosForm({
                     </TableHead>
                     <TableBody>
                         {users.users.map((user) => (
-                            <TableRow key={user.id} onClick={() => handleViewProfile(user.id)} sx={{ cursor: 'pointer' }}>
+                            <TableRow key={user.id} onClick={() => handleViewProfile(user.id)} sx={{ cursor: 'pointer' }} title={"Ver perfil"}>
                                 <TableCell align="center">
                                     <Avatar
                                         alt={user.nome}
@@ -100,17 +126,20 @@ export default function ObraFuncionariosForm({
                                     </IconButton>
                                 </TableCell>
                                 <TableCell align="center">
-                                    <IconButton
-                                        variant="contained"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleRemoveUser(user.id);
-                                        }}
-                                        title="Remover membro"
-                                        color={"error"}
-                                    >
-                                        <PersonRemoveIcon />
-                                    </IconButton>
+                                    {user.id !== currUser?.id && (
+                                        <IconButton
+                                            variant="contained"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleRemoveUser(user.id);
+                                            }}
+                                            title="Remover membro"
+                                            color={"error"}
+                                        >
+                                            <PersonRemoveIcon />
+                                        </IconButton>
+                                    )}
+
                                 </TableCell>
                             </TableRow>
                         ))}

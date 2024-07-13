@@ -53,7 +53,6 @@ export default function RegistoForm(props: RegistoFormProps) {
                 },
             })
                 .then(res => {
-                    console.log("fez o fetch");
                     if (res.ok) {
                         return res.json();
                     } else if (res.status == 404) {
@@ -71,7 +70,7 @@ export default function RegistoForm(props: RegistoFormProps) {
                     }
                 })
                 .catch(error => {
-                    console.error("Error fetching obras: ", error);
+                    console.error("Error fetching registos: ", error);
                     setObras({obras: []});
                 });
         }

@@ -1,7 +1,8 @@
-import {Navigate, useNavigate, useParams} from "react-router-dom";
+import {Navigate, useNavigate} from "react-router-dom";
 import React, {useEffect, useState} from "react";
-import {useCookies} from "react-cookie";
+// @ts-ignore
 import signUpIn from "../assets/sign.png";
+// @ts-ignore
 import logo from "../assets/logo-black-transparent.png";
 import Alert from "@mui/material/Alert";
 
@@ -18,7 +19,6 @@ export default function ResetPassword() {
     const [open, setOpen] = useState(false)
     const navigate = useNavigate()
 
-    // Extract email and token from query parameters
     const queryParams = new URLSearchParams(location.search)
     const email = queryParams.get("email")
     const token = queryParams.get("token")
@@ -55,7 +55,6 @@ export default function ResetPassword() {
             body: values.password
         }).then(res => {
             setSubmitted(true)
-            console.log(res)
             if (res.status == 201) {
                 setValid(true)
                 setOpen(true)

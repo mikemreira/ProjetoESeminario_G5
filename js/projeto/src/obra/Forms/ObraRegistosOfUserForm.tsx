@@ -12,15 +12,13 @@ import * as React from "react";
 
 interface ObraRegistosOfUserFormProps {
     table: any;
-    handleClickOpen: () => void;
     username: string;
 }
 
 export default function ObraRegistosOfUserForm({
-                                                    table,
-                                                    handleClickOpen,
-                                                    username,
-                                                }: ObraRegistosOfUserFormProps) {
+    table,
+    username
+}: ObraRegistosOfUserFormProps) {
 
     return (
         <>
