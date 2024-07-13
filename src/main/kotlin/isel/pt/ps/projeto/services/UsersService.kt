@@ -89,9 +89,12 @@ class UsersService(
             return failure(TokenError.UserOrPasswordAreInvalid)
         }
         val tokenValue = usersDomain.generateTokenValue()
+        val now = clock.now()
         val newToken = Token(
             usersDomain.createTokenValidationInformation(tokenValue),
-            user.id
+            user.id,
+            createdAt = now,
+            lastUsedAt = now
         )
 
         usersRepository.createToken(newToken, usersDomain.maxNumberOfTokensPerUser)
@@ -143,7 +146,8 @@ class UsersService(
         }
         val validToken = usersDomain.createTokenValidationInformation(token)
         val userAndToken = usersRepository.getTokenByTokenValidationInfo(validToken)
-        if (userAndToken != null) {
+        if (userAndToken != null && usersDomain.isTokenTimeValid(clock, userAndToken.second)) {
+            usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
             return userAndToken.first
         } else {
             return null

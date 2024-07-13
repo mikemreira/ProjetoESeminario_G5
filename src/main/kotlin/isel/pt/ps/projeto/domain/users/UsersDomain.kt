@@ -35,6 +35,26 @@ class UsersDomain(
         validationInfo = passwordEncoder.encode(password)
     )
 
+    fun isTokenTimeValid(
+        clock: Clock,
+        token: Token
+    ): Boolean {
+        val now = clock.now()
+        return token.createdAt <= now &&
+            (now - token.createdAt) <= config.tokenTtl &&
+            (now - token.lastUsedAt) <= config.tokenRollingTtl
+    }
+
+    fun getTokenExpiration(token: Token): Instant {
+        val absoluteExpiration = token.createdAt + config.tokenTtl
+        val rollingExpiration = token.lastUsedAt + config.tokenRollingTtl
+        return if (absoluteExpiration < rollingExpiration) {
+            absoluteExpiration
+        } else {
+            rollingExpiration
+        }
+    }
+
     fun createTokenValidationInformation(token: String): TokenValidationInfo =
         tokenEncoder.createValidationInformation(token)
 

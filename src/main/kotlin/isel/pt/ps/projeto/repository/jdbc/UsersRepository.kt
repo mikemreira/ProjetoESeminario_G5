@@ -91,7 +91,7 @@ class UsersRepository(
             it.autoCommit = false
             return try {
                 val pStatement = it.prepareStatement(
-                    "select id, nome, email, password, morada, foto, token_validation \n" +
+                    "select id, nome, email, password, morada, foto, token_validation, created_at, last_used_at \n" +
                         "    from utilizador u \n" +
                         "    inner join Token t\n" +
                         "    on u.id = t.id_utilizador\n" +
@@ -107,7 +107,9 @@ class UsersRepository(
                     PasswordValidationInfo(result.getString("password")),
                     result.getString("morada"),
                     result.getBytes("foto"),
-                    TokenValidationInfo(result.getString("token_validation"))
+                    TokenValidationInfo(result.getString("token_validation")),
+                    result.getLong("created_at"),
+                    result.getLong("last_used_at")
                 ).userAndToken
             } catch(e: SQLException) {
                 it.rollback()
@@ -366,11 +368,13 @@ class UsersRepository(
             it.autoCommit = false
             try {
                 val pStatement2 = it.prepareStatement(
-                    "insert into Token(id_utilizador, token_validation)\n" +
-                    "                     values (?, ?)"
+                    "insert into Token(id_utilizador, token_validation, created_at, last_used_at)\n" +
+                    "                     values (?, ?, ?, ?)"
                 )
                 pStatement2.setInt(1, token.userId)
                 pStatement2.setString(2, token.tokenValidationInfo.validationInfo)
+                pStatement2.setLong(3, token.createdAt.epochSeconds)
+                pStatement2.setLong(4, token.lastUsedAt.epochSeconds)
                 pStatement2.executeUpdate()
             } catch (e: SQLException) {
                 it.rollback()
@@ -455,7 +459,9 @@ class UsersRepository(
         val passwordValidation: PasswordValidationInfo,
         val morada: String?,
         val foto: ByteArray?,
-        val tokenValidation: TokenValidationInfo
+        val tokenValidation: TokenValidationInfo,
+        val createdAt: Long,
+        val lastUsedAt: Long
     ) {
         val userAndToken: Pair<User, Token>
             get() = Pair(
@@ -463,6 +469,8 @@ class UsersRepository(
                 Token(
                     tokenValidation,
                     id,
+                    Instant.fromEpochSeconds(createdAt),
+                    Instant.fromEpochSeconds(lastUsedAt)
                 )
             )
     }

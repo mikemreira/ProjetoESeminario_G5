@@ -264,7 +264,7 @@ class RegistersRepository : RegistersRepository {
                 val pStatement = it.prepareStatement(
                     "Select * from Registo r \n" +
                         "inner join utilizador u on r.id_utilizador = u.id \n" +
-                        "where r.id_obra =(Select id_obra From Utilizador u2 \n" +
+                        "where r.id_obra in (Select id_obra From Utilizador u2 \n" +
                         "Inner join Papel p on u2.id = p.id_utilizador \n" +
                         "where u2.id = ? and papel = 'admin') and r.status = 'pending'\n" +
                         "LIMIT 10 offset ?"

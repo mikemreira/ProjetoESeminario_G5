@@ -1,5 +1,5 @@
 package isel.pt.ps.projeto.casbin
-/*
+
 import org.casbin.jcasbin.model.Model
 import org.casbin.jcasbin.persist.Adapter
 import org.casbin.jcasbin.persist.Helper
@@ -59,5 +59,3 @@ class IsAdapter(private val classPath: String) : Adapter {
         private val LOG: Logger = LoggerFactory.getLogger(IsAdapter::class.java)
     }
 }
-
- */
