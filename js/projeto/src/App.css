@@ -38,6 +38,13 @@
   text-align: center;
 }
 
+.background-image {
+  background-image: '/assets/thumb-1920-220839.jpg';
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+}
+
 .form-profile{
   width: 1000px;
   background-color: white;
@@ -60,6 +67,20 @@
   flex-direction: column;
   justify-content: space-evenly;
   padding: 10px;
+}
+
+.info-pass-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding: 10px;
+  color: #6A6B6D ;
+}
+
+.info-pass-form ul {
+  list-style-position: inside;
+  padding-left: 0;
+  text-align: left;
 }
 
 .success-message {

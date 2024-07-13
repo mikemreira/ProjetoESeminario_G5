@@ -8,11 +8,12 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
-import { useTheme } from '@mui/material/styles';
 import { Avatar, Box, CircularProgress, Snackbar, Stack, Typography } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import InfoIcon from "@mui/icons-material/Info";
-import { useLocation, useNavigate } from "react-router-dom";
+import {useNavigate } from "react-router-dom";
+import Button from "@mui/material/Button";
+import {path} from "../App";
 
 interface DateObject {
     year: number;
@@ -39,11 +40,6 @@ interface ObrasOutputModel {
     obras: Obra[];
 }
 
-// Utility function to convert date object to string
-const formatDate = (dateObj: DateObject | null): string => {
-    return dateObj ? dateObj.value$kotlinx_datetime : "N/A";
-}
-
 export default function Obras() {
     const [cookies] = useCookies(["token"]);
     const [obras, setObras] = useState<ObrasOutputModel>({ obras: [] });
@@ -51,7 +47,7 @@ export default function Obras() {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
 
     useEffect(() => {
-        fetch("/api/obras", {
+        fetch(`${path}/obras`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -94,6 +90,18 @@ export default function Obras() {
     const handleCloseSnackbar = () => {
         setSnackbarOpen(false);
     };
+
+    if (!cookies.token) {
+        return (
+            <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
+                <Typography variant="h4" color="error">Erro de autenticação</Typography>
+                <Typography variant="body1" color="error">Precisa de estar autenticado para acessar a esta página.</Typography>
+                <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
+                   Login
+                </Button>
+            </Stack>
+        )
+    }
 
     return (
         <Stack sx={{ m: '5rem 0' }}>

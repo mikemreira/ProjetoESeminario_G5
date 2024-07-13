@@ -17,13 +17,15 @@ interface ConstructionRepository {
      */
     fun getConstruction(oid: Int): Construction?
 
+    fun getConstructionByNFCID(nfcId: String): Construction?
+
     fun getConstructionsUsers(oid: Int): List<SimpleUserAndFunc>
 
     fun getConstructionUser(oid: Int, uid: Int): SimpleUserAndFunc?
 
     fun getConstructionsOfUser(id: Int, status: String? = null): List<Construction>
 
-    fun createConstruction(userId: Int, name: String, location: String, description: String, startDate: LocalDate, endDate: LocalDate?, foto: String?, status: String?, function: String): Int
+    fun createConstruction(userId: Int, name: String, location: String, description: String, startDate: LocalDate, endDate: LocalDate?, foto: ByteArray?, status: String?, function: String): Int
 
     fun getUserRoleFromConstruction(id: Int, oid: Int): Role?
 
@@ -39,6 +41,10 @@ interface ConstructionRepository {
 
     fun isUserAssociatedWithConstructionByEmail(oid: Int, email: String): Boolean
 
-    fun editConstruction(oid: Int, inputModel: ConstructionEditInputModel): Construction?
+    fun editConstruction(uid:Int, oid: Int, inputModel: ConstructionEditInputModel): Construction?
+
+    fun removeConstructionUser(oid: Int, uid: Int): Boolean
+    fun getNfc(oid: Int): String?
+    fun editNfc(oid: Int, nfcId: String): String
 
 }

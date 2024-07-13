@@ -16,7 +16,13 @@ import java.util.*
 @Component
 class CasbinFilter(private val enforcer: Enforcer, private val usersService: UsersService) : Filter {
 
-    private val excludedPaths = setOf("/users/signin", "/users/signup")
+    private val excludedPaths = setOf(
+        "/users/signin",
+        "/users/signup",
+        "/users/signout",
+        "/forget-password",
+        "/set-password"
+    )
 
     @Throws(ServletException::class)
     override fun init(filterConfig: FilterConfig?) {

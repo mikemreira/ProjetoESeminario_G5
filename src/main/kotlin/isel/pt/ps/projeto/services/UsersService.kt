@@ -5,7 +5,6 @@ import isel.pt.ps.projeto.domain.users.Token
 import isel.pt.ps.projeto.domain.users.UsersDomain
 import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.models.users.User
-import isel.pt.ps.projeto.models.users.UserAndToken
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
 import isel.pt.ps.projeto.utils.Either
 import isel.pt.ps.projeto.utils.failure
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Component
 
 data class TokenExternalInfo(
     val tokenValue: String,
-    val tokenExpiration: Instant,
     val user: SimpleUser
 )
 
@@ -30,10 +28,23 @@ sealed class TokenError {
     object UserOrPasswordAreInvalid : TokenError()
 }
 
+sealed class ForgetPasswordError {
+    object InvalidEmail : ForgetPasswordError()
+}
+
+sealed class SetNewPasswordError {
+    object InvalidQuery : SetNewPasswordError()
+    object NoUserWithThatEmail : SetNewPasswordError()
+    object InsecurePassword : SetNewPasswordError()
+}
+
+typealias SetNewPasswordResult = Either<SetNewPasswordError, String>
+
+typealias ForgetPasswordResult = Either<ForgetPasswordError, String>
+
 typealias UserResult = Either<UserError, User>
 typealias SimpleUserResult = Either<UserError, SimpleUser>
 typealias ChangePasswordResult = Either<UserError, Boolean>
-
 
 typealias TokenResult = Either<TokenError, TokenExternalInfo>
 
@@ -41,7 +52,9 @@ typealias TokenResult = Either<TokenError, TokenExternalInfo>
 class UsersService(
     private val usersRepository: UsersRepository,
     private val usersDomain: UsersDomain,
+    private val utilsService: UtilsServices,
     private val clock: Clock,
+    private val emailSenderService: EmailSenderService,
     private val utils: UtilsController
 ) {
     fun getUsers(): List<User> = usersRepository.getUsers()
@@ -59,7 +72,9 @@ class UsersService(
         }
 
         val passwordValidationInfo = usersDomain.createPasswordValidationInformation(password)
-        return success(usersRepository.signUp(name, email, passwordValidationInfo))
+        val signed = usersRepository.signUp(name, email, passwordValidationInfo)
+        emailSenderService.sendEmail(email, "Bem vindo(a)", "Seja bem vindo(a) aos Registos de acessos ISEL do grupo 5")
+        return success(signed)
     }
 
     fun signIn(
@@ -69,13 +84,11 @@ class UsersService(
         require(email.isNotEmpty() && password.isNotEmpty()) { return failure(TokenError.UserOrPasswordAreInvalid) }
         val user: User = usersRepository.getUserByEmail(email) ?: return failure(TokenError.UserOrPasswordAreInvalid)
         println("SIGN IN USER : $user")
-        println(usersDomain.createPasswordValidationInformation(password))
         if (!usersDomain.validatePassword(password, user.passwordValidation)) {
             println("PASS DIDNT MATCH")
             return failure(TokenError.UserOrPasswordAreInvalid)
         }
         val tokenValue = usersDomain.generateTokenValue()
-        println("1 :"+tokenValue)
         val now = clock.now()
         val newToken = Token(
             usersDomain.createTokenValidationInformation(tokenValue),
@@ -83,7 +96,6 @@ class UsersService(
             createdAt = now,
             lastUsedAt = now
         )
-        println("2 :"+newToken.tokenValidationInfo.validationInfo)
 
         usersRepository.createToken(newToken, usersDomain.maxNumberOfTokensPerUser)
 
@@ -93,19 +105,41 @@ class UsersService(
         return Either.Right(
             TokenExternalInfo(
                 tokenValue,
-                usersDomain.getTokenExpiration(newToken),
                 simpleUser
             )
         )
     }
 
     fun signOut(token: String): Boolean {
-        println("Hello")
         val tokenValidationInfo = usersDomain.createTokenValidationInformation(token)
         usersRepository.signOut(tokenValidationInfo)
         return true
     }
 
+    fun forgetPassword(email: String): ForgetPasswordResult {
+        if (!usersRepository.checkUserByEmail(email)) {
+            return failure(ForgetPasswordError.InvalidEmail)
+        }
+        val token = usersDomain.generateTokenValue()
+        usersRepository.setForgetPassword(email, token)
+        emailSenderService.sendEmail(email, "Forgot Password", "Hello $email, \n" +
+            "Click in this link to reset your password http://localhost:5173/set-password?email=$email&token=$token"
+        )
+        return success("To reset your password go to your email")
+    }
+
+    fun setNewPassword(email: String, token: String, password: String): SetNewPasswordResult {
+        if (!usersRepository.validateEmailAndTokenForForgottenPassword(email, token))
+            return failure(SetNewPasswordError.InvalidQuery)
+        val user = usersRepository.getUserByEmail(email) ?: return failure(SetNewPasswordError.NoUserWithThatEmail)
+        if (!usersDomain.isSafePassword(password)) {
+            println("Insecure password")
+            return failure(SetNewPasswordError.InsecurePassword)
+        }
+        val passVal = usersDomain.createPasswordValidationInformation(password)
+        usersRepository.editPasswordIfForgotten(user.id, email, passVal)
+        return success("Password changed")
+    }
     fun getUserByToken(token: String): User? {
         if(!usersDomain.canBeToken(token)) {
             return null
@@ -121,7 +155,8 @@ class UsersService(
     }
 
     fun editUser(id: Int, nome: String, morada: String?, foto: String?): SimpleUserResult {
-        val res = usersRepository.editUser(id, nome, morada, foto)
+        val fotoBytes = if (foto!=null) utilsService.base64ToByteArray(foto) else null
+        val res = usersRepository.editUser(id, nome, morada, fotoBytes)
         return success(res)
     }
 
@@ -132,7 +167,6 @@ class UsersService(
         }
         println("Safe password")
         val passwordValidationInfo = usersDomain.createPasswordValidationInformation(password)
-        println("Password validation info: $passwordValidationInfo")
         val res = usersRepository.editPassword(id, passwordValidationInfo)
         return success(res)
     }

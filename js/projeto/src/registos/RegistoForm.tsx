@@ -9,27 +9,24 @@ import DialogTitle from '@mui/material/DialogTitle';
 import {Box, InputLabel, MenuItem, Select, Typography} from "@mui/material";
 import {useEffect, useState} from "react";
 import {useCookies} from "react-cookie";
-import {useNavigate} from "react-router-dom";
+import {Obra} from "../obra/ObrasInfo";
+import {path} from "../App";
 
 interface RegistoFormProps {
     open: boolean,
-    onHandleOpen: () => void;
-    onHandleClose: () => void;
-}
-
-interface Option {
-
+    onHandleClose: (reload: boolean) => void;
+    obra: Obra | undefined;
 }
 
 interface ObraOptions {
     oid: number;
     name: string;
+    status: string;
 }
 
 interface ObrasOptionsOutputModel {
     obras: ObraOptions[];
 }
-
 
 export default function RegistoForm(props: RegistoFormProps) {
     const [cookies] = useCookies(["token"]);
@@ -39,52 +36,57 @@ export default function RegistoForm(props: RegistoFormProps) {
     const [optionalDateTime, setOptionalDateTime] = useState<string>('');
 
     useEffect(() => {
-        fetch("/api/obras", {
-            method: "GET",
-            headers: {
-                "Content-type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`,
-            },
-        })
-            .then(res => {
-                console.log(res);
-                if (res.ok) {
-                    return res.json();
-                } else if (res.status == 404) {
-                    return { obras: []}
-                } else {
-                    return null;
-                }
+        if (props.obra !== undefined) {
+            setObras( {
+                    obras: [{
+                        oid: props.obra.oid,
+                        name: props.obra.name,
+                        status: ""
+                    }]
+            })
+            setSelectedObras(props.obra.oid)
+        } else {
+            fetch(`${path}/obras/ongoing`, {
+                method: "GET",
+                headers: {
+                    "Content-type": "application/json",
+                    "Authorization": `Bearer ${cookies.token}`,
+                },
+            })
+                .then(res => {
+                    if (res.ok) {
+                        return res.json();
+                    } else if (res.status == 404) {
+                        return {obras: []}
+                    } else {
+                        return null;
+                    }
 
-            })
-            .then(body => {
-                if (body) {
-                    setObras(body);
-                } else {
-                    setObras({ obras: [] });
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching obras: ", error);
-                setObras({ obras: [] });
-            });
+                })
+                .then(body => {
+                    if (body) {
+                        setObras(body);
+                    } else {
+                        setObras({obras: []});
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching registos: ", error);
+                    setObras({obras: []});
+                });
+        }
     }, [cookies.token, props.open])
 
-    const navigate = useNavigate();
 
     return (
         <React.Fragment>
             <Dialog
                 open={props.open}
-                onClose={props.onHandleClose}
+                onClose={() => props.onHandleClose(false)}
                 PaperProps={{
                     component: 'form',
                     onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
                         event.preventDefault();
-                        const formData = new FormData(event.currentTarget);
-                        const formJson = Object.fromEntries((formData as any).entries());
-                        const id = formJson.obra;
-                        console.log(selectedObras + " -> " + requiredDateTime + " -> " + optionalDateTime);
                         fetch(`/api/obras/${selectedObras}/register`, {
                             method: "POST",
                             headers: {
@@ -96,8 +98,11 @@ export default function RegistoForm(props: RegistoFormProps) {
                                 endTime: optionalDateTime
                             })
                         }).then(res => {
-                            if (res.ok) props.onHandleClose()
-                            props.onHandleClose()
+                            if (res.ok) {
+                                props.onHandleClose(true);
+                            } else {
+                                props.onHandleClose(false);
+                            }
                         })
                         event.stopPropagation()
                     },
@@ -161,7 +166,7 @@ export default function RegistoForm(props: RegistoFormProps) {
 
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={props.onHandleClose}>Cancelar</Button>
+                    <Button onClick={() => props.onHandleClose(false)}>Cancelar</Button>
                     <Button type="submit">Submeter</Button>
                 </DialogActions>
             </Dialog>

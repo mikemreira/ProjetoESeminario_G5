@@ -1,0 +1,1291 @@
+openapi: 3.0.0
+info:
+  title: Projeto e Seminário API
+  description: Projeto e Seminário API para registo de acessos a estaleiros
+  contact:
+    email: a464892@alunos.isel.pt
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0-oas3
+servers:
+- url: https://virtserver.swaggerhub.com/A46489_1/ProjetoG05Isel/1.0.0-oas3
+  description: SwaggerHub API Auto Mocking
+tags:
+- name: admins
+  description: Secured Admin-only calls
+- name: registos
+  description: Calls for registos
+- name: obras
+  description: Calls for obras
+- name: users
+  description: Calls for users
+- name: convites
+  description: Calls o convites
+paths:
+  /users:
+    get:
+      tags:
+      - users
+      - admins
+      summary: Get list of users
+      description: Get the list of users in the system
+      operationId: getUsers
+      parameters:
+      - name: searchString
+        in: query
+        description: pass an optional search string for looking up inventory
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+      - name: skip
+        in: query
+        description: number of records to skip for pagination
+        required: false
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+      - name: limit
+        in: query
+        description: maximum number of records to return
+        required: false
+        style: form
+        explode: true
+        schema:
+          maximum: 50
+          minimum: 0
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: search results matching criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserItem'
+        "400":
+          description: bad input parameter
+  /users/me:
+    get:
+      tags:
+      - users
+      summary: Obtains a user
+      description: Obtains a user through his token in the system
+      operationId: getUserByToken
+      responses:
+        "200":
+          description: user obtained successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserOutputModel'
+        "400":
+          description: "invalid input, object invalid"
+        "404":
+          description: a user with that token could not be found
+    put:
+      tags:
+      - users
+      summary: Edit a user's info
+      description: Edit a user's info through his token and info present on payload
+      operationId: editUserByToken
+      requestBody:
+        description: User item to edit
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserEditInputModel'
+      responses:
+        "201":
+          description: user edited successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserOutputModel'
+        "400":
+          description: "invalid input, object invalid"
+        "404":
+          description: a user with that token could not be found
+  /users/me/changepassword:
+    put:
+      tags:
+      - users
+      summary: Change user password
+      description: "Change user password, receving a new one"
+      operationId: editPassword
+      requestBody:
+        description: User password to edit
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        "201":
+          description: successfully changed password
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserChangePasswordOutputModel'
+        "400":
+          description: "invalid input, object invalid"
+        "404":
+          description: a user with that token could not be found
+  /users/signin:
+    post:
+      tags:
+      - users
+      summary: Logs in a user
+      description: "Logs in a user, generating a token"
+      operationId: signIn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSignIn'
+        required: true
+      responses:
+        "201":
+          description: user logged in
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserTokenCreateOutputModel'
+        "400":
+          description: "invalid input, object invalid"
+  /users/signup:
+    post:
+      tags:
+      - users
+      summary: Create a user
+      description: Create a user
+      operationId: signUp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSignUp'
+        required: true
+      responses:
+        "201":
+          description: user created
+        "400":
+          description: "invalid input, object invalid"
+  /users/signout:
+    post:
+      tags:
+      - users
+      summary: Logs out a user
+      description: "Logs out a user, deleting his token"
+      operationId: userLogout
+      responses:
+        "204":
+          description: user logged out
+        "400":
+          description: "invalid input, object invalid"
+        "404":
+          description: No user with such token found
+  /obras:
+    get:
+      tags:
+      - obras
+      summary: Get all constructions
+      description: Get list of user accessible constructions
+      operationId: getConstructions
+      responses:
+        "200":
+          description: constructions successfully obtained
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListOfConstructionsOutputModel'
+        "400":
+          description: "invalid input, object invalid"
+        "404":
+          description: construction not found
+    post:
+      tags:
+      - obras
+      summary: Adds a construction
+      description: Adds a construction to the system
+      operationId: createConstruction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConstructionInputModel'
+        required: true
+      responses:
+        "201":
+          description: construction created
+          content:
+            aplication/json:
+              schema:
+                type: integer
+        "400":
+          description: "invalid input, object invalid"
+        "409":
+          description: could not create such construction
+  /obras/{oid}:
+    get:
+      tags:
+      - obras
+      summary: Get a specific construction
+      description: Get a construction through it's token in the system and user role
+      operationId: getConstructionAndRole
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: construction obtained successfully
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConstructionAndRoleOutputModel'
+        "400":
+          description: "invalid input, object invalid"
+        "404":
+          description: could not find such construction with that id
+    put:
+      tags:
+      - obras
+      - admins
+      summary: Edit a construction
+      description: Edits a construction in the system
+      operationId: editConstruction
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      requestBody:
+        description: Obra item to edit
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConstructionEditInputModel'
+      responses:
+        "201":
+          description: construction edited
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConstructionOutputModel'
+        "204":
+          description: construction deleted
+        "400":
+          description: "invalid input, object invalid"
+        "404":
+          description: could not find such construction with that id
+  /obras/{oid}/users:
+    get:
+      tags:
+      - obras
+      - admins
+      summary: Get list of users of a construction
+      description: Get list of users of a construction in the system through construction id
+      operationId: getConstructionsUsers
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: user list obtained successfully
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListOfSimpleUserAndFunc'
+        "400":
+          description: "invalid input, object invalid"
+        "404":
+          description: could not find such construction with that id
+  /obras/{oid}/user/{uid}:
+    get:
+      tags:
+      - obras
+      - admins
+      summary: Gets construction user
+      description: Gets construction user with this function
+      operationId: getConstructionUser
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: uid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: user info
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SimpleUserAndFuncOutput'
+        "403":
+          description: unauthorized user
+        "404":
+          description: could not find such construction or user with that id
+    delete:
+      tags:
+      - obras
+      - admins
+      summary: Removes a user from a construction
+      description: Removes a user from a contruction by is id
+      operationId: removeConstructionUser
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: uid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "204":
+          description: user removed
+        "403":
+          description: unauthorized user
+        "404":
+          description: could not find such construction or user with that id
+  /obras/ongoing:
+    get:
+      tags:
+      - obras
+      summary: Gets ongoing construction user
+      description: Gets ongoing construction user
+      operationId: getConstructionOnGoing
+      responses:
+        "200":
+          description: user info
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListOfConstructionsOutputModel'
+        "400":
+          description: empty employees
+        "403":
+          description: unauthorized user
+        "404":
+          description: constructions not found
+  /obras/{oid}/register:
+    post:
+      tags:
+      - registos
+      - obras
+      summary: Adds a register to construction
+      description: Adds a register to construction to the system
+      operationId: registerInConstruction
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterInputModelWeb'
+        required: true
+      responses:
+        "201":
+          description: construction created
+        "400":
+          description: "invalid input, object invalid"
+        "403":
+          description: unauthorized user
+        "404":
+          description: construction with that id not found
+  /obras/{oid}/registos:
+    get:
+      tags:
+      - registos
+      - obras
+      summary: Get registers of users
+      description: Get registes of users from a construction
+      operationId: getRegistersOfUsersFromConstruction
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: page
+        in: query
+        description: number of the page
+        required: false
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      responses:
+        "200":
+          description: registers obtained successfully
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserRegistersAndObraOutputModel'
+        "403":
+          description: unauthorized user
+        "404":
+          description: could not find such construction with that id
+    put:
+      tags:
+      - registos
+      - admins
+      - obras
+      summary: Accept or deny pending register
+      description: Accept or deny pending register from user with funcionario role
+      operationId: acceptOrDenyRegistersFromConstruction
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: page
+        in: query
+        description: number of the page
+        required: false
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptOrDenyRegister'
+        required: true
+      responses:
+        "201":
+          description: register accept or deny successefuly
+        "403":
+          description: unauthorized user
+        "404":
+          description: could not find such construction with that id
+  /obras/{oid}/registos/{uid}:
+    get:
+      tags:
+      - registos
+      - admins
+      - obras
+      summary: Get registers of user from a construction
+      description: Get registers of user from a construction giving user id
+      operationId: getRegistersOfUserFromConstruction
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: uid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: page
+        in: query
+        description: number of the page
+        required: false
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      responses:
+        "200":
+          description: registers obtained successfully
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserRegistersAndObraOutputModel'
+        "403":
+          description: unauthorized user
+        "404":
+          description: could not find such construction with that id
+  /obras/{oid}/registos/me:
+    get:
+      tags:
+      - registos
+      - obras
+      summary: Get my registers from a construction
+      description: Get my registers from a construction by token
+      operationId: getRegistersMyRegistersFromConstruction
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: page
+        in: query
+        description: number of the page
+        required: false
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      responses:
+        "200":
+          description: registers obtained successfully
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserRegistersAndObraOutputModel'
+        "403":
+          description: unauthorized user
+        "404":
+          description: could not find such construction with that id
+  /obras/{oid}/registos/pendente:
+    get:
+      tags:
+      - obras
+      - registos
+      - admins
+      summary: Get pending registers from a construction
+      description: Get pending registers from a construction by id
+      operationId: getPendingRegistersOfUsersFromConstruction
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: page
+        in: query
+        description: number of the page
+        required: false
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      responses:
+        "200":
+          description: registers obtained successfully
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserRegistersAndObraOutputModel'
+        "403":
+          description: unauthorized user
+        "404":
+          description: could not find such construction with that id
+  /registos:
+    get:
+      tags:
+      - registos
+      summary: Get user registers
+      description: Get user registers by token
+      operationId: getUserRegisters
+      responses:
+        "200":
+          description: registers obtained successfully
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserRegistersOutputModel'
+        "400":
+          description: invalid register
+        "404":
+          description: could not find registers
+    put:
+      tags:
+      - registos
+      summary: Adds a new register exit
+      description: Adds a new register exit to construction to the system
+      operationId: addUsersRegisterExit
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterInputModel'
+        required: true
+      responses:
+        "201":
+          description: register created
+        "400":
+          description: "invalid input, object invalid"
+        "403":
+          description: construction not found
+        "404":
+          description: registers not found
+    post:
+      tags:
+      - registos
+      summary: Adds a new register entry
+      description: Adds a new register entry to construction to the system
+      operationId: addUsersRegisterEntry
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterInputModel'
+        required: true
+      responses:
+        "201":
+          description: register created
+        "400":
+          description: "invalid input, object invalid"
+        "403":
+          description: construction not found
+        "404":
+          description: registers not found
+  /registos/pendente:
+    get:
+      tags:
+      - registos
+      summary: Get pending registers for specific user
+      description: Get pending registers for specific user through token
+      operationId: getPendingRegistersOfUsers
+      parameters:
+      - name: page
+        in: query
+        description: number of the page
+        required: false
+        style: form
+        explode: true
+        schema:
+          minimum: 0
+          type: integer
+          format: int32
+          default: 0
+      responses:
+        "200":
+          description: records obtained successfully
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegisterAndUser'
+        "403":
+          description: unauthorized user
+        "404":
+          description: registers not found
+  /obras/{oid}/convite:
+    post:
+      tags:
+      - convites
+      - obras
+      summary: Invites a user to construction
+      description: Invites a user to construction to the system
+      operationId: inviteUserToConstruction
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Invite'
+        required: true
+      responses:
+        "201":
+          description: invite sent successefuly
+        "400":
+          description: "invalid input, object invalid"
+        "403":
+          description: unathorized user
+        "404":
+          description: user or construction not found
+        "409":
+          description: user already in this construction
+  /convites:
+    get:
+      tags:
+      - obras
+      - convites
+      summary: Get invites for user
+      description: Get invites for user through token
+      operationId: getInvites
+      responses:
+        "200":
+          description: invites obtained successfully
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ListOfConstructionAndRoleOutputModel'
+        "403":
+          description: unathorized user
+        "404":
+          description: user or construction not found
+        "409":
+          description: user already in this construction
+    put:
+      tags:
+      - obras
+      - convites
+      summary: Accept or deny invite
+      description: Accept or deny invite for a construction
+      operationId: acceptOrDeny
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/acceptOrDenyInvite'
+        required: true
+      responses:
+        "201":
+          description: invites response successfully
+        "403":
+          description: unathorized user
+        "404":
+          description: user or construction not found
+        "409":
+          description: user already in this construction
+components:
+  schemas:
+    UserOutputModel:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the user
+        nome:
+          type: string
+          description: Name of the user
+        email:
+          type: string
+          description: Email address of the user
+        morada:
+          type: string
+          description: Address of the user
+          nullable: true
+        foto:
+          type: string
+          description: URL of the user's photo
+          nullable: true
+    UserEditInputModel:
+      required:
+      - nome
+      type: object
+      properties:
+        nome:
+          type: string
+          description: Name of the user
+        morada:
+          type: string
+          description: Address of the user
+          nullable: true
+        foto:
+          type: string
+          description: URL of the user's photo
+          nullable: true
+    UserChangePasswordOutputModel:
+      type: object
+      properties:
+        response:
+          type: string
+          description: Response message indicating the result of the password change
+    UserSignIn:
+      required:
+      - email
+      - password
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email address of the user
+        password:
+          type: string
+          description: Password of the user
+    UserTokenCreateOutputModel:
+      type: object
+      properties:
+        token:
+          type: string
+          description: The authentication token for the user
+        foto:
+          type: string
+          description: URL of the user's photo
+          nullable: true
+    UserSignUp:
+      required:
+      - email
+      - name
+      - password
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the user
+        email:
+          type: string
+          description: Email address of the user
+        password:
+          type: string
+          description: Password of the user
+    ListOfConstructionsOutputModel:
+      type: object
+      properties:
+        obras:
+          type: array
+          description: List of construction projects
+          items:
+            $ref: '#/components/schemas/ConstructionOutputModel'
+    ConstructionOutputModel:
+      type: object
+      properties:
+        oid:
+          type: integer
+          description: Unique identifier for the construction
+        name:
+          type: string
+          description: Name of the construction project
+        location:
+          type: string
+          description: Location of the construction project
+        description:
+          type: string
+          description: Description of the construction project
+        startDate:
+          type: string
+          description: Start date of the construction project
+          format: date
+        endDate:
+          type: string
+          description: End date of the construction project
+          format: date
+          nullable: true
+        foto:
+          type: string
+          description: URL of the construction project's photo
+          nullable: true
+        status:
+          type: string
+          description: Status of the construction project
+    ConstructionInputModel:
+      required:
+      - description
+      - function
+      - location
+      - name
+      - startDate
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the construction project
+        location:
+          type: string
+          description: Location of the construction project
+        description:
+          type: string
+          description: Description of the construction project
+        startDate:
+          type: string
+          description: Start date of the construction project
+          format: date
+        endDate:
+          type: string
+          description: End date of the construction project
+          format: date
+          nullable: true
+        foto:
+          type: string
+          description: URL of the construction project's photo
+          nullable: true
+        status:
+          type: string
+          description: Status of the construction project
+          nullable: true
+        function:
+          type: string
+          description: Function of the construction project
+    ConstructionAndRoleOutputModel:
+      type: object
+      properties:
+        oid:
+          type: integer
+          description: Unique identifier for the construction
+        name:
+          type: string
+          description: Name of the construction project
+        location:
+          type: string
+          description: Location of the construction project
+        description:
+          type: string
+          description: Description of the construction project
+        startDate:
+          type: string
+          description: Start date of the construction project
+          format: date
+        endDate:
+          type: string
+          description: End date of the construction project
+          format: date
+          nullable: true
+        foto:
+          type: string
+          description: URL of the construction project's photo
+          nullable: true
+        status:
+          type: string
+          description: Status of the construction project
+          nullable: true
+        role:
+          type: string
+          description: Role of the user in the construction project
+        function:
+          type: string
+          description: Function of the construction project
+          nullable: true
+    ConstructionEditInputModel:
+      required:
+      - description
+      - location
+      - name
+      - startDate
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the construction project
+        location:
+          type: string
+          description: Location of the construction project
+        description:
+          type: string
+          description: Description of the construction project
+        startDate:
+          type: string
+          description: Start date of the construction project
+          format: date
+        endDate:
+          type: string
+          description: End date of the construction project
+          format: date
+          nullable: true
+        foto:
+          type: string
+          description: URL of the construction project's photo
+          nullable: true
+        status:
+          type: string
+          description: Status of the construction project
+          nullable: true
+    ListOfSimpleUserAndFunc:
+      type: object
+      properties:
+        users:
+          type: array
+          description: List of users with their functions or roles
+          items:
+            $ref: '#/components/schemas/SimpleUserAndFuncOutput'
+    SimpleUserAndFuncOutput:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the user
+        nome:
+          type: string
+          description: Name of the user
+        email:
+          type: string
+          description: Email address of the user
+        morada:
+          type: string
+          description: Address of the user
+          nullable: true
+        func:
+          type: string
+          description: Function or role of the user
+          nullable: true
+        foto:
+          type: string
+          description: URL of the user's photo
+          nullable: true
+    RegisterInputModelWeb:
+      required:
+      - endTime
+      - startTime
+      type: object
+      properties:
+        startTime:
+          type: string
+          description: Start time of the registration in string format
+          format: time
+        endTime:
+          type: string
+          description: End time of the registration in string format
+          format: time
+    UserRegistersAndObraOutputModel:
+      type: object
+      properties:
+        registers:
+          type: array
+          description: List of registers with user and obra details
+          items:
+            $ref: '#/components/schemas/RegisterAndUser'
+        constructionStatus:
+          type: string
+          description: Status of the construction project
+          nullable: true
+        meRoute:
+          type: string
+          description: Route for "me" information
+          nullable: true
+        pendingRoute:
+          type: string
+          description: Route for pending information
+          nullable: true
+        allRoute:
+          type: string
+          description: Route for all information
+          nullable: true
+    RegisterAndUser:
+      type: object
+      properties:
+        userName:
+          type: string
+          description: Name of the user
+        id:
+          type: integer
+          description: Unique identifier for the register
+        oid:
+          type: integer
+          description: Unique identifier for the construction
+        uid:
+          type: integer
+          description: Unique identifier for the user
+        startTime:
+          type: string
+          description: Start time of the register
+          format: date-time
+        endTime:
+          type: string
+          description: End time of the register
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          description: Status of the register
+    UserRegistersOutputModel:
+      type: object
+      properties:
+        registers:
+          type: array
+          description: List of registers
+          items:
+            $ref: '#/components/schemas/RegisterOutputModel'
+        pending:
+          type: string
+          description: Pending status information
+          nullable: true
+    RegisterOutputModel:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the register
+        id_utilizador:
+          type: integer
+          description: Unique identifier for the user
+        id_obra:
+          type: integer
+          description: Unique identifier for the construction
+        nome_obra:
+          type: string
+          description: Name of the construction project
+        entrada:
+          type: string
+          description: Entry time of the register
+          format: date-time
+        saida:
+          type: string
+          description: Exit time of the register
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          description: Status of the register
+          nullable: true
+    AcceptOrDenyRegister:
+      required:
+      - registerId
+      - response
+      - userId
+      type: object
+      properties:
+        registerId:
+          type: integer
+          description: Unique identifier for the register
+        userId:
+          type: integer
+          description: Unique identifier for the user
+        response:
+          type: string
+          description: Response indicating acceptance or denial of the register
+    RegisterInputModel:
+      required:
+      - obraId
+      - time
+      type: object
+      properties:
+        time:
+          type: string
+          description: Time of the registration
+          format: date-time
+        obraId:
+          type: integer
+          description: Unique identifier for the construction project
+    ListOfConstructionAndRoleOutputModel:
+      type: object
+      properties:
+        obrasAndRole:
+          type: array
+          description: List of construction projects with roles
+          items:
+            $ref: '#/components/schemas/ConstructionAndRoleOutputModel'
+    Invite:
+      required:
+      - email
+      - function
+      - role
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email address of the invitee
+        function:
+          type: string
+          description: Function or role associated with the invitation
+        role:
+          type: string
+          description: Role description associated with the invitation
+    acceptOrDenyInvite:
+      required:
+      - oid
+      - response
+      type: object
+      properties:
+        oid:
+          type: integer
+          description: Unique identifier for the invitation or request
+        response:
+          type: string
+          description: Response indicating acceptance or denial
+    UserItem:
+      required:
+      - email
+      - id
+      - password
+      - username
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        username:
+          type: string
+          example: Miguel Moreira
+        email:
+          type: string
+          example: miguelmoreira2009@hotmail.com
+        password:
+          type: string
+          example: pa$$w0rd123

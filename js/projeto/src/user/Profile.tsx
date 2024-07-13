@@ -8,18 +8,18 @@ import {
     List,
     ListItem,
     ListItemText,
-    CircularProgress,
     Grid,
     Avatar,
     Button,
     Box,
-    Divider,
+    Divider, Stack,
 } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import {useSetAvatar} from "../context/Authn";
 import {useNavigate} from "react-router-dom";
+import {path} from "../App";
 
-interface UserModel {
+export interface UserModel {
     id: number
     nome: string
     email: string
@@ -36,7 +36,7 @@ export default function Profile() {
     const [editedUser, setEditedUser] = useState<UserModel | null>(null)
 
     useEffect(() => {
-        fetch("/api/users/me", {
+        fetch(`${path}/users/me`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -66,9 +66,8 @@ export default function Profile() {
     }
 
     const handleSaveProfile = () => {
-        console.log(JSON.stringify(editedUser))
         if (editedUser) {
-            fetch("/api/users/me", {
+            fetch(`${path}/users/me`, {
                 method: "PUT",
                 headers: {
                     "Content-type": "application/json",
@@ -126,6 +125,18 @@ export default function Profile() {
 
     const handleChangePass = () => {
         navigate("/profile/changePassword")
+    }
+
+    if (!cookies.token) {
+        return (
+            <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
+                <Typography variant="h4" color="error">Erro de autenticação</Typography>
+                <Typography variant="body1" color="error">Precisa de estar autenticado para acessar a esta página.</Typography>
+                <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
+                    Login
+                </Button>
+            </Stack>
+        )
     }
 
     return (

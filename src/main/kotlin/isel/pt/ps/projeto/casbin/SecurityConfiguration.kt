@@ -36,6 +36,10 @@ class SecurityConfiguration {
                 authorize("/obras/**", authenticated)
                 authorize("/convites", authenticated)
                 authorize("/profile", authenticated)
+                authorize("/users/signout", permitAll)
+                authorize("/forget-password", permitAll)
+                authorize("/set-password", permitAll)
+                authorize("/registos/**", authenticated)
             }
             addFilterBefore<UsernamePasswordAuthenticationFilter>(casbinFilter)
         }

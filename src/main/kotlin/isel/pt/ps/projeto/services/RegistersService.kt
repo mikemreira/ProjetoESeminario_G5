@@ -21,7 +21,13 @@ sealed class RegistersInfoError {
     object NoAccessToConstruction : RegistersInfoError()
     object ConstructionSuspended : RegistersInfoError()
 }
-typealias RegistersInfoResult = Either<RegistersInfoError, List<RegisterOutputModel>>
+
+sealed class RegistersUserInfoError {
+    object NoRegisters : RegistersUserInfoError()
+    object InvalidRegister : RegistersUserInfoError()
+}
+
+typealias RegistersInfoResult = Either<RegistersUserInfoError, List<RegisterOutputModel>>
 typealias ListOfUsersRegistersInfoResult = Either<RegistersInfoError, List<RegisterAndUser>>
 typealias ListOfUsersRegistersAndConstructionStatusInfoResult = Either<RegistersInfoError, ConstructionStatusAndUserRegisters>
 typealias EntryRegisterResult = Either<RegistersInfoError, Boolean>
@@ -37,7 +43,7 @@ class RegistersService(
 
         val register = registersRepository.getUserRegisters(uid)
         return if (register.isEmpty()) {
-            failure(RegistersInfoError.NoRegisters)
+            failure(RegistersUserInfoError.NoRegisters)
         } else {
             success(register)
         }
@@ -51,6 +57,21 @@ class RegistersService(
             return failure(RegistersInfoError.ConstructionSuspended)
 
         val res = registersRepository.addUserRegisterEntry(uid, obraId, entry)
+        return if (res) {
+            success(true)
+        } else {
+            failure(RegistersInfoError.InvalidRegister)
+        }
+    }
+
+    fun addRegisterEntryByNFC(uid: Int, nfcId: String, entry: LocalDateTime) : EntryRegisterResult {
+        val construction = constructionRepository.getConstructionByNFCID(nfcId)
+            ?: return failure(RegistersInfoError.NoConstruction)
+
+        if (construction.status == "recoverable")
+            return failure(RegistersInfoError.ConstructionSuspended)
+
+        val res = registersRepository.addUserRegisterEntry(uid, construction.oid, entry)
         return if (res) {
             success(true)
         } else {

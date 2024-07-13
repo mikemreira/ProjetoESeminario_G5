@@ -14,6 +14,7 @@ import isel.pt.ps.projeto.utils.Success
 import kotlinx.datetime.toLocalDate
 import kotlinx.datetime.toLocalDateTime
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -37,37 +38,28 @@ class ConstructionsController(
         @RequestHeader("Authorization") userToken: String,
         @PathVariable oid: Int,
     ): ResponseEntity<*> {
-        // add process to get user by token
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        // TODO(Find a way to return null and then the error maybe ?)
-
         val res = constructionService.getUserRoleOnConstruction(authUser.user.id, oid)
-
-        // add everything in a new OutputModel with role and construction
         return when (res) {
             is Success -> {
                 val fotoString = if (res.value.construction.foto != null) utils.byteArrayToBase64(res.value.construction.foto) else null
                 val result = res.value
                 ResponseEntity.status(200)
                     .body(
-                        ConstructionOutputModelAndHrefs(
-                            ConstructionAndRoleOutputModel(
-                                result.construction.oid,
-                                result.construction.nome,
-                                result.construction.localizacao,
-                                result.construction.descricao,
-                                result.construction.data_inicio,
-                                result.construction.data_fim,
-                                fotoString,
-                                result.construction.status,
-                                result.role.role,
-                                result.role.function
-                            ),
-                            "/obras/${result.construction.oid}/users",
-                            "/obras/${result.construction.oid}/registos",
-                            "/obras/${result.construction.oid}/edit"
+                        ConstructionAndRoleOutputModel(
+                            result.construction.oid,
+                            result.construction.nome,
+                            result.construction.localizacao,
+                            result.construction.descricao,
+                            result.construction.data_inicio,
+                            result.construction.data_fim,
+                            fotoString,
+                            result.construction.status,
+                            result.role.role,
+                            result.role.function
                         )
                     )
+
             }
             is Failure ->
                 when (res.value) {
@@ -75,11 +67,50 @@ class ConstructionsController(
                     ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                     ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
                     ConstructionInfoError.NoAccessToConstruction -> Problem.response(401, Problem.unauthorizedUser)
-                    ConstructionInfoError.InvalidRegister -> TODO()
                     ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                    ConstructionInfoError.AlreadyInConstruction -> TODO()
-                    ConstructionInfoError.ConstructionSuspended -> TODO()
+                    ConstructionInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
                 }
+        }
+    }
+
+    @GetMapping("/{oid}/nfc")
+    fun getNfc(
+        @RequestHeader("Authorization") userToken: String,
+        @PathVariable oid: Int,
+    ): ResponseEntity<*> {
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        val res = constructionService.getNfc(authUser.user.id, oid)
+        return when (res) {
+            is Success -> {
+                ResponseEntity.status(200)
+                    .body(NfcOutputModel(res.value))
+            }
+            is Failure -> when (res.value) {
+                NfcError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                NfcError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+            }
+        }
+    }
+
+    @PutMapping("/{oid}/nfc")
+    fun editNfc(
+        @RequestHeader("Authorization") userToken: String,
+        @RequestBody newNfc: String,
+        @PathVariable oid: Int,
+    ): ResponseEntity<*> {
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        val res = constructionService.editNfc(authUser.user.id, oid, newNfc)
+        return when (res) {
+            is Success -> {
+                ResponseEntity.status(201)
+                    .body(NfcOutputModel(res.value))
+            }
+            is Failure -> when (res.value) {
+                NfcError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                NfcError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+            }
         }
     }
 
@@ -95,7 +126,7 @@ class ConstructionsController(
         return when (res) {
             is Success -> {
                 if (res.value == null)
-                    ResponseEntity.status(204).body("Deleted")
+                    ResponseEntity.status(204).body("deleted")
                 else {
                     val fotoString = if (res.value.foto != null) utils.byteArrayToBase64(res.value.foto) else null
                     ResponseEntity.status(201).body(
@@ -121,7 +152,6 @@ class ConstructionsController(
         }
     }
 
-
     @GetMapping("/{oid}/users")
     fun getConstructionsUsers(
         @RequestHeader("Authorization") userToken: String,
@@ -134,7 +164,6 @@ class ConstructionsController(
             )
 
         val res = constructionService.getConstructionUsers(authUser.user.id, oid)
-        //return ResponseEntity.status(200).body(users)
         return when (res) {
             is Success -> {
                 ResponseEntity.status(200)
@@ -160,10 +189,8 @@ class ConstructionsController(
                 ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                 ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
                 ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
-                ConstructionInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                ConstructionInfoError.AlreadyInConstruction -> TODO()
-                ConstructionInfoError.ConstructionSuspended -> TODO()
+                ConstructionInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }
@@ -199,6 +226,24 @@ class ConstructionsController(
         }
     }
 
+    @DeleteMapping("/{oid}/user/{uid}")
+    fun removeConstructionUser(
+        @RequestHeader("Authorization") userToken: String,
+        @PathVariable oid: Int,
+        @PathVariable uid: Int,
+    ): ResponseEntity<*> {
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        return when (val res = constructionService.removeConstructionUser(authUser.user.id, oid, uid)) {
+            is Success -> ResponseEntity.status(204).body("deleted")
+            is Failure -> when (res.value) {
+                ConstructionUserError.UserNotFound -> Problem.response(404, Problem.userNotFound)
+                ConstructionUserError.NoPermission -> Problem.response(403, Problem.userNotAdmin)
+            }
+        }
+    }
+
+
     @GetMapping("")
     fun getConstructions(
         @RequestHeader("Authorization") userToken: String,
@@ -231,22 +276,20 @@ class ConstructionsController(
                     ConstructionInfoError.ConstructionNotFound -> Problem.response(404, Problem.constructionNotFound)
                     ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                     ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
-                    ConstructionInfoError.NoAccessToConstruction -> TODO()
-                    ConstructionInfoError.InvalidRegister -> TODO()
-                    ConstructionInfoError.NoPermission -> TODO()
-                    ConstructionInfoError.AlreadyInConstruction -> TODO()
-                    ConstructionInfoError.ConstructionSuspended -> TODO()
+                    ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noAccessToConstruction)
+                    ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                    ConstructionInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
                 }
         }
     }
 
-    @GetMapping("/obras/ongoing")
+    @GetMapping("/ongoing")
     fun getContructionsOnGoing(
             @RequestHeader("Authorization") userToken: String
     ): ResponseEntity<*> {
             val authUser =
                 requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-            val res = constructionService.getConstructionsOfUser(authUser.user.id)
+            val res = constructionService.getOnGoingConstructionsOfUser(authUser.user.id)
             return when (res) {
                 is Success ->
                     ResponseEntity.status(200)
@@ -273,10 +316,8 @@ class ConstructionsController(
                         ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                         ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
                         ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noAccessToConstruction)
-                        ConstructionInfoError.InvalidRegister -> TODO()
-                        ConstructionInfoError.NoPermission -> TODO()
-                        ConstructionInfoError.AlreadyInConstruction -> TODO()
-                        ConstructionInfoError.ConstructionSuspended -> TODO()
+                        ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                        ConstructionInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
                     }
             }
     }
@@ -308,7 +349,6 @@ class ConstructionsController(
             }
             is Failure ->
                 when (res.value) {
-                    //ConstructionCreationError.ConstructionAlreadyExists -> Problem.response(400, Problem.constructionAlreadyExists)
                     ConstructionCreationError.InvalidConstruction -> Problem.response(400, Problem.invalidConstruction)
                 }
         }
@@ -335,9 +375,7 @@ class ConstructionsController(
                 ConstructionInfoError.NoConstructions -> Problem.response(404, Problem.noConstructions)
                 ConstructionInfoError.EmptyEmployees -> Problem.response(400, Problem.emptyEmployees)
                 ConstructionInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noAccessToConstruction)
-                ConstructionInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 ConstructionInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                ConstructionInfoError.AlreadyInConstruction -> TODO()
                 ConstructionInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }

@@ -1,5 +1,6 @@
 package isel.pt.ps.projeto.repository.jdbc
 
+import isel.pt.ps.projeto.services.UtilsServices
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.constructions.ConstructionEditInputModel
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
@@ -18,12 +19,11 @@ import java.sql.Connection
 import java.sql.Date
 import java.sql.SQLException
 import java.sql.Timestamp
-import java.util.*
 
 
 @Component
 class ConstructionsRepository(
-    private val utils: UtlisRepository,
+    private val utils: UtilsServices,
 ) : ConstructionRepository {
     private fun initializeConnection(): Connection {
         val dataSource = PGSimpleDataSource()
@@ -41,6 +41,41 @@ class ConstructionsRepository(
                             "where id = ?",
                     )
                 pStatement.setInt(1, oid)
+                val result = pStatement.executeQuery()
+                if (!result.next())
+                    null
+                else {
+                    val dateFim = result.getDate("data_fim")
+                    Construction(
+                        result.getInt("id"),
+                        result.getString("nome"),
+                        result.getString("localização"),
+                        result.getString("descrição"),
+                        result.getDate("data_inicio").toString().toLocalDate(),
+                        if (dateFim == null) dateFim else dateFim.toString().toLocalDate(),
+                        result.getString("status"),
+                        result.getBytes("foto")
+                    )
+                }
+            } catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun getConstructionByNFCID(nfcId: String): Construction? {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement =
+                    it.prepareStatement(
+                        "select id, nome, localização, descrição, data_inicio, data_fim, status, foto from obra \n" +
+                            "where id_nfc = ?",
+                    )
+                pStatement.setString(1, nfcId)
                 val result = pStatement.executeQuery()
                 if (!result.next())
                     null
@@ -184,7 +219,7 @@ class ConstructionsRepository(
         description: String,
         startDate: LocalDate,
         endDate: LocalDate?,
-        foto: String?,
+        foto: ByteArray?,
         status: String?,
         function: String
     ): Int {
@@ -192,7 +227,6 @@ class ConstructionsRepository(
             it.autoCommit = false
             return try {
                 println("foto: $foto")
-                val fotoBytes = if (foto!=null) utils.base64ToByteArray(foto) else null
                 val generatedColumns = arrayOf("id")
                 val insertStatement = it.prepareStatement(
                     "INSERT INTO Obra (nome, localização, descrição, data_inicio, data_fim, foto)\n" +
@@ -203,7 +237,7 @@ class ConstructionsRepository(
                 insertStatement.setString(3,description)
                 insertStatement.setDate(4,Date.valueOf(startDate.toString()))
                 insertStatement.setDate(5, if (endDate !=null) Date.valueOf(endDate.toString()) else null)
-                insertStatement.setBytes(6, fotoBytes)
+                insertStatement.setBytes(6, foto)
                 insertStatement.executeUpdate()
                 insertStatement.generatedKeys.use { generatedKeys ->
                     if (generatedKeys.next()) {
@@ -318,7 +352,7 @@ class ConstructionsRepository(
         }
     }
 
-    override fun editConstruction(oid: Int, inputModel: ConstructionEditInputModel): Construction? {
+    override fun editConstruction(uid: Int, oid: Int, inputModel: ConstructionEditInputModel): Construction? {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -337,6 +371,17 @@ class ConstructionsRepository(
                 pStatement.setString(7, inputModel.status)
                 pStatement.setInt(8, oid)
                 pStatement.executeUpdate()
+
+                val pStatement2 = it.prepareStatement(
+                    "UPDATE Papel\n" +
+                        "SET funcao = ?\n" +
+                        "WHERE id_utilizador = ? AND id_obra = ?"
+                )
+                pStatement2.setString(1, inputModel.function)
+                pStatement2.setInt(2, uid)
+                pStatement2.setInt(3, oid)
+                pStatement2.executeUpdate()
+
                 if (inputModel.status == "deleted")
                     return null
                 val selectConst = it.prepareStatement("SELECT * FROM Obra WHERE id = ?")
@@ -360,6 +405,77 @@ class ConstructionsRepository(
             } finally {
                 it.commit()
 
+            }
+        }
+    }
+
+    override fun removeConstructionUser(oid: Int, uid: Int): Boolean {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val papelStatement = it.prepareStatement(
+                    "delete from papel\n" +
+                    "where id_obra = ? and id_utilizador = ?\n"
+                )
+                papelStatement.setInt(1, oid)
+                papelStatement.setInt(2, uid)
+                papelStatement.executeUpdate()
+                val registosStatement = it.prepareStatement(
+                    "delete from registo\n" +
+                        "where id_obra = ? and id_utilizador = ?\n"
+                )
+                registosStatement.setInt(1, oid)
+                registosStatement.setInt(2, uid)
+                registosStatement.executeUpdate()
+                true
+            }  catch (e: SQLException) {
+                throw e
+            } finally {
+                it.commit()
+            }
+        }    }
+
+    override fun getNfc(oid: Int): String? {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement =
+                    it.prepareStatement(
+                        "select * from obra \n" +
+                            "where id = ?",
+                    )
+                pStatement.setInt(1, oid)
+                val result = pStatement.executeQuery()
+                result.next()
+                result.getString("id_nfc")
+            } catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun editNfc(oid: Int, nfcId: String): String {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement =
+                    it.prepareStatement(
+                        "update obra " +
+                            "set id_nfc = ? \n" +
+                            "where id = ?",
+                    )
+                pStatement.setString(1, nfcId)
+                pStatement.setInt(2, oid)
+                pStatement.executeUpdate()
+                nfcId
+            } catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
             }
         }
     }

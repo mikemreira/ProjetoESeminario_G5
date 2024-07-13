@@ -2,7 +2,6 @@ import {
     MRT_GlobalFilterTextField,
     MRT_TableBodyCellValue,
     MRT_TablePagination,
-    flexRender,
     useMaterialReactTable
 } from 'material-react-table';
 import {
@@ -21,24 +20,18 @@ import {
 import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import * as React from "react";
-import { Delete, Edit } from "@mui/icons-material";
 import RegistoForm from "./RegistoForm";
 import AddIcon from "@mui/icons-material/Add";
 import {useNavigate} from "react-router-dom";
 import Button from "@mui/material/Button";
+import {path} from "../App";
 
 const columns = [
     { accessorKey: 'nome_obra', header: 'Nome da obra' },
     { accessorKey: 'entrada', header: 'Entrada' },
     { accessorKey: 'saida', header: 'Saida' },
-    { accessorKey: 'status', header: 'Estado' },
-    { id: 'actions', header: 'Actions' },
+    { accessorKey: 'status', header: 'Estado' }
 ];
-
-const handleEdit = () => { }
-const handleDelete = (row: Registo) => {
-    console.log("ID" + row.id)
-}
 
 interface DateObject {
     year: number;
@@ -60,10 +53,6 @@ interface Registo {
     status: string | null;
 }
 
-interface RegistosOutputModel {
-    registos: Registo[];
-}
-
 export default function Registos () {
     const [cookies] = useCookies(["token"]);
     const [registos, setRegistos] = useState<Registo[]>([])
@@ -72,8 +61,8 @@ export default function Registos () {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        fetch("/api/registos", {
+    const fetchRegistos = () => {
+        fetch(`${path}/registos`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -81,7 +70,6 @@ export default function Registos () {
             },
         }).then((res) => {
             if (res.ok) {
-                console.log("Registos: " + res)
                 return res.json()
             }
             else {
@@ -96,14 +84,21 @@ export default function Registos () {
         }).catch(error => {
             console.error("Error fetching registos: ", error);
         })
+    }
+
+    useEffect(() => {
+        fetchRegistos()
     }, [cookies.token])
 
     const handleClickOpenForm = () => {
         setOpenForm(true);
     };
 
-    const handleCloseForm = () => {
+    const handleCloseForm = (reload: boolean) => {
         setOpenForm(false);
+        if (reload) {
+            fetchRegistos();
+        }
     };
 
     const handleCloseSnackbar = () => {
@@ -129,6 +124,18 @@ export default function Registos () {
         paginationDisplayMode: 'pages',
     });
 
+    if (!cookies.token) {
+        return (
+            <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
+                <Typography variant="h4" color="error">Erro de autenticação</Typography>
+                <Typography variant="body1" color="error">Precisa de estar autenticado para acessar a esta página.</Typography>
+                <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
+                    Login
+                </Button>
+            </Stack>
+        )
+    }
+
     return (
         <Stack sx={{ m: '2rem 0' }}>
             <Box
@@ -152,27 +159,23 @@ export default function Registos () {
                     <AddIcon sx={{ fontSize: 32, color: 'white' }}/>
                 </IconButton>
             </Box>
-            <TableContainer sx={{ backgroundColor: '#cccccc',  }}>
+            <TableContainer sx={{ backgroundColor: '#cccccc' }}>
                 <Table sx={{ tableLayout: 'fixed' }}>
                     <TableHead>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
                                     <TableCell align="center" variant="head" key={header.id}>
-                                        {header.isPlaceholder ? null : flexRender(
-                                            header.column.columnDef.Header ?? header.column.columnDef.header,
-                                            header.getContext()
-                                        )}
+                                        {header.isPlaceholder ? null : header.column.columnDef.header}
                                     </TableCell>
                                 ))}
-                                <TableCell/>
                             </TableRow>
                         ))}
                     </TableHead>
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={columns.length + 1} align="center">
+                                <TableCell colSpan={columns.length} align="center">
                                     <CircularProgress/>
                                 </TableCell>
                             </TableRow>
@@ -182,7 +185,7 @@ export default function Registos () {
                                     {row.getVisibleCells().map((cell, _columnIndex) => (
                                         <TableCell align="center" variant="body" key={cell.id}>
                                             {cell.column.id === 'nome_obra' ? (
-                                                <Button onClick={() => handleClickOpenObra(row.original.id_obra)}  style={{ textTransform: 'none' }} >
+                                                <Button onClick={() => handleClickOpenObra(row.original.id_obra)} style={{ textTransform: 'none' }}>
                                                     {cell.row.original.nome_obra}
                                                 </Button>
                                             ) : (
@@ -194,25 +197,16 @@ export default function Registos () {
                                             )}
                                         </TableCell>
                                     ))}
-                                    <TableCell>
-                                        <IconButton style={{ color: '#3547a1' }} onClick={handleEdit}>
-                                            <Edit/>
-                                        </IconButton>
-                                        <IconButton style={{ color: '#c24242' }} onClick={() => handleDelete(row.original)}>
-                                            <Delete/>
-                                        </IconButton>
-                                    </TableCell>
                                 </TableRow>
                             ))
                         )}
                     </TableBody>
                 </Table>
-
             </TableContainer>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
             <MRT_TablePagination table={table} />
             </Box>
-            <RegistoForm open={openForm} onHandleClose={handleCloseForm} onHandleOpen={handleClickOpenForm} />
+            <RegistoForm open={openForm} onHandleClose={handleCloseForm} obra={undefined}/>
 
             <Snackbar
                 open={snackbarOpen}

@@ -22,8 +22,8 @@ class AuthenticatedUserArgumentResolver : HandlerMethodArgumentResolver {
         binderFactory: WebDataBinderFactory?
     ): Any? {
         val request = webRequest.getNativeRequest(HttpServletRequest::class.java)
-            ?: throw IllegalStateException("TODO")
-        return getUserFrom(request) ?: throw IllegalStateException("TODO")
+            ?: throw IllegalStateException("HttpServletRequest is missing in the web request")
+        return getUserFrom(request) ?: throw IllegalStateException("Authenticated user is not present in the request")
     }
 
     companion object {

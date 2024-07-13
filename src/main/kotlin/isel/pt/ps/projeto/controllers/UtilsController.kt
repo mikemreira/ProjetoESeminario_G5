@@ -9,4 +9,7 @@ class UtilsController {
         val base64String = Base64.getEncoder().encodeToString(byteArray)
         return "data:image/jpeg;base64,$base64String"
     }
+
+    //val path = "https://spring-api-ps-isel.test.azuremicroservices.io/spring-app-api/default"
+    val path = "https://spring-api-ps-isel-spring-app-api.azuremicroservices.io"
 }

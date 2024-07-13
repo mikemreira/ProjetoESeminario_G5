@@ -1,5 +1,6 @@
 package isel.pt.ps.projeto.repository.jdbc
 
+import isel.pt.ps.projeto.services.UtilsServices
 import isel.pt.ps.projeto.domain.users.PasswordValidationInfo
 import isel.pt.ps.projeto.domain.users.Token
 import isel.pt.ps.projeto.domain.users.TokenValidationInfo
@@ -20,7 +21,7 @@ const val jdbcDatabaseUrl = "jdbc:postgresql://localhost/postgres?user=postgres&
 
 @Component
 class UsersRepository(
-    private val utils: UtlisRepository
+    private val utils: UtilsServices
 ) : UserRepository {
     private fun initializeConnection(): Connection {
         val dataSource = PGSimpleDataSource()
@@ -85,30 +86,12 @@ class UsersRepository(
         }
     }
 
-    /**
-     *  override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? =
-     *         handle.createQuery(
-     *             """
-     *                 select id, username, password_validation, token_validation, created_at, last_used_at
-     *                 from Users as users
-     *                 inner join Token as token
-     *                 on users.id = token.user_id
-     *                 where token_validation = :validation_information
-     *             """
-     *         )
-     *             .bind("validation_information", tokenValidationInfo.validationInfo)
-     *             .mapTo<UserAndTokenModel>()
-     *             .singleOrNull()
-     *             ?.userAndToken
-     *
-     */
-
     override fun getTokenByTokenValidationInfo(token: TokenValidationInfo): Pair<User, Token>? {
         initializeConnection().use {
             it.autoCommit = false
             return try {
                 val pStatement = it.prepareStatement(
-                    "select id, nome, email, password, morada, foto, token_validation, created_at, last_used_at\n" +
+                    "select id, nome, email, password, morada, foto, token_validation, created_at, last_used_at \n" +
                         "    from utilizador u \n" +
                         "    inner join Token t\n" +
                         "    on u.id = t.id_utilizador\n" +
@@ -138,20 +121,6 @@ class UsersRepository(
         }
     }
 
-    /**
-     * override fun updateTokenLastUsed(token: Token, now: Instant) {
-     *         handle.createUpdate(
-     *             """
-     *                 update Token
-     *                 set last_used_at = :last_used_at
-     *                 where token_validation = :validation_information
-     *             """.trimIndent()
-     *         )
-     *             .bind("last_used_at", now.epochSeconds)
-     *             .bind("validation_information", token.tokenValidationInfo.validationInfo)
-     *             .execute()
-     *     }
-     */
 
     override fun updateTokenLastUsed(token: Token, now: Instant) {
         initializeConnection().use {
@@ -315,6 +284,81 @@ class UsersRepository(
         }
     }
 
+    override fun setForgetPassword(email: String, token: String) {
+        initializeConnection().use {
+            it.autoCommit = false
+            try {
+                val pStatement = it.prepareStatement(
+                    "Insert into PasswordEsquecida values (?,?)"
+                )
+                pStatement.setString(1, email)
+                pStatement.setString(2, token)
+                pStatement.executeUpdate()
+            } catch (e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun validateEmailAndTokenForForgottenPassword(email: String, token: String): Boolean {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement(
+                    "select exists (" +
+                        "select * " +
+                        "from PasswordEsquecida " +
+                        "where email = ? and token_check = ? " +
+                        ")"
+                )
+                pStatement.setString(1, email)
+                pStatement.setString(2, token)
+                val result = pStatement.executeQuery()
+                result.next()
+                result.getBoolean("exists")
+            } catch (e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun editPasswordIfForgotten(userId: Int, email: String, pass: PasswordValidationInfo) {
+        initializeConnection().use {
+            it.autoCommit = false
+            try {
+                val pStatement = it.prepareStatement(
+                    "UPDATE Utilizador\n" +
+                        "SET password = ?\n" +
+                        "WHERE id = ? \n"
+                )
+                pStatement.setString(1, pass.validationInfo)
+                pStatement.setInt(2, userId)
+                pStatement.executeUpdate()
+                val tokenStatement = it.prepareStatement(
+                    "delete from token where id_utilizador = ?"
+                )
+                tokenStatement.setInt(1, userId)
+                tokenStatement.executeUpdate()
+                val forgetPasswordStatement = it.prepareStatement(
+                    "delete from PasswordEsquecida where email = ?"
+                )
+                forgetPasswordStatement.setString(1, email)
+                forgetPasswordStatement.executeUpdate()
+            } catch (e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
 
     override fun createToken(
         token: Token,
@@ -323,19 +367,6 @@ class UsersRepository(
         initializeConnection().use {
             it.autoCommit = false
             try {
-                println("3 :"+token.tokenValidationInfo.validationInfo)
-                val pStatement = it.prepareStatement(
-                    "delete from Token\n" +
-                    "                 where id_utilizador = ?\n" +
-                    "                     and token_validation in (\n" +
-                    "                         select token_validation from Token where id_utilizador = ?\n" +
-                    "                             order by last_used_at desc offset ?\n" +
-                    "                   )"
-                )
-                pStatement.setInt(1, token.userId)
-                pStatement.setInt(2, token.userId)
-                pStatement.setInt(3, maxTokens-1)
-                pStatement.executeUpdate()
                 val pStatement2 = it.prepareStatement(
                     "insert into Token(id_utilizador, token_validation, created_at, last_used_at)\n" +
                     "                     values (?, ?, ?, ?)"
@@ -354,11 +385,10 @@ class UsersRepository(
         }
     }
 
-    override fun editUser(id: Int, nome: String, morada: String?, foto: String?): SimpleUser {
+    override fun editUser(id: Int, nome: String, morada: String?, foto: ByteArray?): SimpleUser {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val fotoBytes = utils.base64ToByteArray(foto!!)
                 val pStatement = it.prepareStatement(
                     "UPDATE Utilizador\n" +
                         "SET nome = ?,\n" +
@@ -366,14 +396,12 @@ class UsersRepository(
                         "    foto = ?\n" +
                         "WHERE id = ?;\n"
                 )
-                // TODO("MISSING FOTO UPDATE")
                 pStatement.setString(1, nome)
                 pStatement.setString(2, morada)
-                pStatement.setBytes(3, fotoBytes)
+                pStatement.setBytes(3, foto)
                 pStatement.setInt(4, id)
                 pStatement.executeUpdate()
 
-                // TODO("MISSING FOTO IN SELECT")
                 val selectStatement = it.prepareStatement(
                     "SELECT id, nome, email, morada, foto FROM Utilizador WHERE id = ?"
                 )

@@ -5,10 +5,9 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { styled } from '@mui/material/styles';
-import {colors, FormControl, InputLabel, MenuItem, Select, Snackbar} from "@mui/material";
+import {FormControl, InputLabel, MenuItem, Select, Snackbar, Stack, Typography} from "@mui/material";
 import {Navigate, useNavigate, useParams} from "react-router-dom"
+import {path} from "../App";
 
 interface InviteValues {
     email: string
@@ -17,7 +16,7 @@ interface InviteValues {
 }
 
 const func = [
-    'Ajudante', 'Apontador', 'Armador de ferro', 'Arvorado', 'Calceteiro', 'Canalisador', 'Carpinteiro', 'Chefe de equipa', 'Condutor Manobrador', 'Diretor de serviços', 'Eletricista', 'Encarregado', 'Escriturário', 'Estucador',  'Ferramenteiro', 'Gruista', 'Impermiabilizador', 'Ladrilhador', 'Marteleiro', 'Montador de andaimes', 'Pedreiro', 'Pintor', 'Serralheiro', 'Servente', 'Soldador', 'Técnico de manutenção', 'Tubista', 'Outro'
+    'Ajudante', 'Apontador', 'Armador de ferro', 'Arvorado', 'Calceteiro', 'Canalizador', 'Carpinteiro', 'Chefe de equipa', 'Condutor Manobrador', 'Diretor de serviços', 'Eletricista', 'Encarregado', 'Escriturário', 'Estucador',  'Ferramenteiro', 'Gruista', 'Impermeabilizador', 'Ladrilhador', 'Marteleiro', 'Montador de andaimes', 'Pedreiro', 'Pintor', 'Serralheiro', 'Servente', 'Soldador', 'Técnico de manutenção', 'Tubista', 'Outro'
 ];
 
 const roles = [
@@ -49,14 +48,14 @@ export default function InviteToObra() {
         }))
     }
 
-    const handleFunctionChange = (event: ChangeEvent<{ value: unknown }>) => {
+    const handleFunctionChange = (event: { target: { value: string; }; }) => {
         setValues((values) => ({
             ...values,
             function: event.target.value as string
         }))
     }
 
-    const handleRoleChange = (event: ChangeEvent<{ value: unknown }>) => {
+    const handleRoleChange = (event: { target: { value: string; }; }) => {
         setValues((values) => ({
             ...values,
             role: event.target.value as string
@@ -69,7 +68,7 @@ export default function InviteToObra() {
         console.log("Form values:", values);
         console.log("id obra:", oid);
 
-        fetch(`/api/obras/${oid}/convite`, {
+        fetch(`${path}/obras/${oid}/convite`, {
             method: "POST",
             headers: {
                 'Content-type': 'application/json',
@@ -78,11 +77,10 @@ export default function InviteToObra() {
             body: JSON.stringify(values)
         }).then(res => {
             setSubmitted(true);
-            if (res.status === 201) {
+            if (res.ok) {
                 setValid(true);
                 setSuccess(true);
-                // setRedirect(<Navigate to="/obras" replace={true} />)
-                //setRedirect(<Navigate to="/obras/" state={{ success: true }} replace={true} />);
+                navigate(-1)
             } else {
                 setValid(false);
             }
@@ -101,6 +99,18 @@ export default function InviteToObra() {
 
     const handleCancel = () => {
         navigate(-1)
+    }
+
+    if (!cookies.token) {
+        return (
+            <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
+                <Typography variant="h4" color="error">Erro de autenticação</Typography>
+                <Typography variant="body1" color="error">Precisa de estar autenticado para acessar a esta página.</Typography>
+                <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
+                    Login
+                </Button>
+            </Stack>
+        )
     }
 
     return (

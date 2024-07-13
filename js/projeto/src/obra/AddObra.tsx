@@ -7,10 +7,10 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import {colors, FormControl, InputLabel, MenuItem, Select, Snackbar} from "@mui/material";
+import {FormControl, InputLabel, MenuItem, Select, Snackbar, Stack} from "@mui/material";
 import {Navigate, useNavigate} from "react-router-dom"
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import {colorTransformations} from "@mui/material/Link/getTextDecoration";
+import Typography from "@mui/material/Typography";
+import {path} from "../App";
 
 interface ObraValues {
     name: string
@@ -24,7 +24,7 @@ interface ObraValues {
 }
 
 const roles = [
-    'Ajudante', 'Apontador', 'Armador de ferro', 'Arvorado', 'Calceteiro', 'Canalisador', 'Carpinteiro', 'Chefe de equipa', 'Condutor Manobrador', 'Diretor de serviços', 'Eletricista', 'Encarregado', 'Escriturário', 'Estucador',  'Ferramenteiro', 'Gruista', 'Impermiabilizador', 'Ladrilhador', 'Marteleiro', 'Montador de andaimes', 'Pedreiro', 'Pintor', 'Serralheiro', 'Servente', 'Soldador', 'Técnico de manutenção', 'Tubista', 'Outro'
+    'Ajudante', 'Apontador', 'Armador de ferro', 'Arvorado', 'Calceteiro', 'Canalizador', 'Carpinteiro', 'Chefe de equipa', 'Condutor Manobrador', 'Diretor de serviços', 'Eletricista', 'Encarregado', 'Escriturário', 'Estucador',  'Ferramenteiro', 'Gruista', 'Impermeabilizador', 'Ladrilhador', 'Marteleiro', 'Montador de andaimes', 'Pedreiro', 'Pintor', 'Serralheiro', 'Servente', 'Soldador', 'Técnico de manutenção', 'Tubista', 'Outro'
 ];
 
 export default function AddObra() {
@@ -33,7 +33,6 @@ export default function AddObra() {
     const [valid, setValid] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
     const [redirect, setRedirect] = useState<JSX.Element | null>(null);
-    const [open, setOpen] = React.useState(false);
     const navigate = useNavigate();
     const [values, setValues] = useState<ObraValues>({
         name: "",
@@ -80,7 +79,7 @@ export default function AddObra() {
         }
     };
 
-    const handleSelectChange = (event: ChangeEvent<{ value: unknown }>) => {
+    const handleSelectChange = (event: { target: { value: string; }; }) => {
         setValues((values) => ({
             ...values,
             function: event.target.value as string
@@ -90,9 +89,7 @@ export default function AddObra() {
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
 
-        console.log("Form values:", values);
-
-        fetch("/api/obras", {
+        fetch(`${path}/obras`, {
             method: "POST",
             headers: {
                 'Content-type': 'application/json',
@@ -103,7 +100,6 @@ export default function AddObra() {
             setSubmitted(true);
             if (res.status === 201) {
                 setValid(true);
-                // setRedirect(<Navigate to="/obras" replace={true} />)
                 setRedirect(<Navigate to="/obras" state={{ success: true }} replace={true} />);
             } else {
                 setValid(false);
@@ -112,7 +108,6 @@ export default function AddObra() {
         }).then(body => {
             if (!valid) {
                 setError(body.error);
-                console.log(body.error);
             } else {
                 setRedirect(<Navigate to="/obras" replace={true} />)
             }
@@ -121,23 +116,21 @@ export default function AddObra() {
         });
     };
 
-    const handleClick = () => {
-        setOpen(true);
-    };
-
     const handleCancel = () => {
         navigate(-1)
     }
 
-/*
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setOpen(false);
+    if (!cookies.token) {
+        return (
+            <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
+                <Typography variant="h4" color="error">Erro de autenticação</Typography>
+                <Typography variant="body1" color="error">Precisa de estar autenticado para acessar a esta página.</Typography>
+                <Button variant="contained" color="primary" onClick={() => navigate("/login")}>
+                    Login
+                </Button>
+            </Stack>
+        )
     }
-
- */
 
     return (
         <div className="form-obras">
@@ -253,14 +246,3 @@ export default function AddObra() {
         </div>
     );
 }
-
-/*
-{submitted && valid && <Alert severity="success" sx={{ m: 1 }}>Obra adicionada com sucesso!</Alert>}
-<TextField
-    id="foto"
-    label="Foto"
-    value={values.foto}
-    onChange={handleInputChange}
-    name="foto"
-/>
- */

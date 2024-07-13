@@ -5,6 +5,7 @@ import isel.pt.ps.projeto.models.Problem
 import isel.pt.ps.projeto.models.registers.*
 import isel.pt.ps.projeto.services.RegistersInfoError
 import isel.pt.ps.projeto.services.RegistersService
+import isel.pt.ps.projeto.services.RegistersUserInfoError
 import isel.pt.ps.projeto.utils.Failure
 import isel.pt.ps.projeto.utils.Success
 import jakarta.servlet.http.HttpServletResponse
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*
 class RegistersController(
     private val registersService: RegistersService,
     private val requestTokenProcessor: RequestTokenProcessor,
+    private val utils: UtilsController
 ) {
 
     @GetMapping("/registos")
@@ -47,12 +49,8 @@ class RegistersController(
                     )
             is Failure ->
                 when (res.value) {
-                    RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
-                    RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
-                    RegistersInfoError.NoAccessToConstruction -> TODO()
-                    RegistersInfoError.NoConstruction -> TODO()
-                    RegistersInfoError.NoPermission -> TODO()
-                    RegistersInfoError.ConstructionSuspended -> TODO()
+                    RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                    RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 }
         }
     }
@@ -73,9 +71,33 @@ class RegistersController(
                     RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                     RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                     RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
-                    RegistersInfoError.NoConstruction -> TODO()
-                    RegistersInfoError.NoPermission -> TODO()
-                    RegistersInfoError.ConstructionSuspended -> TODO()
+                    RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                    RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                    RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                }
+        }
+    }
+
+    @PostMapping("/registos/nfc")
+    fun addRegisterEntryByNfc(
+        @RequestHeader("Authorization") userToken: String,
+        @RequestBody register: RegisterByNfcInputModel
+    ): ResponseEntity<*> {
+        val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        println("Registo NFC")
+        val res = registersService.addRegisterEntryByNFC(authUser.user.id, register.nfcId, register.time)
+        return when (res) {
+            is Success ->
+                ResponseEntity.status(201)
+                    .body(RegisterInfoModel("Successful"))
+            is Failure ->
+                when (res.value) {
+                    RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                    RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                    RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
+                    RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                    RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                    RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
                 }
         }
     }
@@ -96,9 +118,9 @@ class RegistersController(
                     RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                     RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                     RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
-                    RegistersInfoError.NoConstruction -> TODO()
-                    RegistersInfoError.NoPermission -> TODO()
-                    RegistersInfoError.ConstructionSuspended -> TODO()
+                    RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                    RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                    RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
                 }
         }
     }
@@ -128,18 +150,20 @@ class RegistersController(
                     },
                     res.value.constructionStatus
                     ,
-                    "/obras/$oid/registos/me"
+                    "${utils.path}/obras/$oid/registos/me"
                     ,
-                    "/obras/$oid/registos/pendente"
+                    "${utils.path}/obras/$oid/registos/pendente"
+                    ,
+                    "${utils.path}/obras/$oid/registos"
                 )
             )
             is Failure -> when (res.value) {
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                RegistersInfoError.InvalidRegister -> TODO()
-                RegistersInfoError.NoRegisters -> TODO()
-                RegistersInfoError.ConstructionSuspended -> TODO()
+                RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }
@@ -154,14 +178,14 @@ class RegistersController(
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         return when (val res = registersService.acceptOrDenyRegisters(authUser.user.id, input.userId, input.registerId, oid, input.response)) {
-            is Success -> ResponseEntity.status(200).body("Registo ${input.response}")
+            is Success -> ResponseEntity.status(201).body("Registo ${input.response}")
             is Failure -> when (res.value) {
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                RegistersInfoError.InvalidRegister -> TODO()
-                RegistersInfoError.NoRegisters -> TODO()
-                RegistersInfoError.ConstructionSuspended -> TODO()
+                RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }
@@ -195,9 +219,9 @@ class RegistersController(
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                RegistersInfoError.InvalidRegister -> TODO()
-                RegistersInfoError.NoRegisters -> TODO()
-                RegistersInfoError.ConstructionSuspended -> TODO()
+                RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }
@@ -207,7 +231,6 @@ class RegistersController(
     fun getRegistersMyRegistersFromConstruction(
         @PathVariable oid: Int,
         @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "on going") status: String,
         @RequestHeader("Authorization") userToken: String,
     ): ResponseEntity<*>{
         val authUser =
@@ -231,9 +254,9 @@ class RegistersController(
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                RegistersInfoError.InvalidRegister -> TODO()
-                RegistersInfoError.NoRegisters -> TODO()
-                RegistersInfoError.ConstructionSuspended -> TODO()
+                RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }
@@ -265,9 +288,9 @@ class RegistersController(
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                RegistersInfoError.InvalidRegister -> TODO()
-                RegistersInfoError.NoRegisters -> TODO()
-                RegistersInfoError.ConstructionSuspended -> TODO()
+                RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }
@@ -298,9 +321,9 @@ class RegistersController(
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
                 RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
-                RegistersInfoError.InvalidRegister -> TODO()
-                RegistersInfoError.NoRegisters -> TODO()
-                RegistersInfoError.ConstructionSuspended -> TODO()
+                RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
             }
         }
     }

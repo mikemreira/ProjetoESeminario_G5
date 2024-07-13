@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import { useEffect } from "react";
 import {useSetAvatar, useSetUser} from "../context/Authn";
+import {path} from "../App";
 
 export default function LogOut() {
     const navigate = useNavigate()
@@ -8,7 +9,7 @@ export default function LogOut() {
     const setAvatar = useSetAvatar()
 
     useEffect(() => {
-        fetch("/api/users/signout", {
+        fetch(`${path}/users/signout`, {
             method: "POST",
             headers: {
                 'Content-type': 'application/json'
@@ -17,12 +18,14 @@ export default function LogOut() {
             const expirationDate = new Date();
             setUser(undefined)
             setAvatar(undefined)
-            sessionStorage.clear()
+            localStorage.clear()
             expirationDate.setHours(expirationDate.getHours() - 1);
             document.cookie = `token=; expires=${expirationDate.toUTCString()}; path=/`;
             document.cookie = `username=; expires=${expirationDate.toUTCString()}; path=/`;
             navigate("/login")
         })
     }, [])
+
+    return null
 
 }

@@ -53,7 +53,7 @@ interface UserRepository {
         id: Int,
         nome: String,
         morada: String?,
-        foto: String?,
+        foto: ByteArray?,
     ): SimpleUser
 
     fun editPassword(
@@ -65,4 +65,8 @@ interface UserRepository {
      * Delete
      */
     fun deleteUser(id: Int): User
+
+    fun setForgetPassword(email: String, token: String)
+    fun validateEmailAndTokenForForgottenPassword(email: String, token: String): Boolean
+    fun editPasswordIfForgotten(userId: Int, email: String, pass: PasswordValidationInfo)
 }

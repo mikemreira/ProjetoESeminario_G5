@@ -1,12 +1,11 @@
 import "./styles.css";
 import { Link, useNavigate } from "react-router-dom";
-import { useAvatar, useCurrentUser } from "./context/Authn.tsx";
+import { useAvatar, useCurrentUser } from "./context/Authn";
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
 import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
@@ -17,12 +16,12 @@ import { Badge } from "@mui/material";
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckIcon from '@mui/icons-material/Check';
 import ReplyIcon from '@mui/icons-material/Reply';
 import CloseIcon from '@mui/icons-material/Close';
 // @ts-ignore
 import logo from './assets/logo-no-background.png';
+import {path} from "./App";
 
 
 interface DateObject {
@@ -80,44 +79,49 @@ export default function NavBar() {
     const [pendingRegisters, setPendingRegisters] = useState<RegistosOutputModel>({ registers: [] });
 
     useEffect(() => {
-        fetch(`/api/convites`, {
-            method: "GET",
-            headers: {
-                "Content-type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
-            },
-        }).then((res) => {
-            if (res.ok) return res.json();
-            else return null;
-        }).then((body) => {
-            if (body) {
-                setInvites(body);
-            }
-        }).catch(error => {
-            console.error("Error fetching notifications: ", error);
-        });
+        if (cookies.token !== undefined) {
+            fetch(`${path}/convites`, {
+                method: "GET",
+                headers: {
+                    "Content-type": "application/json",
+                    "Authorization": `Bearer ${cookies.token}`
+                },
+            }).then((res) => {
+                if (res.ok) return res.json();
+                else return null;
+            }).then((body) => {
+                if (body) {
+                    setInvites(body);
+                }
+            }).catch(error => {
+                console.error("Error fetching notifications: ", error);
+            });
+        }
     }, [cookies.token]);
 
     useEffect(() => {
-        fetch(`/api/registos/pendente`, {
-            method: "GET",
-            headers: {
-                "Content-type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`,
-            },
-        }).then((res) => {
-            if (res.ok) {
-                return res.json();
-            } else {
-                throw new Error('Failed to fetch registos pendentes');
-            }
-        }).then((body) => {
-            console.log("Registos pendentes: ", body);
-            setPendingRegisters(body);
+        if (cookies.token !== undefined) {
+            fetch(`${path}/registos/pendente`, {
+                method: "GET",
+                headers: {
+                    "Content-type": "application/json",
+                    "Authorization": `Bearer ${cookies.token}`,
+                },
+            }).then((res) => {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to fetch registos pendentes');
+                }
+            }).then((body) => {
+                console.log("Registos pendentes: ", body);
+                setPendingRegisters(body);
 
-        }).catch((error) => {
-            console.error("Error fetching registos pendentes:", error);
-        });
+            }).catch((error) => {
+                console.error("Error fetching registos pendentes:", error);
+            });
+        }
+
     }, [cookies.token]);
 
     const handleOpenUserMenu = (event) => {
@@ -143,7 +147,7 @@ export default function NavBar() {
     };
 
     const handleAcceptOrRejectInvite = (oid: number, response: string) => {
-        fetch(`/api/convites`, {
+        fetch(`${path}/convites`, {
             method: 'PUT',
             headers: {
                 'Content-type': 'application/json',
@@ -168,9 +172,10 @@ export default function NavBar() {
     };
 
     const handleGetPendingRegister = (oid: number) => {
-        navigate(`/obras/${oid}/registers/pending`);
+        navigate(`/obras/${oid}`);
     };
 
+    // @ts-ignore
     return (
         <AppBar position="fixed">
             <Container maxWidth="xl">
