@@ -1,10 +1,13 @@
-import {Stack} from "@mui/material";
+import {Paper, Stack} from "@mui/material";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
 import React, {useState} from "react";
 import {useCookies} from "react-cookie";
+import IconButton from "@mui/material/IconButton";
+import EditIcon from "@mui/icons-material/Edit";
+import CancelIcon from '@mui/icons-material/Cancel';
+import SaveIcon from '@mui/icons-material/Save';
 
 interface ObraNFCFormProps {
     nfc: string | null;
@@ -68,44 +71,39 @@ export default function ObraNFCForm({
                 }}
             >
                 <Typography variant="h4" color="black">NFC</Typography>
-                <Box>
-                    {isEditing ? (
-                        <>
-                            <Button variant="outlined" sx={{
-                                m: 1,
-                                borderColor: 'red',
-                                color: 'red',
-                                '&:hover': {
-                                    borderColor: 'darkred',
-                                    color: 'darkred',
-                                }
-                            }} onClick={() => setIsEditing(false)}>
-                                Cancelar
-                            </Button>
-                            <Button variant="contained" color="primary" onClick={handleEditNFC}>
-                                Guardar
-                            </Button>
-                        </>
-
-                    ) : (
-                        <Button variant="contained" color="primary" onClick={() => setIsEditing(true)}>
-                            Editar
-                        </Button>
-                    )}
-                </Box>
-
             </Box>
             {isEditing ? (
                 <TextField
                     fullWidth
-                    label="NFC"
+                    label="NFC ID"
                     variant="outlined"
                     name="newNfc"
                     value={values.newNfc}
                     onChange={handleInputChange}
+                    sx={{ mt: 2 }}
                 />
             ) : (
-                <Typography variant="body1">{nfc}</Typography>
+                <Paper sx={{ p: 2, mt: 2, backgroundColor: '#CACCD0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box>
+                        <Typography variant="body2" color="textSecondary">NFC ID</Typography>
+                        <Typography variant="body1">{nfc}</Typography>
+                    </Box>
+                    <IconButton color="primary" title={"Configurar NFC"} onClick={() => setIsEditing(true)}>
+                        <EditIcon />
+                    </IconButton>
+                </Paper>
+            )}
+            {isEditing && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                    <>
+                        <IconButton sx={{ color: 'red' }} title={"Cancelar"} onClick={() => setIsEditing(false)}>
+                            <CancelIcon />
+                        </IconButton>
+                        <IconButton color={"primary"} title={"Guardar"} onClick={handleEditNFC}>
+                            <SaveIcon />
+                        </IconButton>
+                    </>
+                </Box>
             )}
         </Stack>
     );
