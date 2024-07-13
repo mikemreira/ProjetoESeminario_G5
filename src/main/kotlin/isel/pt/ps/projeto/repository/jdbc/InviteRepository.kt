@@ -16,7 +16,7 @@ class InviteRepository() : InviteRepository {
 
     private fun initializeConnection(): Connection {
         val dataSource = PGSimpleDataSource()
-        dataSource.setURL(jdbcDatabaseUrl)
+        dataSource.setURL(JDBC_URL)
         return dataSource.connection
     }
 

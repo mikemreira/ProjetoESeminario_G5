@@ -25,7 +25,14 @@ p, construction_3_user, /obras/3, GET
 p, construction_3_user, /obras/3/registos/me, GET
 p, construction_1_admin, /obras/1/convite, POST
 p, construction_3_admin, /obras/3/convite, POST
+p, user, /convites, PUT
+p, construction_1_funcionario, /obras/1, GET
+p, construction_1_funcionario, /obras/1/registos/me, GET
+p, construction_3_funcionario, /obras/3, GET
+p, construction_3_funcionario, /obras/3/registos/me, GET
 g, abc@abc.com, user
 g, mike@mike.com, user
 g, mike@mike.com, construction_1_admin
 g, mike@mike.com, construction_3_admin
+g, abc@abc.com, construction_1_funcionario
+g, abc@abc.com, construction_3_funcionario

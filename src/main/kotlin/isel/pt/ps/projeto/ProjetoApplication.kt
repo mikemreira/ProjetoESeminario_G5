@@ -10,11 +10,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.io.ClassPathResource
 //import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import kotlin.time.Duration.Companion.hours
 
 @SpringBootApplication
@@ -58,5 +61,11 @@ class PipelineConfigurer(
 }
 
 fun main(args: Array<String>) {
+    println(ClassPathResource("model.conf"))
+    val reader = BufferedReader(InputStreamReader(ClassPathResource("policy.csv").inputStream))
+    var line: String?
+    while (reader.readLine().also { line = it } != null) {
+        println(line)
+    }
     runApplication<ProjetoApplication>(*args)
 }

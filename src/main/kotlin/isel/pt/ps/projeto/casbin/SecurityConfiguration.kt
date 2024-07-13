@@ -41,7 +41,7 @@ class SecurityConfiguration {
                 authorize("/set-password", permitAll)
                 authorize("/registos/**", authenticated)
             }
-            addFilterBefore<UsernamePasswordAuthenticationFilter>(casbinFilter)
+            addFilterAfter<UsernamePasswordAuthenticationFilter>(casbinFilter)
         }
         return http.build()
     }

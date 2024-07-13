@@ -36,6 +36,7 @@ class CasbinFilter(private val enforcer: Enforcer, private val usersService: Use
             chain.doFilter(request, response)
             return
         }
+        println("REQUEST " + httpServletRequest.requestURI)
         println("" + httpServletRequest.getHeader("Authorization").trim().split(" ")[1] + " TOKEN")
         val token = httpServletRequest.getHeader("Authorization").trim().split(" ")[1]
         val user = usersService.getUserByToken(token)
@@ -73,3 +74,5 @@ class CasbinFilter(private val enforcer: Enforcer, private val usersService: Use
         private val logger: Logger = LoggerFactory.getLogger(CasbinFilter::class.java)
     }
 }
+
+// jdbc:postgresql://postgredb:5432/postgres?username=postgres&password=postgres
