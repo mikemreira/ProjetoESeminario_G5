@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component
 
 data class TokenExternalInfo(
     val tokenValue: String,
-    val tokenExpiration: Instant,
     val user: SimpleUser
 )
 
@@ -90,12 +89,9 @@ class UsersService(
             return failure(TokenError.UserOrPasswordAreInvalid)
         }
         val tokenValue = usersDomain.generateTokenValue()
-        val now = clock.now()
         val newToken = Token(
             usersDomain.createTokenValidationInformation(tokenValue),
-            user.id,
-            createdAt = now,
-            lastUsedAt = now
+            user.id
         )
 
         usersRepository.createToken(newToken, usersDomain.maxNumberOfTokensPerUser)
@@ -106,7 +102,6 @@ class UsersService(
         return Either.Right(
             TokenExternalInfo(
                 tokenValue,
-                usersDomain.getTokenExpiration(newToken),
                 simpleUser
             )
         )
@@ -148,8 +143,7 @@ class UsersService(
         }
         val validToken = usersDomain.createTokenValidationInformation(token)
         val userAndToken = usersRepository.getTokenByTokenValidationInfo(validToken)
-        if (userAndToken != null && usersDomain.isTokenTimeValid(clock, userAndToken.second)) {
-            usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
+        if (userAndToken != null) {
             return userAndToken.first
         } else {
             return null

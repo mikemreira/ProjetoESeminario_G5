@@ -86,30 +86,12 @@ class UsersRepository(
         }
     }
 
-    /**
-     *  override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? =
-     *         handle.createQuery(
-     *             """
-     *                 select id, username, password_validation, token_validation, created_at, last_used_at
-     *                 from Users as users
-     *                 inner join Token as token
-     *                 on users.id = token.user_id
-     *                 where token_validation = :validation_information
-     *             """
-     *         )
-     *             .bind("validation_information", tokenValidationInfo.validationInfo)
-     *             .mapTo<UserAndTokenModel>()
-     *             .singleOrNull()
-     *             ?.userAndToken
-     *
-     */
-
     override fun getTokenByTokenValidationInfo(token: TokenValidationInfo): Pair<User, Token>? {
         initializeConnection().use {
             it.autoCommit = false
             return try {
                 val pStatement = it.prepareStatement(
-                    "select id, nome, email, password, morada, foto, token_validation, created_at, last_used_at\n" +
+                    "select id, nome, email, password, morada, foto, token_validation \n" +
                         "    from utilizador u \n" +
                         "    inner join Token t\n" +
                         "    on u.id = t.id_utilizador\n" +
@@ -125,9 +107,7 @@ class UsersRepository(
                     PasswordValidationInfo(result.getString("password")),
                     result.getString("morada"),
                     result.getBytes("foto"),
-                    TokenValidationInfo(result.getString("token_validation")),
-                    result.getLong("created_at"),
-                    result.getLong("last_used_at")
+                    TokenValidationInfo(result.getString("token_validation"))
                 ).userAndToken
             } catch(e: SQLException) {
                 it.rollback()
@@ -139,20 +119,6 @@ class UsersRepository(
         }
     }
 
-    /**
-     * override fun updateTokenLastUsed(token: Token, now: Instant) {
-     *         handle.createUpdate(
-     *             """
-     *                 update Token
-     *                 set last_used_at = :last_used_at
-     *                 where token_validation = :validation_information
-     *             """.trimIndent()
-     *         )
-     *             .bind("last_used_at", now.epochSeconds)
-     *             .bind("validation_information", token.tokenValidationInfo.validationInfo)
-     *             .execute()
-     *     }
-     */
 
     override fun updateTokenLastUsed(token: Token, now: Instant) {
         initializeConnection().use {
@@ -399,27 +365,12 @@ class UsersRepository(
         initializeConnection().use {
             it.autoCommit = false
             try {
-                println("3 :"+token.tokenValidationInfo.validationInfo)
-                val pStatement = it.prepareStatement(
-                    "delete from Token\n" +
-                    "                 where id_utilizador = ?\n" +
-                    "                     and token_validation in (\n" +
-                    "                         select token_validation from Token where id_utilizador = ?\n" +
-                    "                             order by last_used_at desc offset ?\n" +
-                    "                   )"
-                )
-                pStatement.setInt(1, token.userId)
-                pStatement.setInt(2, token.userId)
-                pStatement.setInt(3, maxTokens-1)
-                pStatement.executeUpdate()
                 val pStatement2 = it.prepareStatement(
-                    "insert into Token(id_utilizador, token_validation, created_at, last_used_at)\n" +
-                    "                     values (?, ?, ?, ?)"
+                    "insert into Token(id_utilizador, token_validation)\n" +
+                    "                     values (?, ?)"
                 )
                 pStatement2.setInt(1, token.userId)
                 pStatement2.setString(2, token.tokenValidationInfo.validationInfo)
-                pStatement2.setLong(3, token.createdAt.epochSeconds)
-                pStatement2.setLong(4, token.lastUsedAt.epochSeconds)
                 pStatement2.executeUpdate()
             } catch (e: SQLException) {
                 it.rollback()
@@ -504,9 +455,7 @@ class UsersRepository(
         val passwordValidation: PasswordValidationInfo,
         val morada: String?,
         val foto: ByteArray?,
-        val tokenValidation: TokenValidationInfo,
-        val createdAt: Long,
-        val lastUsedAt: Long
+        val tokenValidation: TokenValidationInfo
     ) {
         val userAndToken: Pair<User, Token>
             get() = Pair(
@@ -514,8 +463,6 @@ class UsersRepository(
                 Token(
                     tokenValidation,
                     id,
-                    Instant.fromEpochSeconds(createdAt),
-                    Instant.fromEpochSeconds(lastUsedAt)
                 )
             )
     }
