@@ -1,0 +1,29 @@
+# Stage 1: Build the Vite app
+FROM node:18 AS builder
+
+WORKDIR /app
+
+# Install dependencies
+COPY ./js/projeto/package*.json ./
+RUN npm install
+
+# Copy the rest of the application code and build the app
+COPY ./js/projeto .
+RUN npm run build
+
+# Stage 2: Serve the built app with Vite's preview mode
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install Vite globally to use the preview mode
+RUN npm install -g vite
+
+# Copy the built files from the builder stage
+COPY --from=builder /app/dist ./dist
+
+# Expose the port Vite runs on
+EXPOSE 5173
+
+# Use Vite's preview command to serve the built files
+CMD ["vite", "preview", "--host", "0.0.0.0", "--port", "5173"]
