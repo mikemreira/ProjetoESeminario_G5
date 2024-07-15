@@ -1,5 +1,6 @@
 package isel.pt.ps.projeto.controllers
 
+import isel.pt.ps.projeto.casbin.AuthorizationService
 import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
 import isel.pt.ps.projeto.domain.users.AuthenticatedUser
 import isel.pt.ps.projeto.models.Problem
@@ -12,11 +13,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.util.*
 
 
 @RestController
-@RequestMapping()
+@RequestMapping("/users")
 class UsersController(
     private val usersService: UsersService,
     private val requestTokenProcessor: RequestTokenProcessor,
@@ -25,7 +25,7 @@ class UsersController(
 ) {
     private val logger: Logger = LoggerFactory.getLogger(UsersController::class.java)
 
-    @GetMapping("/users/me")
+    @GetMapping("/me")
     fun getUserByToken(@RequestHeader("Authorization") token : String): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
         val fotoString = if (authUser.user.foto != null) utils.byteArrayToBase64(authUser.user.foto) else null
@@ -76,7 +76,7 @@ class UsersController(
         }
     }
 
-    @PutMapping("/users/me")
+    @PutMapping("/me")
     fun editUserByToken(
         @RequestHeader("Authorization") token : String,
         @RequestBody input: UserEditInputModel
@@ -96,7 +96,7 @@ class UsersController(
         }
     }
 
-    @PutMapping("/users/me/changepassword")
+    @PutMapping("/me/changepassword")
     fun editPassword(
         @RequestHeader("Authorization") token : String,
         @RequestBody password: String
@@ -122,7 +122,7 @@ class UsersController(
         return ResponseEntity.status(200).body(listOfUsers)
     }
 
-    @PostMapping("/users/signup", consumes = ["application/json", "text/plain;charset=UTF-8"], produces = ["application/json"])
+    @PostMapping("/signup")
     fun signUp(
         @RequestBody input: UserSignUp,
     ): ResponseEntity<*> {
@@ -130,6 +130,7 @@ class UsersController(
         return when (res) {
             is Success -> {
                 authorizationService.saveUserRole(input.email)
+                authorizationService.enforcer()
                 ResponseEntity.status(201)
                     .body(UserSignUpOutputModel("User added"))
             }
@@ -143,7 +144,7 @@ class UsersController(
         }
     }
 
-    @PostMapping("/users/signin")
+    @PostMapping("/signin")
     fun signIn(
         @RequestBody input: UserSignIn,
         response: HttpServletResponse,
@@ -161,7 +162,7 @@ class UsersController(
         }
     }
 
-    @PostMapping("/users/signout")
+    @PostMapping("/signout")
     fun signOut(
         user: AuthenticatedUser,
         response: HttpServletResponse,

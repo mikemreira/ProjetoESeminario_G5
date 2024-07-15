@@ -32,7 +32,7 @@ export default function ForgotPassword() {
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        fetch(`${path}/forget-password`, {
+        fetch(`${path}/users/forget-password`, {
             method: "POST",
             headers: {
                 "Content-type": "application/json",

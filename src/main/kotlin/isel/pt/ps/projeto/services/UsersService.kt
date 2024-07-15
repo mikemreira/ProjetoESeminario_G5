@@ -9,9 +9,12 @@ import isel.pt.ps.projeto.repository.jdbc.UsersRepository
 import isel.pt.ps.projeto.utils.Either
 import isel.pt.ps.projeto.utils.failure
 import isel.pt.ps.projeto.utils.success
+import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.springframework.stereotype.Component
+import kotlin.coroutines.coroutineContext
+import kotlin.coroutines.suspendCoroutine
 
 data class TokenExternalInfo(
     val tokenValue: String,
@@ -64,6 +67,8 @@ class UsersService(
         email: String,
         password: String,
     ): UserResult {
+        val scope = CoroutineScope(Dispatchers.Default)
+
         if (!usersDomain.isSafePassword(password)) {
             return failure(UserError.InsecurePassword)
         }
@@ -73,7 +78,11 @@ class UsersService(
 
         val passwordValidationInfo = usersDomain.createPasswordValidationInformation(password)
         val signed = usersRepository.signUp(name, email, passwordValidationInfo)
-        emailSenderService.sendEmail(email, "Bem vindo(a)", "Seja bem vindo(a) aos Registos de acessos ISEL do grupo 5")
+
+        scope.launch {
+            emailSenderService.sendEmail(email, "Bem vindo(a)", "Seja bem vindo(a) aos Registos de acessos ISEL do grupo 5")
+        }
+
         return success(signed)
     }
 

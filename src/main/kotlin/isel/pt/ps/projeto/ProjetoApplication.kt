@@ -1,5 +1,6 @@
 package isel.pt.ps.projeto
 
+//import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import isel.pt.ps.projeto.controllers.pipeline.AuthenticatedUserArgumentResolver
 import isel.pt.ps.projeto.controllers.pipeline.AuthenticationInterceptor
 import isel.pt.ps.projeto.domain.constructions.ConstructionsDomain
@@ -10,14 +11,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.io.ClassPathResource
-//import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
+import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import kotlin.time.Duration.Companion.hours
 
 @SpringBootApplication
@@ -45,6 +43,16 @@ class ProjetoApplication {
 
 
 }
+
+@Bean
+fun corsConfigurer(): WebMvcConfigurer {
+    return object : WebMvcConfigurer {
+        override fun addCorsMappings(registry: CorsRegistry) {
+            registry.addMapping("/**").allowedOrigins("*")
+        }
+    }
+}
+
 @Configuration
 class PipelineConfigurer(
     val authenticationInterceptor: AuthenticationInterceptor,
@@ -61,11 +69,5 @@ class PipelineConfigurer(
 }
 
 fun main(args: Array<String>) {
-    println(ClassPathResource("model.conf"))
-    val reader = BufferedReader(InputStreamReader(ClassPathResource("policy.csv").inputStream))
-    var line: String?
-    while (reader.readLine().also { line = it } != null) {
-        println(line)
-    }
     runApplication<ProjetoApplication>(*args)
 }

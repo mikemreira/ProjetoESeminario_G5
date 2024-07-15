@@ -1,12 +1,11 @@
 package isel.pt.ps.projeto.controllers
 
+import isel.pt.ps.projeto.casbin.AuthorizationService
 import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
 import isel.pt.ps.projeto.models.Problem
 import isel.pt.ps.projeto.models.constructions.*
-import isel.pt.ps.projeto.models.registers.RegisterQuery
 import isel.pt.ps.projeto.models.registers.RegisterInputModelWeb
 import isel.pt.ps.projeto.models.users.ListOfSimpleUserAndFunc
-import isel.pt.ps.projeto.models.users.SimpleUserAndFunc
 import isel.pt.ps.projeto.models.users.SimpleUserAndFuncOutput
 import isel.pt.ps.projeto.services.*
 import isel.pt.ps.projeto.utils.Failure
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -344,6 +342,8 @@ class ConstructionsController(
         return when (res) {
             is Success -> {
                 authorizationService.saveConstructionUserRole(authUser.user.email, res.value, "admin")
+                authorizationService.createConstructionPolicies(res.value)
+                authorizationService.enforcer()
                 ResponseEntity.status(201)
                     .body(ConstructionIdOutputModel(res.value))
             }

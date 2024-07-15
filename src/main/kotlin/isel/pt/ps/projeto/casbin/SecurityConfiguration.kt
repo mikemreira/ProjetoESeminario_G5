@@ -1,6 +1,5 @@
 package isel.pt.ps.projeto.casbin
 
-import org.casbin.jcasbin.main.Enforcer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -36,9 +35,9 @@ class SecurityConfiguration {
                 authorize("/obras/**", authenticated)
                 authorize("/convites", authenticated)
                 authorize("/profile", authenticated)
-                authorize("/users/signout", permitAll)
-                authorize("/forget-password", permitAll)
-                authorize("/set-password", permitAll)
+                authorize("/users/signout", authenticated)
+                authorize("/users/forget-password", permitAll)
+                authorize("/users/set-password", permitAll)
                 authorize("/registos/**", authenticated)
             }
             addFilterAfter<UsernamePasswordAuthenticationFilter>(casbinFilter)

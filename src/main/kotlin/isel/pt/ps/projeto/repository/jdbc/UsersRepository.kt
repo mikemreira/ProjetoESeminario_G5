@@ -16,38 +16,37 @@ import java.sql.DriverManager
 import java.sql.SQLException
 import java.util.*
 
-const val JDBC_URL = "jdbc:postgresql://ps-postgresql.postgres.database.azure.com:5432/postgres?user=admin_ps&password=Mikemtcool1!&sslmode=require"//"jdbc:postgresql://postgredb:5432/postgres?user=postgres&password=postgres"
-const val jdbcDatabaseUrl = "jdbc:postgresql://localhost/postgres?user=postgres&password=postgres"
+const val JDBC_URL = "jdbc:postgresql://localhost:5432/postgres"//"jdbc:postgresql://ps-postgresql.postgres.database.azure.com:5432/postgres?user=admin_ps&password=Mikemtcool1!&sslmode=require"
 
 @Component
 class UsersRepository(
     private val utils: UtilsServices
 ) : UserRepository {
     private fun initializeConnection(): Connection {
-        println("database_URL " + JDBC_URL)
         val dataSource = PGSimpleDataSource()
         dataSource.setURL(JDBC_URL)
         return dataSource.connection
     }
 
     override fun getUsers(): List<User> {
-        val conn = DriverManager.getConnection(JDBC_URL, "admin_ps", "Mikemtcool1!")
-        val statement = conn.createStatement()
-        val result = statement.executeQuery("select * from utilizador")
-        val list = mutableListOf<User>()
-        while (result.next()) {
-            list.add(
-                User(
-                    result.getInt("id"),
-                    result.getString("nome"),
-                    result.getString("email"),
-                    PasswordValidationInfo(result.getString("password")),
-                    result.getString("morada"),
-                    result.getBytes("foto")
+        initializeConnection().use {
+            val statement = it.createStatement()
+            val result = statement.executeQuery("select * from utilizador")
+            val list = mutableListOf<User>()
+            while (result.next()) {
+                list.add(
+                    User(
+                        result.getInt("id"),
+                        result.getString("nome"),
+                        result.getString("email"),
+                        PasswordValidationInfo(result.getString("password")),
+                        result.getString("morada"),
+                        result.getBytes("foto")
+                    )
                 )
-            )
+            }
+            return list
         }
-        return list
     }
 
     override fun getUserById(id: Int): User {

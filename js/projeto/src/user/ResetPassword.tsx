@@ -48,7 +48,7 @@ export default function ResetPassword() {
             setSubmitted(true)
             return
         }
-        fetch(`${path}/set-password?email=${email}&token=${token}`, {
+        fetch(`${path}/users/set-password?email=${email}&token=${token}`, {
             method: "PUT",
             headers: {
                 "Content-type": "application/json",

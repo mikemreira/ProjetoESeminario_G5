@@ -1,11 +1,12 @@
 package isel.pt.ps.projeto.controllers
 
+import isel.pt.ps.projeto.casbin.AuthorizationService
 import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
 import isel.pt.ps.projeto.models.invite.Invite
 import isel.pt.ps.projeto.models.Problem
 import isel.pt.ps.projeto.models.constructions.ConstructionAndRoleOutputModel
 import isel.pt.ps.projeto.models.constructions.ListOfConstructionAndRoleOutputModel
-import isel.pt.ps.projeto.models.invite.acceptOrDenyInvite
+import isel.pt.ps.projeto.models.invite.AcceptOrDenyInviteModel
 import isel.pt.ps.projeto.services.InviteInfoError
 import isel.pt.ps.projeto.services.InviteService
 import isel.pt.ps.projeto.utils.Failure
@@ -14,9 +15,10 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping()
+@RequestMapping
 class InviteController(
     private val inviteService: InviteService,
+    private val authorizationService: AuthorizationService,
     private val requestTokenProcessor: RequestTokenProcessor,
     private val utils: UtilsController
 ) {
@@ -81,7 +83,7 @@ class InviteController(
 
     @PutMapping("/convites")
     fun acceptOrDeny(
-        @RequestBody input: acceptOrDenyInvite,
+        @RequestBody input: AcceptOrDenyInviteModel,
         @RequestHeader("Authorization") userToken: String
     ): ResponseEntity<*>{
         val authUser =
@@ -89,8 +91,12 @@ class InviteController(
 
         val res = inviteService.acceptOrDeny(authUser.user.email, input.oid, input.response)
         return when(res) {
-            is Success -> ResponseEntity.status(201)
-                .body("O Convite foi ${input.response}")
+            is Success -> {
+                println("ADDED USER ${authUser.user.id}")
+                authorizationService.saveConstructionUserRole(authUser.user.email, input.oid, "funcionario")
+                ResponseEntity.status(201)
+                    .body("O Convite foi ${input.response}")
+            }
 
             is Failure -> when (res.value) {
                 InviteInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)

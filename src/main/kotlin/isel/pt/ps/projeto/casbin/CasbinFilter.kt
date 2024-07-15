@@ -20,8 +20,8 @@ class CasbinFilter(private val enforcer: Enforcer, private val usersService: Use
         "/users/signin",
         "/users/signup",
         "/users/signout",
-        "/forget-password",
-        "/set-password"
+        "/users/forget-password",
+        "/users/set-password"
     )
 
     @Throws(ServletException::class)
@@ -36,23 +36,22 @@ class CasbinFilter(private val enforcer: Enforcer, private val usersService: Use
             chain.doFilter(request, response)
             return
         }
-        println("REQUEST " + httpServletRequest.requestURI)
-        println("" + httpServletRequest.getHeader("Authorization").trim().split(" ")[1] + " TOKEN")
+
         val token = httpServletRequest.getHeader("Authorization").trim().split(" ")[1]
         val user = usersService.getUserByToken(token)
-        println("USER " + user?.email)
         if (user != null) {
             val method = httpServletRequest.method
             val path = httpServletRequest.requestURI
-            println(enforcer.getRolesForUser("mike@mike.com"))
-
+            enforcer.loadPolicy()
             if (enforcer.enforce(user.email, path, method)) {
                 logger.info("session is authorized: {} {} {}", user.email, method, path)
+
                 val rolesForUser = enforcer.getRolesForUser(user.email)
                 val securityContext = SecurityContextHolder.getContext()
                 securityContext.authentication = AuthenticationImpl(user.email, rolesForUser)
                 val session = httpServletRequest.session
                 session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext)
+
                 chain.doFilter(request, response)
             } else {
                 logger.error("session is not authorized: {} {} {}", user.email, method, path)

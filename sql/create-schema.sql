@@ -97,7 +97,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create the trigger
-CREATE TRIGGER convite_status_update_trigger
+CREATE OR REPLACE TRIGGER convite_status_update_trigger
 AFTER UPDATE ON Convite
 FOR EACH ROW
 EXECUTE FUNCTION handle_convite_status_update();
@@ -113,7 +113,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER registo_status_update_trigger
+CREATE OR REPLACE TRIGGER registo_status_update_trigger
 AFTER UPDATE ON Registo
 FOR EACH ROW
 WHEN (OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'rejected')
@@ -130,7 +130,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trigger_delete_related_records
+CREATE OR REPLACE TRIGGER trigger_delete_related_records
 AFTER UPDATE OF status ON Obra
 FOR EACH ROW
 WHEN (NEW.status = 'deleted')
