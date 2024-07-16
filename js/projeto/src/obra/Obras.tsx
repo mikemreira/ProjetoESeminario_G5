@@ -166,7 +166,7 @@ export default function Obras() {
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={4} align="center">
-                                        <CircularProgress />
+                                        Ainda não está registado em nenhuma obra.
                                     </TableCell>
                                 </TableRow>
                             )

@@ -74,6 +74,7 @@ export default function Registos () {
             }
             else {
                 setSnackbarOpen(true);
+                setLoading(false);
                 return null;
             }
         }).then((body) => {
@@ -180,6 +181,13 @@ export default function Registos () {
                                 </TableCell>
                             </TableRow>
                         ) : (
+                            table.getRowModel().rows.length == 0 ?
+                                <TableRow>
+                                    <TableCell colSpan={4} align="center">
+                                        Ainda não efetuou nenhum registo.
+                                    </TableCell>
+                                </TableRow>
+                                :
                             table.getRowModel().rows.map((row, rowIndex) => (
                                 <TableRow key={row.id} selected={row.getIsSelected()}>
                                     {row.getVisibleCells().map((cell, _columnIndex) => (

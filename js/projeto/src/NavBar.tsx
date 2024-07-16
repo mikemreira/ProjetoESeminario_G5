@@ -238,7 +238,7 @@ export default function NavBar() {
                                     position: 'relative'
                                 }}>
                                     <Badge badgeContent={invites.obrasAndRole.length || pendingRegisters.registers.length} color="warning">
-                                        <NotificationsIcon sx={{ color: 'white',  }} />
+                                        <NotificationsIcon sx={{ color: 'white', transform: 'translateY(7px)' }} />
                                     </Badge>
                                 </IconButton>
                             </Tooltip>
@@ -246,8 +246,8 @@ export default function NavBar() {
                                 id="notifications-menu"
                                 anchorEl={anchorElNotifications}
                                 anchorOrigin={{
-                                    vertical: 'top',
-                                    horizontal: 'right',
+                                    vertical: 'bottom',
+                                    horizontal: 'center',
                                 }}
                                 keepMounted
                                 transformOrigin={{
