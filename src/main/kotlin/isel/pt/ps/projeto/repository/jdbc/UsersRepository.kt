@@ -16,7 +16,7 @@ import java.sql.DriverManager
 import java.sql.SQLException
 import java.util.*
 
-const val JDBC_URL = "jdbc:postgresql://localhost:5432/postgres"//"jdbc:postgresql://ps-postgresql.postgres.database.azure.com:5432/postgres?user=admin_ps&password=Mikemtcool1!&sslmode=require"
+const val JDBC_URL = "jdbc:postgresql://localhost:5432/postgres?user=postgres&password=postgres"//"jdbc:postgresql://ps-postgresql.postgres.database.azure.com:5432/postgres?user=admin_ps&password=Mikemtcool1!&sslmode=require"
 
 @Component
 class UsersRepository(

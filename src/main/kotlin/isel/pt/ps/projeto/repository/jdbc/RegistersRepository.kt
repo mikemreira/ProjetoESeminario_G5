@@ -73,12 +73,15 @@ class RegistersRepository : RegistersRepository {
                 val checkEntryStatement = it.prepareStatement("" +
                     "select exists ( " +
                     "select * from registo\n" +
-                    "Where id_utilizador = ? and saida = null"
+                    "Where id_utilizador = ? and saida = null and id_obra = ? " +
+                    ")"
                 )
 
                 checkEntryStatement.setInt(1 ,userId)
+                checkEntryStatement.setInt(2 , obraId)
                 val check = checkEntryStatement.executeQuery()
-                if(check.next()){
+                check.next()
+                if(check.getBoolean("exists")){
                     val saidaStatement = it.prepareStatement("" +
                         "update registo\n" +
                         "set saida = ?\n" +
