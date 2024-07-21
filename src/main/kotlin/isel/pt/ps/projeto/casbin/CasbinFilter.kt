@@ -21,7 +21,7 @@ class CasbinFilter(private val enforcer: Enforcer, private val usersService: Use
         "/users/signup",
         "/users/signout",
         "/users/forget-password",
-        "/users/set-password"
+        "/users/set-password",
     )
 
     @Throws(ServletException::class)

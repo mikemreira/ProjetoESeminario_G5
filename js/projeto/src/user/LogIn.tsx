@@ -10,6 +10,8 @@ import '../Login.css';
 // @ts-ignore
 import signUpIn from '../assets/sign.png';
 import {path} from "../App";
+import {CircularProgress} from "@mui/material";
+import Box from "@mui/material/Box";
 
 
 export default function LogIn() {
@@ -18,6 +20,12 @@ export default function LogIn() {
     email: "",
     password: ""
   });
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [valid, setValid] = useState(false);
+  const [error, setError] = useState(undefined);
+  const setUser = useSetUser();
+  const setAvatar = useSetAvatar();
 
   const handleInputChange = (event: { preventDefault: () => void; target: { name: any; value: any; }; }) => {
     event.preventDefault();
@@ -28,11 +36,6 @@ export default function LogIn() {
     }));
   };
 
-  const [submitted, setSubmitted] = useState(false)
-  const [valid, setValid] = useState(false)
-  const [error, setError] = useState(undefined)
-  const setUser = useSetUser()
-  const setAvatar = useSetAvatar()
 
   const handleSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
@@ -46,9 +49,11 @@ export default function LogIn() {
     }).then(res => {
         setSubmitted(true)
         if (res.status == 201) {
+            setLoading(true)
             return res.json()
         }
         else {
+            setLoading(false)
             setValid(false)
             return { error: "Invalid email or password" }
         }
@@ -60,9 +65,26 @@ export default function LogIn() {
             setValid(true)
             setCookies("token", body.token, { path: '/' })
             setUser(body.token)
-            setAvatar(body.foto)
             localStorage.setItem("token", body.token)
-            localStorage.setItem("avatar", body.foto)
+
+            fetch(body.hrefIcon, {
+                method: "GET",
+                headers: {
+                    'Content-type': 'application/json',
+                    'Authorization': `Bearer ${body.token}`
+                }
+            }).then(res => res.json())
+                .then(fotoBody => {
+                    console.log(fotoBody)
+                    setAvatar(fotoBody.foto)
+                    localStorage.setItem("avatar", fotoBody.foto)
+                    setLoading(false)
+                }).catch(error => {
+                setError(error.message)
+                setLoading(false)
+            })
+            //setAvatar(body.foto)
+           // localStorage.setItem("avatar", body.foto)
         }
     }).catch(error => {
         setError(error.message)
@@ -110,7 +132,18 @@ export default function LogIn() {
                                 Log In
                             </button>
                             <p style={{color: 'black'}}>Esqueceu-se da password? <a href={"/forgotPassword"}>Clique aqui.</a></p>
-                            {submitted && !valid && <Alert severity="error" sx={{m: 1}}>{error}</Alert>}
+                            {loading && (
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <CircularProgress />
+                                </Box>
+                            )}
+                            {!loading && submitted && !valid && <Alert severity="error" sx={{m: 1}}>{error}</Alert>}
                         </>
                     )}
                 </form>

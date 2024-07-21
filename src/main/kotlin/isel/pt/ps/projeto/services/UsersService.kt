@@ -51,7 +51,7 @@ typealias UserResult = Either<UserError, User>
 typealias SimpleUserResult = Either<UserError, SimpleUser>
 typealias ChangePasswordResult = Either<UserError, Boolean>
 
-typealias ImageResult = Either<ImageError, String?>
+typealias ImageResult = Either<ImageError, ByteArray?>
 
 typealias TokenResult = Either<TokenError, TokenExternalInfo>
 
@@ -175,7 +175,7 @@ class UsersService(
         return if (image == null)
             success(null)
         else
-            success(utilsService.encodeToBase64(image))
+            success(image)
     }
 
     fun editUser(id: Int, nome: String, morada: String?, foto: String?): SimpleUserResult {

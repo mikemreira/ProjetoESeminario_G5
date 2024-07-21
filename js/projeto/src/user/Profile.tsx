@@ -25,8 +25,9 @@ export interface UserModel {
     email: string
     morada: string
     foto: string | null
+    thumbnailHref: string | null
+    listHref: string | null
 }
-
 
 export default function Profile() {
     const setAvatar = useSetAvatar()
@@ -54,17 +55,46 @@ export default function Profile() {
                 if (body) {
                     setUser(body);
                     setEditedUser(body);
+                    if (body.thumbnailHref) {
+                        fetch(body.thumbnailHref, {
+                            method: "GET",
+                            headers: {
+                                "Content-type": "application/json",
+                                "Authorization": `Bearer ${cookies.token}`,
+                            },
+                        })
+                            .then((res) => res.json())
+                            .then((fotoBody) => {
+                                setUser(
+                                    (prevUser) => ({
+                                        ...prevUser!,
+                                        foto: fotoBody.foto,
+                                    }) as UserModel
+                                )
+                                setEditedUser(
+                                    (prevUser) => ({
+                                        ...prevUser!,
+                                        foto: fotoBody.foto,
+                                    }) as UserModel
+                                )
+                                setAvatar(fotoBody.foto)
+                                localStorage.setItem("avatar", fotoBody.foto)
+                            })
+                            .catch((error) => {
+                                console.error("Error fetching thumbnail image:", error)
+                            })
+                    }
                 }
             })
             .catch((error) => {
                 console.error("Error fetching profile:", error)
             })
-    }, [cookies.token, user?.foto])
+    }, [cookies.token])
 
     const handleEditProfile = () => {
         setIsEditing(true)
     }
-
+/*
     const handleSaveProfile = () => {
         if (editedUser) {
             fetch(`${path}/users/me`, {
@@ -92,6 +122,60 @@ export default function Profile() {
                 })
         }
     }
+ */
+
+    const handleSaveProfile = () => {
+        if (editedUser) {
+            fetch(`${path}/users/me`, {
+                method: "PUT",
+                headers: {
+                    "Content-type": "application/json",
+                    "Authorization": `Bearer ${cookies.token}`,
+                },
+                body: JSON.stringify(editedUser),
+            })
+                .then((res) => {
+                    if (res.ok) {
+                        return res.json();
+                    } else {
+                        console.error("Failed to update profile");
+                        return null;
+                    }
+                })
+                .then((body) => {
+                    if (body) {
+                        setUser(body);
+                        console.log(body);
+                        //setEditedUser(body);
+                        if (body.thumbnailHref) {
+                            fetch(body.thumbnailHref, {
+                                method: "GET",
+                                headers: {
+                                    "Content-type": "application/json",
+                                    "Authorization": `Bearer ${cookies.token}`,
+                                },
+                            })
+                                .then((res) => res.json())
+                                .then((fotoBody) => {
+                                    setEditedUser((prevUser) => ({
+                                        ...prevUser!,
+                                        foto: fotoBody.foto,
+                                    }) as UserModel);
+                                    setAvatar(fotoBody.foto);
+                                    localStorage.setItem("avatar", fotoBody.foto);
+                                })
+                                .catch((error) => {
+                                    console.error("Error fetching thumbnail image:", error);
+                                });
+                        }
+                        setIsEditing(false);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error updating profile:", error);
+                });
+        }
+    };
 
     const handleCancelEdit = () => {
         // @ts-ignore

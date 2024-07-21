@@ -367,7 +367,7 @@ class UsersRepository(
                 val pStatement = it.prepareStatement("" +
                    "Select * " +
                    "From UtilizadorImagem \n" +
-                   "Where id = ? "
+                   "Where id_utilizador = ? "
                 )
 
                 pStatement.setInt(1, userId)
@@ -469,9 +469,9 @@ class UsersRepository(
                 if (foto != null){
                     val imageStatement = it.prepareStatement(
                         "UPDATE UtilizadorImagem " +
-                            "SET thumbnail = ?\n" +
-                            "    icon = ?\n" +
-                            "    profile = ?\n" +
+                            "SET thumbnail = ?,\n" +
+                            "    icon = ?,\n" +
+                            "    list = ?\n" +
                             "WHERE id_utilizador = ?"
                     )
                     imageStatement.setBytes(1, foto.thumbnail)

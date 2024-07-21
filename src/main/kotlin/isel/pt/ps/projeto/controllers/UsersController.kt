@@ -39,8 +39,8 @@ class UsersController(
                         authUser.user.email,
                         authUser.user.morada,
                         fotoString,
-                        "/api/imagem?type=thumbnail",
-                        "/api/imagem?type=list"
+                        "${utils.path}/users/imagem?type=thumbnail",
+                        "${utils.path}/users/imagem?type=list"
                     )
                 )
     }
@@ -98,8 +98,8 @@ class UsersController(
                             res.value.email,
                             res.value.morada,
                             res.value.foto,
-                            "/api/imagem?type=thumbnail",
-                            "/api/imagem?type=list"
+                            "${utils.path}/users/imagem?type=thumbnail",
+                            "${utils.path}/users/imagem?type=list"
                         )
                     )
             is Failure ->
@@ -139,15 +139,16 @@ class UsersController(
 
     @GetMapping("/imagem")
     fun getImage(
-        @RequestParam tipo: String,
+        @RequestParam type: String,
         @RequestHeader("Authorization") token : String
     ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
-        val res = usersService.getImage(authUser.user.id, tipo)
+        val res = usersService.getImage(authUser.user.id, type)
         return when (res) {
             is Success -> {
+                val foto = if (res.value != null) utils.byteArrayToBase64(res.value) else null
                 ResponseEntity.status(200)
-                    .body(ImageOutputModel(res.value))
+                    .body(ImageOutputModel(foto))
             }
 
             is Failure ->
@@ -187,7 +188,7 @@ class UsersController(
         val res = usersService.signIn(input.email, input.password)
         return when (res) {
             is Success -> {
-                ResponseEntity.status(201).body(UserTokenCreateOutputModel(res.value.tokenValue, "/api/imagem?type=icon"))
+                ResponseEntity.status(201).body(UserTokenCreateOutputModel(res.value.tokenValue, "${utils.path}/users/imagem?type=icon"))
             }
 
             is Failure ->

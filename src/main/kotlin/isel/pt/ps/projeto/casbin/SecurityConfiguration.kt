@@ -39,6 +39,7 @@ class SecurityConfiguration {
                 authorize("/users/forget-password", permitAll)
                 authorize("/users/set-password", permitAll)
                 authorize("/registos/**", authenticated)
+                authorize("/users/imagem", authenticated)
             }
             addFilterAfter<UsernamePasswordAuthenticationFilter>(casbinFilter)
         }
