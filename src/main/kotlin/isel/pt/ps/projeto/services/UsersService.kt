@@ -3,6 +3,7 @@ package isel.pt.ps.projeto.services
 import isel.pt.ps.projeto.controllers.UtilsController
 import isel.pt.ps.projeto.domain.users.Token
 import isel.pt.ps.projeto.domain.users.UsersDomain
+import isel.pt.ps.projeto.models.images.UserImages
 import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
@@ -11,10 +12,7 @@ import isel.pt.ps.projeto.utils.failure
 import isel.pt.ps.projeto.utils.success
 import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.springframework.stereotype.Component
-import kotlin.coroutines.coroutineContext
-import kotlin.coroutines.suspendCoroutine
 
 data class TokenExternalInfo(
     val tokenValue: String,
@@ -41,6 +39,10 @@ sealed class SetNewPasswordError {
     object InsecurePassword : SetNewPasswordError()
 }
 
+sealed class ImageError {
+    object InvalidQuery : ImageError()
+}
+
 typealias SetNewPasswordResult = Either<SetNewPasswordError, String>
 
 typealias ForgetPasswordResult = Either<ForgetPasswordError, String>
@@ -48,6 +50,8 @@ typealias ForgetPasswordResult = Either<ForgetPasswordError, String>
 typealias UserResult = Either<UserError, User>
 typealias SimpleUserResult = Either<UserError, SimpleUser>
 typealias ChangePasswordResult = Either<UserError, Boolean>
+
+typealias ImageResult = Either<ImageError, String?>
 
 typealias TokenResult = Either<TokenError, TokenExternalInfo>
 
@@ -163,8 +167,24 @@ class UsersService(
         }
     }
 
+    fun getImage(userId: Int, type: String): ImageResult {
+        if (type != "thumbnail" && type != "icon" && type != "list")
+            return failure(ImageError.InvalidQuery)
+
+        val image = usersRepository.getImage(userId, type)
+        return if (image == null)
+            success(null)
+        else
+            success(utilsService.encodeToBase64(image))
+    }
+
     fun editUser(id: Int, nome: String, morada: String?, foto: String?): SimpleUserResult {
-        val fotoBytes = if (foto!=null) utilsService.base64ToByteArray(foto) else null
+        val fotoBytes: UserImages? = if (foto!=null) {
+            val thumbnail = utilsService.resizeAndCompressImageBase64(foto, 1280, 1280, 0.99F)
+            val list = utilsService.resizeAndCompressImageBase64(foto, 640, 640, 0.99F)
+            val icon = utilsService.resizeAndCompressImageBase64(foto, 256, 256, 0.99F)
+            UserImages(thumbnail, icon, list)
+        } else null
         val res = usersRepository.editUser(id, nome, morada, fotoBytes)
         return success(res)
     }

@@ -3,6 +3,7 @@ package isel.pt.ps.projeto.repository
 import isel.pt.ps.projeto.domain.users.PasswordValidationInfo
 import isel.pt.ps.projeto.domain.users.Token
 import isel.pt.ps.projeto.domain.users.TokenValidationInfo
+import isel.pt.ps.projeto.models.images.UserImages
 import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.models.users.UserAndToken
@@ -53,7 +54,7 @@ interface UserRepository {
         id: Int,
         nome: String,
         morada: String?,
-        foto: ByteArray?,
+        foto: UserImages?,
     ): SimpleUser
 
     fun editPassword(
@@ -69,4 +70,5 @@ interface UserRepository {
     fun setForgetPassword(email: String, token: String)
     fun validateEmailAndTokenForForgottenPassword(email: String, token: String): Boolean
     fun editPasswordIfForgotten(userId: Int, email: String, pass: PasswordValidationInfo)
+    fun getImage(userId: Int, type: String): ByteArray?
 }

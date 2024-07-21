@@ -4,6 +4,7 @@ import isel.pt.ps.projeto.services.UtilsServices
 import isel.pt.ps.projeto.domain.users.PasswordValidationInfo
 import isel.pt.ps.projeto.domain.users.Token
 import isel.pt.ps.projeto.domain.users.TokenValidationInfo
+import isel.pt.ps.projeto.models.images.UserImages
 import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.models.users.User
 import isel.pt.ps.projeto.models.users.UserAndToken
@@ -359,6 +360,29 @@ class UsersRepository(
         }
     }
 
+    override fun getImage(userId: Int, type: String): ByteArray? {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement("" +
+                   "Select * " +
+                   "From UtilizadorImagem \n" +
+                   "Where id = ? "
+                )
+
+                pStatement.setInt(1, userId)
+                val res = pStatement.executeQuery()
+                res.next()
+                res.getBytes(type)
+            } catch (e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
 
     override fun createToken(
         token: Token,
@@ -384,7 +408,7 @@ class UsersRepository(
             }
         }
     }
-
+/*
     override fun editUser(id: Int, nome: String, morada: String?, foto: ByteArray?): SimpleUser {
         initializeConnection().use {
             it.autoCommit = false
@@ -410,11 +434,67 @@ class UsersRepository(
                 val resultSet = selectStatement.executeQuery()
                 resultSet.next()
                 SimpleUser(
+                    id = resultSet.getInt("id"),
+                    nome = resultSet.getString("nome"),
+                    email = resultSet.getString("email"),
+                    morada = resultSet.getString("morada"),
+                    foto = resultSet.getString("foto")
+                )
+
+            } catch (e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+ */
+    override fun editUser(id: Int, nome: String, morada: String?, foto: UserImages?): SimpleUser {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement(
+                    "UPDATE Utilizador\n" +
+                        "SET nome = ?,\n" +
+                        "    morada = ? \n" +
+                        "WHERE id = ?;\n"
+                )
+                pStatement.setString(1, nome)
+                pStatement.setString(2, morada)
+                pStatement.setInt(3, id)
+                pStatement.executeUpdate()
+
+                if (foto != null){
+                    val imageStatement = it.prepareStatement(
+                        "UPDATE UtilizadorImagem " +
+                            "SET thumbnail = ?\n" +
+                            "    icon = ?\n" +
+                            "    profile = ?\n" +
+                            "WHERE id_utilizador = ?"
+                    )
+                    imageStatement.setBytes(1, foto.thumbnail)
+                    imageStatement.setBytes(2, foto.icon)
+                    imageStatement.setBytes(3, foto.list)
+                    imageStatement.setInt(4, id)
+                    imageStatement.executeUpdate()
+                }
+
+
+                val selectStatement = it.prepareStatement(
+                    "SELECT id, nome, email, morada, foto FROM Utilizador WHERE id = ?"
+                )
+                selectStatement.setInt(1, id)
+
+                val resultSet = selectStatement.executeQuery()
+                resultSet.next()
+                SimpleUser(
                         id = resultSet.getInt("id"),
                         nome = resultSet.getString("nome"),
                         email = resultSet.getString("email"),
                         morada = resultSet.getString("morada"),
-                        foto = resultSet.getString("foto")
+                    resultSet.getString("foto")
                 )
 
             } catch (e: SQLException) {

@@ -4,6 +4,7 @@ import isel.pt.ps.projeto.casbin.AuthorizationService
 import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
 import isel.pt.ps.projeto.domain.users.AuthenticatedUser
 import isel.pt.ps.projeto.models.Problem
+import isel.pt.ps.projeto.models.images.ImageOutputModel
 import isel.pt.ps.projeto.models.users.*
 import isel.pt.ps.projeto.services.*
 import isel.pt.ps.projeto.utils.Failure
@@ -26,7 +27,9 @@ class UsersController(
     private val logger: Logger = LoggerFactory.getLogger(UsersController::class.java)
 
     @GetMapping("/me")
-    fun getUserByToken(@RequestHeader("Authorization") token : String): ResponseEntity<*> {
+    fun getUserByToken(
+        @RequestHeader("Authorization") token : String
+    ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
         val fotoString = if (authUser.user.foto != null) utils.byteArrayToBase64(authUser.user.foto) else null
                 return ResponseEntity.status(200).body(
@@ -35,7 +38,9 @@ class UsersController(
                         authUser.user.nome,
                         authUser.user.email,
                         authUser.user.morada,
-                        fotoString
+                        fotoString,
+                        "/api/imagem?type=thumbnail",
+                        "/api/imagem?type=list"
                     )
                 )
     }
@@ -86,7 +91,17 @@ class UsersController(
         return when (res) {
             is Success ->
                 ResponseEntity.status(201)
-                    .body(UserOutputModel(res.value.id, res.value.nome, res.value.email, res.value.morada, res.value.foto))
+                    .body(
+                        UserOutputModel(
+                            res.value.id,
+                            res.value.nome,
+                            res.value.email,
+                            res.value.morada,
+                            res.value.foto,
+                            "/api/imagem?type=thumbnail",
+                            "/api/imagem?type=list"
+                        )
+                    )
             is Failure ->
                when (res.value) {
                    UserError.UserAlreadyExists -> Problem.response(400, Problem.userAlreadyExists)
@@ -122,6 +137,26 @@ class UsersController(
         return ResponseEntity.status(200).body(listOfUsers)
     }
 
+    @GetMapping("/imagem")
+    fun getImage(
+        @RequestParam tipo: String,
+        @RequestHeader("Authorization") token : String
+    ): ResponseEntity<*> {
+        val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
+        val res = usersService.getImage(authUser.user.id, tipo)
+        return when (res) {
+            is Success -> {
+                ResponseEntity.status(200)
+                    .body(ImageOutputModel(res.value))
+            }
+
+            is Failure ->
+                when (res.value) {
+                    ImageError.InvalidQuery -> Problem.response(400, Problem.invalidQuery)
+                }
+        }
+    }
+
     @PostMapping("/signup")
     fun signUp(
         @RequestBody input: UserSignUp,
@@ -152,7 +187,7 @@ class UsersController(
         val res = usersService.signIn(input.email, input.password)
         return when (res) {
             is Success -> {
-                ResponseEntity.status(201).body(UserTokenCreateOutputModel(res.value.tokenValue, res.value.user.foto))
+                ResponseEntity.status(201).body(UserTokenCreateOutputModel(res.value.tokenValue, "/api/imagem?type=icon"))
             }
 
             is Failure ->

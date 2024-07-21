@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS Papel;
 DROP TABLE IF EXISTS Obra;
 DROP TABLE IF EXISTS Token;
 DROP TABLE IF EXISTS PasswordEsquecida;
+DROP TABLE IF EXISTS UtilizadorImagem;
 DROP TABLE IF EXISTS Utilizador;
 
 create table if not exists Utilizador (
@@ -13,6 +14,15 @@ create table if not exists Utilizador (
                             email varchar(64) unique,
                             morada varchar(64) default null,
                             foto bytea default null
+);
+
+-- Ainda em Testes
+CREATE TABLE IF NOT EXISTS UtilizadorImagem(
+	id_utilizador int references Utilizador(id),
+	thumbnail bytea default null,
+	icon bytea default null,
+	list bytea default null,
+	Primary key (id_utilizador)
 );
 
 create table if not exists PasswordEsquecida (
@@ -135,3 +145,18 @@ AFTER UPDATE OF status ON Obra
 FOR EACH ROW
 WHEN (NEW.status = 'deleted')
 EXECUTE FUNCTION delete_related_records();
+
+
+-- Ainda em testes (Daqui para baixo)
+CREATE OR REPLACE FUNCTION create_utilizador_imagem()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO UtilizadorImagem (id_utilizador) VALUES (NEW.id);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER after_utilizador_insert
+AFTER INSERT ON Utilizador
+FOR EACH ROW
+EXECUTE FUNCTION create_utilizador_imagem();
