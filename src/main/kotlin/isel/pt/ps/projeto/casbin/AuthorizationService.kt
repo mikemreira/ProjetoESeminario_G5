@@ -44,7 +44,7 @@ class AuthorizationService(
         savePolicy("user", "/convites", "PUT")
         savePolicy("user", "/profile", "GET")
         savePolicy("user", "/users/me/changepassword", "PUT")
-        savePolicy("user", "/users/imagem", "GET")
+        savePolicy("user", "/users/me/imagem", "GET")
         usersRepository.getUsers().map { user ->
             saveUserRole(user.email)
             enforcer.addRoleForUser(user.email, "user")

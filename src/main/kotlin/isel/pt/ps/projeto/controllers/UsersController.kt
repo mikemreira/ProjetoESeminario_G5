@@ -134,8 +134,8 @@ class UsersController(
 
     @GetMapping("/me/imagem")
     fun getImage(
+        @RequestHeader("Authorization") token : String,
         @RequestParam type: String,
-        @RequestHeader("Authorization") token : String
     ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
         val res = usersService.getImage(authUser.user.id, type)
@@ -160,7 +160,7 @@ class UsersController(
         @PathVariable uid: Int,
         @RequestHeader("Authorization") token : String
     ): ResponseEntity<*> {
-        val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
+        requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
         val res = usersService.getImage(uid, type)
         return when (res) {
             is Success -> {
@@ -207,7 +207,7 @@ class UsersController(
         val res = usersService.signIn(input.email, input.password)
         return when (res) {
             is Success -> {
-                ResponseEntity.status(201).body(UserTokenCreateOutputModel(res.value.tokenValue, "${utils.path}/users/imagem?type=icon"))
+                ResponseEntity.status(201).body(UserTokenCreateOutputModel(res.value.tokenValue, "${utils.path}/users/me/imagem?type=icon"))
             }
 
             is Failure ->

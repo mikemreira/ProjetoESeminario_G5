@@ -12,7 +12,7 @@ import {
     Avatar,
     Button,
     Box,
-    Divider, Stack,
+    Divider, Stack, CircularProgress,
 } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import {useSetAvatar} from "../context/Authn";
@@ -24,9 +24,8 @@ export interface UserModel {
     nome: string
     email: string
     morada: string
+    fotoHref: string | null
     foto: string | null
-    thumbnailHref: string | null
-    listHref: string | null
 }
 
 export default function Profile() {
@@ -35,6 +34,7 @@ export default function Profile() {
     const [user, setUser] = useState<UserModel>()
     const [isEditing, setIsEditing] = useState(false)
     const [editedUser, setEditedUser] = useState<UserModel | null>(null)
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         fetch(`${path}/users/me`, {
@@ -46,6 +46,7 @@ export default function Profile() {
         })
             .then((res) => {
                 if (res.ok) {
+                    setLoading(true)
                     return res.json()
                 } else {
                     return null
@@ -55,8 +56,8 @@ export default function Profile() {
                 if (body) {
                     setUser(body);
                     setEditedUser(body);
-                    if (body.thumbnailHref) {
-                        fetch(body.thumbnailHref, {
+                    if (body.fotoHref) {
+                        fetch(`${body.fotoHref}?type=thumbnail`, {
                             method: "GET",
                             headers: {
                                 "Content-type": "application/json",
@@ -79,6 +80,7 @@ export default function Profile() {
                                 )
                                 setAvatar(fotoBody.foto)
                                 localStorage.setItem("avatar", fotoBody.foto)
+                                setLoading(false)
                             })
                             .catch((error) => {
                                 console.error("Error fetching thumbnail image:", error)
@@ -126,6 +128,7 @@ export default function Profile() {
 
     const handleSaveProfile = () => {
         if (editedUser) {
+            setLoading(true)
             fetch(`${path}/users/me`, {
                 method: "PUT",
                 headers: {
@@ -136,19 +139,17 @@ export default function Profile() {
             })
                 .then((res) => {
                     if (res.ok) {
-                        return res.json();
+                        return res.json()
                     } else {
-                        console.error("Failed to update profile");
-                        return null;
+                        console.error("Failed to update profile")
+                        return null
                     }
                 })
                 .then((body) => {
                     if (body) {
-                        setUser(body);
-                        console.log(body);
-                        //setEditedUser(body);
-                        if (body.thumbnailHref) {
-                            fetch(body.thumbnailHref, {
+                        setUser(body)
+                        if (body.fotoHref) {
+                            fetch(`${body.fotoHref}?type=thumbnail`, {
                                 method: "GET",
                                 headers: {
                                     "Content-type": "application/json",
@@ -160,22 +161,23 @@ export default function Profile() {
                                     setEditedUser((prevUser) => ({
                                         ...prevUser!,
                                         foto: fotoBody.foto,
-                                    }) as UserModel);
-                                    setAvatar(fotoBody.foto);
-                                    localStorage.setItem("avatar", fotoBody.foto);
+                                    }) as UserModel)
+                                    setAvatar(fotoBody.foto)
+                                    localStorage.setItem("avatar", fotoBody.foto)
+                                    setLoading(false)
                                 })
                                 .catch((error) => {
-                                    console.error("Error fetching thumbnail image:", error);
+                                    console.error("Error fetching thumbnail image:", error)
                                 });
                         }
-                        setIsEditing(false);
+                        setIsEditing(false)
                     }
                 })
                 .catch((error) => {
-                    console.error("Error updating profile:", error);
-                });
+                    console.error("Error updating profile:", error)
+                })
         }
-    };
+    }
 
     const handleCancelEdit = () => {
         // @ts-ignore
@@ -232,99 +234,114 @@ export default function Profile() {
                             Perfil
                         </Typography>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} md={4}>
-                                <Avatar
-                                    alt={user.nome}
-                                    src={editedUser?.foto || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"}
-                                    variant="rounded"
+                            {loading ? (
+                                <Box
                                     sx={{
-                                        width: "100%",
-                                        height: "100%",
-                                        cursor: isEditing ? "pointer" : "default",
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        width: '130vh',
                                     }}
-                                    onClick={isEditing ? () => document.getElementById('contained-button-file')?.click() : undefined}
-                                />
-                                {isEditing && (
-                                    <input
-                                        accept="image/*"
-                                        style={{ display: 'none' }}
-                                        id="contained-button-file"
-                                        type="file"
-                                        onChange={handleFileChange}
-                                    />
-                                )}
-                            </Grid>
-                            <Grid item xs={12} md={8}>
-                                <List>
-                                    <ListItem>
-                                        <ListItemText
-                                            primary="Nome"
-                                            secondary={
-                                                isEditing ? (
-                                                    <TextField
-                                                        fullWidth
-                                                        name="nome"
-                                                        value={editedUser?.nome || ""}
-                                                        onChange={handleChange}
-                                                    />
-                                                ) : (
-                                                    user.nome
-                                                )
-                                            }
-                                            primaryTypographyProps={{ style: { color: "#0000FF" } }}
-                                        />
-                                    </ListItem>
-                                    <Divider />
-                                    <ListItem>
-                                        <ListItemText
-                                            primary="Email"
-                                            secondary={user.email}
-                                            primaryTypographyProps={{ style: { color: "#0000FF" } }}
-                                        />
-                                    </ListItem>
-                                    <Divider />
-                                    <ListItem>
-                                        <ListItemText
-                                            primary="Morada"
-                                            secondary={
-                                                isEditing ? (
-                                                    <TextField
-                                                        fullWidth
-                                                        name="morada"
-                                                        value={editedUser?.morada || ""}
-                                                        onChange={handleChange}
-                                                    />
-                                                ) : (
-                                                    user.morada
-                                                )
-                                            }
-                                            primaryTypographyProps={{ style: { color: "#0000FF" } }}
-                                        />
-                                    </ListItem>
-                                    <Divider />
-                                </List>
-                                <Box mt={2}>
-                                    {isEditing ? (
-                                        <>
-                                            <Button variant="contained" color="primary" onClick={handleSaveProfile} sx={{ marginRight: 1 }} >
-                                                Guardar alterações
-                                            </Button>
-                                            <Button variant="contained" color="error" onClick={handleCancelEdit}>
-                                                Cancelar
-                                            </Button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Button variant="contained" color="primary" onClick={handleEditProfile}>
-                                                Editar
-                                            </Button>
-                                            <Button variant="contained" color="primary" sx={{ marginLeft: 1 }} onClick={handleChangePass}>
-                                                Alterar Password
-                                            </Button>
-                                        </>
-                                    )}
+                                >
+                                    <CircularProgress />
                                 </Box>
-                            </Grid>
+                            ) : (
+                                <>
+                                    <Grid item xs={12} md={4}>
+                                        <Avatar
+                                            alt={user.nome}
+                                            src={editedUser?.foto || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"}
+                                            variant="rounded"
+                                            sx={{
+                                                width: "100%",
+                                                height: "100%",
+                                                cursor: isEditing ? "pointer" : "default",
+                                            }}
+                                            onClick={isEditing ? () => document.getElementById('contained-button-file')?.click() : undefined}
+                                        />
+                                        {isEditing && (
+                                            <input
+                                                accept="image/*"
+                                                style={{ display: 'none' }}
+                                                id="contained-button-file"
+                                                type="file"
+                                                onChange={handleFileChange}
+                                            />
+                                        )}
+                                    </Grid>
+                                    <Grid item xs={12} md={8}>
+                                        <List>
+                                            <ListItem>
+                                                <ListItemText
+                                                    primary="Nome"
+                                                    secondary={
+                                                        isEditing ? (
+                                                            <TextField
+                                                                fullWidth
+                                                                name="nome"
+                                                                value={editedUser?.nome || ""}
+                                                                onChange={handleChange}
+                                                            />
+                                                        ) : (
+                                                            user.nome
+                                                        )
+                                                    }
+                                                    primaryTypographyProps={{ style: { color: "#0000FF" } }}
+                                                />
+                                            </ListItem>
+                                            <Divider />
+                                            <ListItem>
+                                                <ListItemText
+                                                    primary="Email"
+                                                    secondary={user.email}
+                                                    primaryTypographyProps={{ style: { color: "#0000FF" } }}
+                                                />
+                                            </ListItem>
+                                            <Divider />
+                                            <ListItem>
+                                                <ListItemText
+                                                    primary="Morada"
+                                                    secondary={
+                                                        isEditing ? (
+                                                            <TextField
+                                                                fullWidth
+                                                                name="morada"
+                                                                value={editedUser?.morada || ""}
+                                                                onChange={handleChange}
+                                                            />
+                                                        ) : (
+                                                            user.morada
+                                                        )
+                                                    }
+                                                    primaryTypographyProps={{ style: { color: "#0000FF" } }}
+                                                />
+                                            </ListItem>
+                                            <Divider />
+                                        </List>
+                                        <Box mt={2}>
+                                            {isEditing ? (
+                                                <>
+                                                    <Button variant="contained" color="primary" onClick={handleSaveProfile} sx={{ marginRight: 1 }} >
+                                                        Guardar alterações
+                                                    </Button>
+                                                    <Button variant="contained" color="error" onClick={handleCancelEdit}>
+                                                        Cancelar
+                                                    </Button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Button variant="contained" color="primary" onClick={handleEditProfile}>
+                                                        Editar
+                                                    </Button>
+                                                    <Button variant="contained" color="primary" sx={{ marginLeft: 1 }} onClick={handleChangePass}>
+                                                        Alterar Password
+                                                    </Button>
+                                                </>
+                                            )}
+                                        </Box>
+                                    </Grid>
+                                </>
+                            )}
                         </Grid>
                     </CardContent>
                 </Card>
