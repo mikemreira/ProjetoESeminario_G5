@@ -5,7 +5,5 @@ data class UserOutputModel(
     val nome: String,
     val email: String,
     val morada: String?,
-    val foto: String?,
-    val thumbnailHref: String?,
-    val listHref: String?
+    val fotoHref: String?,
 )

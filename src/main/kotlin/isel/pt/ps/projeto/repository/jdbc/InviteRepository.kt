@@ -26,6 +26,7 @@ class InviteRepository() : InviteRepository {
             return try {
                 val pStatement = it.prepareStatement(
                     "select * from Utilizador u\n" +
+                        "inner join UtilizadorImagem ui on ui.id_utilizador = u.id\n" +
                     "inner join convite c on c.id_utilizador = u.id\n" +
                     "where c.id_obra = ?"
                 )
@@ -39,7 +40,7 @@ class InviteRepository() : InviteRepository {
                             result.getString("nome"),
                             result.getString("email"),
                             result.getString("morada"),
-                            result.getString("foto")
+                            result.getString("list")
                         )
                     )
                 }

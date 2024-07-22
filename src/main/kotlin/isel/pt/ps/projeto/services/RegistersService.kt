@@ -87,7 +87,13 @@ class RegistersService(
         if (construction.status == "recoverable")
             return failure(RegistersInfoError.ConstructionSuspended)
 
-        val res = registersRepository.addUserRegisterExit(uid, obraId, exit)
+        val lastRegister = registersRepository.getLatestEntryRegisterId(uid, obraId)
+            ?: return failure(RegistersInfoError.InvalidRegister)
+
+        if (lastRegister.endTime == null)
+            return failure(RegistersInfoError.InvalidRegister)
+
+        val res = registersRepository.addUserRegisterExit(lastRegister.id, uid, obraId, exit)
         return if (res) {
             success(true)
         } else {

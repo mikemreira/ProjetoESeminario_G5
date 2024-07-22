@@ -15,7 +15,7 @@ interface UserRepository {
      */
     fun getUsers(): List<User> // Is will be updated to depend on construction
 
-    fun getUserById(id: Int): User
+    fun getUserById(id: Int): User?
 
     fun getUserByToken(token: String): User?
 

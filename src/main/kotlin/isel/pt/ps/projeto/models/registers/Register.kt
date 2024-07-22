@@ -14,6 +14,6 @@ data class Register (
     val uid: Int,
     val oid: Int,
     val startTime: LocalDateTime,
-    val endTime: LocalDateTime,
+    val endTime: LocalDateTime?,
     val status: String
 )

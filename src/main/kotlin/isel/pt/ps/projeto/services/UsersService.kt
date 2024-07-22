@@ -41,6 +41,7 @@ sealed class SetNewPasswordError {
 
 sealed class ImageError {
     object InvalidQuery : ImageError()
+    object UserDoesntExist : ImageError()
 }
 
 typealias SetNewPasswordResult = Either<SetNewPasswordError, String>
@@ -112,8 +113,7 @@ class UsersService(
 
         usersRepository.createToken(newToken, usersDomain.maxNumberOfTokensPerUser)
 
-        val fotoString = if (user.foto != null ) utils.byteArrayToBase64(user.foto) else null
-        val simpleUser = SimpleUser(user.id, user.nome, user.email, user.morada, fotoString)
+        val simpleUser = SimpleUser(user.id, user.nome, user.email, user.morada, null)
         println("Simple USER : $simpleUser")
         return Either.Right(
             TokenExternalInfo(
@@ -168,6 +168,9 @@ class UsersService(
     }
 
     fun getImage(userId: Int, type: String): ImageResult {
+
+        usersRepository.getUserById(userId) ?: return failure(ImageError.UserDoesntExist)
+
         if (type != "thumbnail" && type != "icon" && type != "list")
             return failure(ImageError.InvalidQuery)
 

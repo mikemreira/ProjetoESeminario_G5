@@ -42,7 +42,6 @@ class UsersRepository(
                         result.getString("email"),
                         PasswordValidationInfo(result.getString("password")),
                         result.getString("morada"),
-                        result.getBytes("foto")
                     )
                 )
             }
@@ -50,8 +49,34 @@ class UsersRepository(
         }
     }
 
-    override fun getUserById(id: Int): User {
-        TODO("Not yet implemented")
+    override fun getUserById(id: Int): User? {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement(
+                    "select * from Utilizador\n" +
+                        "where id = ?"
+                )
+                pStatement.setInt(1, id)
+                val result = pStatement.executeQuery()
+                if(result.next())
+                    User(
+                        result.getInt("id"),
+                        result.getString("nome"),
+                        result.getString("email"),
+                        PasswordValidationInfo(result.getString("password")),
+                        result.getString("morada")
+                    )
+                else
+                    null
+
+            } catch (e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
     }
 
     override fun getUserByToken(token: String): User? {
@@ -75,7 +100,6 @@ class UsersRepository(
                         result.getString("email"),
                         PasswordValidationInfo(result.getString("password")),
                         "",
-                        result.getBytes("foto")
                     )
                 }
             } catch (e: SQLException) {
@@ -92,7 +116,7 @@ class UsersRepository(
             it.autoCommit = false
             return try {
                 val pStatement = it.prepareStatement(
-                    "select id, nome, email, password, morada, foto, token_validation, created_at, last_used_at \n" +
+                    "select id, nome, email, password, morada, token_validation, created_at, last_used_at \n" +
                         "    from utilizador u \n" +
                         "    inner join Token t\n" +
                         "    on u.id = t.id_utilizador\n" +
@@ -107,7 +131,6 @@ class UsersRepository(
                     result.getString("email"),
                     PasswordValidationInfo(result.getString("password")),
                     result.getString("morada"),
-                    result.getBytes("foto"),
                     TokenValidationInfo(result.getString("token_validation")),
                     result.getLong("created_at"),
                     result.getLong("last_used_at")
@@ -156,7 +179,6 @@ class UsersRepository(
                         result.getString("email"),
                         PasswordValidationInfo(result.getString("password")),
                         "",
-                        result.getBytes("foto")
                     )
                 }
             } catch (e: SQLException) {
@@ -218,7 +240,6 @@ class UsersRepository(
                     result.getString("email"),
                     PasswordValidationInfo(result.getString("password")),
                     "",
-                    result.getBytes("foto")
                 )
             } catch (e: SQLException) {
                 it.rollback()
@@ -254,7 +275,6 @@ class UsersRepository(
                     result.getString("email"),
                     PasswordValidationInfo(result.getString("password")),
                     "",
-                    result.getBytes("foto")
                 )
                 UserAndToken(user, token.toString())
             } catch (e: SQLException) {
@@ -483,7 +503,7 @@ class UsersRepository(
 
 
                 val selectStatement = it.prepareStatement(
-                    "SELECT id, nome, email, morada, foto FROM Utilizador WHERE id = ?"
+                    "SELECT id, nome, email, morada FROM Utilizador WHERE id = ?"
                 )
                 selectStatement.setInt(1, id)
 
@@ -494,7 +514,7 @@ class UsersRepository(
                         nome = resultSet.getString("nome"),
                         email = resultSet.getString("email"),
                         morada = resultSet.getString("morada"),
-                    resultSet.getString("foto")
+                        null
                 )
 
             } catch (e: SQLException) {
@@ -538,14 +558,13 @@ class UsersRepository(
         val email: String,
         val passwordValidation: PasswordValidationInfo,
         val morada: String?,
-        val foto: ByteArray?,
         val tokenValidation: TokenValidationInfo,
         val createdAt: Long,
         val lastUsedAt: Long
     ) {
         val userAndToken: Pair<User, Token>
             get() = Pair(
-                User(id, nome, email, passwordValidation, morada, foto),
+                User(id, nome, email, passwordValidation, morada),
                 Token(
                     tokenValidation,
                     id,

@@ -31,16 +31,13 @@ class UsersController(
         @RequestHeader("Authorization") token : String
     ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
-        val fotoString = if (authUser.user.foto != null) utils.byteArrayToBase64(authUser.user.foto) else null
                 return ResponseEntity.status(200).body(
                     UserOutputModel(
                         authUser.user.id,
                         authUser.user.nome,
                         authUser.user.email,
                         authUser.user.morada,
-                        fotoString,
-                        "${utils.path}/users/imagem?type=thumbnail",
-                        "${utils.path}/users/imagem?type=list"
+                        "${utils.path}/users/me/imagem"
                     )
                 )
     }
@@ -97,9 +94,7 @@ class UsersController(
                             res.value.nome,
                             res.value.email,
                             res.value.morada,
-                            res.value.foto,
-                            "${utils.path}/users/imagem?type=thumbnail",
-                            "${utils.path}/users/imagem?type=list"
+                            "${utils.path}/users/me/imagem"
                         )
                     )
             is Failure ->
@@ -137,7 +132,7 @@ class UsersController(
         return ResponseEntity.status(200).body(listOfUsers)
     }
 
-    @GetMapping("/imagem")
+    @GetMapping("/me/imagem")
     fun getImage(
         @RequestParam type: String,
         @RequestHeader("Authorization") token : String
@@ -154,6 +149,30 @@ class UsersController(
             is Failure ->
                 when (res.value) {
                     ImageError.InvalidQuery -> Problem.response(400, Problem.invalidQuery)
+                    ImageError.UserDoesntExist -> Problem.response(404, Problem.userNotFound)
+                }
+        }
+    }
+
+    @GetMapping("/{uid}/imagem")
+    fun getUserImage(
+        @RequestParam type: String,
+        @PathVariable uid: Int,
+        @RequestHeader("Authorization") token : String
+    ): ResponseEntity<*> {
+        val authUser = requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
+        val res = usersService.getImage(uid, type)
+        return when (res) {
+            is Success -> {
+                val foto = if (res.value != null) utils.byteArrayToBase64(res.value) else null
+                ResponseEntity.status(200)
+                    .body(ImageOutputModel(foto))
+            }
+
+            is Failure ->
+                when (res.value) {
+                    ImageError.InvalidQuery -> Problem.response(400, Problem.invalidQuery)
+                    ImageError.UserDoesntExist -> Problem.response(404, Problem.userNotFound)
                 }
         }
     }

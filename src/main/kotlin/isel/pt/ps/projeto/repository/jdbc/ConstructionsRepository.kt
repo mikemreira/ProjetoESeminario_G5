@@ -107,7 +107,8 @@ class ConstructionsRepository(
             return try {
                 val pStatement =
                     it.prepareStatement(
-                        "select ut.id, ut.nome, ut.email, ut.morada, ut.foto, pa.funcao from utilizador ut\n" +
+                        "select ut.id, ut.nome, ut.email, ut.morada, ui.list as foto, pa.funcao from utilizador ut\n" +
+                            "inner join UtilizadorImagem ui on ui.id_utilizador = ut.id\n" +
                             "inner join papel pa on pa.id_utilizador = ut.id\n" +
                             "inner join obra o on o.id = pa.id_obra\n" +
                             "where o.id = ?",
@@ -141,7 +142,8 @@ class ConstructionsRepository(
             return try {
                 val pStatement =
                     it.prepareStatement(
-                        "select ut.id, ut.nome, ut.email, ut.morada, ut.foto, pa.funcao from utilizador ut\n" +
+                        "select ut.id, ut.nome, ut.email, ut.morada, ui.thumbnail as foto, pa.funcao from utilizador ut\n" +
+                            "inner join UtilizadorImagem ui on ui.id_utilizador = ut.id\n" +
                             "inner join papel pa on pa.id_utilizador = ut.id\n" +
                             "inner join obra o on o.id = pa.id_obra\n" +
                             "where o.id = ? and ut.id = ?",
@@ -298,10 +300,12 @@ class ConstructionsRepository(
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pStatement = it.prepareStatement("select u.id, u.nome, u.email, u.morada, u.foto from utilizador u\n" +
+                val pStatement = it.prepareStatement("select u.id, u.nome, u.email, u.morada, ui.thumbnail as foto " +
+                    "from utilizador u\n" +
+                    "inner join UtilizadorImagem ui on ui.id_utilizador = u.id\n" +
                     "inner join papel p on p.id_utilizador = u.id\n" +
                     "inner join obra o on o.id = p.id_obra\n" +
-                    "where u.email = ?  and o.id = ?")
+                    "where u.email = ? and o.id = ?")
                 pStatement.setString(1, email)
                 pStatement.setInt(2, oid)
                 val result = pStatement.executeQuery()
@@ -313,7 +317,7 @@ class ConstructionsRepository(
                         result.getString("nome"),
                         result.getString("email"),
                         result.getString("morada"),
-                        result.getString("foto")
+                        result.getString("thumbnail")
                     )
             }  catch (e: Exception) {
                 it.rollback()

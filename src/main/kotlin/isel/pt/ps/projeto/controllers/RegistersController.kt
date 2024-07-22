@@ -327,4 +327,10 @@ class RegistersController(
             }
         }
     }
+    @GetMapping("/registos/saida)")
+    fun getRegisterWithoutExit(
+        @RequestHeader("Authorization") userToken: String
+    ): ResponseEntity<*> {
+        TODO()
+    }
 }

@@ -1,5 +1,6 @@
 package isel.pt.ps.projeto.repository.jdbc
 
+import isel.pt.ps.projeto.models.registers.Register
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterOutputModel
 import isel.pt.ps.projeto.repository.RegistersRepository
@@ -70,6 +71,7 @@ class RegistersRepository : RegistersRepository {
         initializeConnection().use {
             it.autoCommit = false
             return try {
+                /*
                 val checkEntryStatement = it.prepareStatement("" +
                     "select exists ( " +
                     "select * from registo\n" +
@@ -104,6 +106,18 @@ class RegistersRepository : RegistersRepository {
                     pStatement.executeUpdate()
 
                 }
+
+                 */
+                val pStatement = it.prepareStatement(
+                    "insert into registo(id_utilizador, id_obra, entrada) values(?, ?, ?)"
+                )
+                pStatement.setInt(1, userId)
+                pStatement.setInt(2, obraId)
+
+                val stamp = Timestamp.valueOf(time)
+                pStatement.setTimestamp(3, stamp)
+
+                pStatement.executeUpdate()
                 true
             } catch (e: Exception) {
                 it.rollback()
@@ -114,19 +128,57 @@ class RegistersRepository : RegistersRepository {
         }
     }
 
-    override fun addUserRegisterExit(userId: Int, obraId: Int, time: java.time.LocalDateTime) : Boolean {
+    override fun getLatestEntryRegisterId(userId: Int, oid: Int): Register? {
         initializeConnection().use {
             it.autoCommit = false
             return try {
                 val pStatement = it.prepareStatement(
-                    "update registo set saida=? where id_utilizador=? and id_obra=?"
+                    "select * registo " +
+                        "where id_utilizador=? and id_obra=? \n" +
+                        "order by entrada desc\n" +
+                        "limit 1 "
+                )
+                pStatement.setInt(1, userId)
+                pStatement.setInt(2, oid)
+                val res = pStatement.executeQuery()
+                if (res.next()) {
+                    val saida = res.getTimestamp("saida")
+                    Register(
+                        res.getInt("id"),
+                        res.getInt("id_utilizador"),
+                        res.getInt("id_obra"),
+                        res.getTimestamp("entrada").toLocalDateTime(),
+                        if (saida != null) saida.toLocalDateTime() else null,
+                        res.getString("status")
+                    )
+                }
+                else
+                    null
+            } catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun addUserRegisterExit(regId: Int,userId: Int, obraId: Int, time: java.time.LocalDateTime) : Boolean {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement(
+                    "update registo " +
+                        "set saida=? " +
+                        "where id_utilizador=? and id_obra=? and id = ?"
                 )
                 val stamp = Timestamp.valueOf(time)
                 pStatement.setTimestamp(1, stamp)
                 pStatement.setInt(2, userId)
                 pStatement.setInt(3, obraId)
-
+                pStatement.setInt(4, regId)
                 pStatement.executeUpdate()
+
                 true
             } catch (e: Exception) {
                 it.rollback()
