@@ -8,9 +8,10 @@ import isel.pt.ps.projeto.repository.jdbc.RegistersRepository
 import isel.pt.ps.projeto.utils.Either
 import isel.pt.ps.projeto.utils.failure
 import isel.pt.ps.projeto.utils.success
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.toJavaLocalDateTime
 
 import org.springframework.stereotype.Component
-import java.time.LocalDateTime
 
 
 sealed class RegistersInfoError {
@@ -30,7 +31,7 @@ sealed class RegistersUserInfoError {
 typealias RegistersInfoResult = Either<RegistersUserInfoError, List<RegisterOutputModel>>
 typealias ListOfUsersRegistersInfoResult = Either<RegistersInfoError, List<RegisterAndUser>>
 typealias ListOfUsersRegistersAndConstructionStatusInfoResult = Either<RegistersInfoError, ConstructionStatusAndUserRegisters>
-typealias EntryRegisterResult = Either<RegistersInfoError, Boolean>
+typealias EntryOrExitRegisterResult = Either<RegistersInfoError, Boolean>
 typealias AcceptOrDenyRegisterResult = Either<RegistersInfoError, Boolean>
 
 @Component
@@ -49,14 +50,14 @@ class RegistersService(
         }
     }
 
-    fun addUserRegisterEntry(uid: Int, obraId: Int, entry: LocalDateTime) : EntryRegisterResult {
+    fun addUserRegisterEntry(uid: Int, obraId: Int, entry: LocalDateTime) : EntryOrExitRegisterResult {
         val construction = constructionRepository.getConstruction(obraId)
             ?: return failure(RegistersInfoError.NoConstruction)
 
         if (construction.status == "recoverable")
             return failure(RegistersInfoError.ConstructionSuspended)
 
-        val res = registersRepository.addUserRegisterEntry(uid, obraId, entry)
+        val res = registersRepository.addUserRegisterEntry(uid, obraId, entry.toJavaLocalDateTime())
         return if (res) {
             success(true)
         } else {
@@ -64,14 +65,14 @@ class RegistersService(
         }
     }
 
-    fun addRegisterEntryByNFC(uid: Int, nfcId: String, entry: LocalDateTime) : EntryRegisterResult {
+    fun addRegisterEntryByNFC(uid: Int, nfcId: String, entry: LocalDateTime) : EntryOrExitRegisterResult {
         val construction = constructionRepository.getConstructionByNFCID(nfcId)
             ?: return failure(RegistersInfoError.NoConstruction)
 
         if (construction.status == "recoverable")
             return failure(RegistersInfoError.ConstructionSuspended)
 
-        val res = registersRepository.addUserRegisterEntry(uid, construction.oid, entry)
+        val res = registersRepository.addUserRegisterEntry(uid, construction.oid, entry.toJavaLocalDateTime())
         return if (res) {
             success(true)
         } else {
@@ -79,7 +80,7 @@ class RegistersService(
         }
     }
 
-    fun addUserRegisterExit(uid: Int, obraId: Int, exit: LocalDateTime) : EntryRegisterResult {
+    fun addUserRegisterExit(uid: Int, obraId: Int, exit: LocalDateTime) : EntryOrExitRegisterResult {
 
         val construction = constructionRepository.getConstruction(obraId)
             ?: return failure(RegistersInfoError.NoConstruction)
@@ -93,7 +94,7 @@ class RegistersService(
         if (lastRegister.endTime == null)
             return failure(RegistersInfoError.InvalidRegister)
 
-        val res = registersRepository.addUserRegisterExit(lastRegister.id, uid, obraId, exit)
+        val res = registersRepository.addUserRegisterExit(lastRegister.id, uid, obraId, exit.toJavaLocalDateTime())
         return if (res) {
             success(true)
         } else {
@@ -177,5 +178,22 @@ class RegistersService(
         val res = registersRepository.acceptOrDeny(userId, oid, registerId, response)
         return success(res)
     }
+
+    fun getIncompleteRegisters(userId: Int): RegistersInfoResult {
+        val res = registersRepository.getIncompleteRegisters(userId)
+        return success(res)
+    }
+
+    fun insertExitOnWeb(userId: Int, registerId: Int, oid: Int, endTime: LocalDateTime): EntryOrExitRegisterResult {
+        val construction = constructionRepository.getConstruction(oid)
+            ?: return failure(RegistersInfoError.NoConstruction)
+
+        val role = constructionRepository.getUserRoleFromConstruction(userId, construction.oid).also { println("ROLE : $it") }
+            ?: return failure(RegistersInfoError.NoAccessToConstruction)
+
+        val res = registersRepository.insertExitOnWeb(userId, registerId, oid, role.role, endTime.toJavaLocalDateTime())
+        return success(res)
+    }
+
 
 }

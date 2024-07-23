@@ -4,11 +4,13 @@ import isel.pt.ps.projeto.models.registers.Register
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterOutputModel
 import isel.pt.ps.projeto.repository.RegistersRepository
+import kotlinx.datetime.toJavaLocalDateTime
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.stereotype.Component
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.Timestamp
+import java.time.LocalDateTime
 
 
 @Component
@@ -67,7 +69,7 @@ class RegistersRepository : RegistersRepository {
         }
     }
 
-    override fun addUserRegisterEntry(userId: Int, obraId: Int, time: java.time.LocalDateTime): Boolean {
+    override fun addUserRegisterEntry(userId: Int, obraId: Int, time: LocalDateTime): Boolean {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -109,7 +111,7 @@ class RegistersRepository : RegistersRepository {
 
                  */
                 val pStatement = it.prepareStatement(
-                    "insert into registo(id_utilizador, id_obra, entrada) values(?, ?, ?)"
+                    "insert into registo(id_utilizador, id_obra, entrada, status) values(?, ?, ?, 'unfinished')"
                 )
                 pStatement.setInt(1, userId)
                 pStatement.setInt(2, obraId)
@@ -169,7 +171,8 @@ class RegistersRepository : RegistersRepository {
             return try {
                 val pStatement = it.prepareStatement(
                     "update registo " +
-                        "set saida=? " +
+                        "set saida=?, " +
+                        "    status= 'completed'" +
                         "where id_utilizador=? and id_obra=? and id = ?"
                 )
                 val stamp = Timestamp.valueOf(time)
@@ -188,6 +191,37 @@ class RegistersRepository : RegistersRepository {
             }
         }
     }
+
+    override fun insertExitOnWeb(userId: Int, regId: Int, obraId: Int, role: String, endTime: LocalDateTime): Boolean {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+
+                val pStatement = it.prepareStatement(
+                    "update registo " +
+                        "set saida=?, " +
+                        "    status= ? " +
+                        "where id_utilizador=? and id_obra=? and id = ?"
+                )
+                val stamp = Timestamp.valueOf(endTime)
+                pStatement.setTimestamp(1, stamp)
+                if (role == "admin")
+                    pStatement.setString(2, "completed")
+                else
+                    pStatement.setString(2, "pending")
+                pStatement.setInt(3, userId)
+                pStatement.setInt(4, obraId)
+                pStatement.setInt(5, regId)
+                pStatement.executeUpdate()
+
+                true
+            } catch (e: Exception) {
+                it.rollback()
+                false
+            } finally {
+                it.commit()
+            }
+        }    }
 
     override fun getUsersRegistersFromConstruction(oid: Int, page: Int): List<RegisterAndUser> {
         initializeConnection().use {
@@ -369,6 +403,42 @@ class RegistersRepository : RegistersRepository {
                 pStatement.executeUpdate()
                 true
             }  catch (e: SQLException) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun getIncompleteRegisters(userId: Int): List<RegisterOutputModel> {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement2 = it.prepareStatement(
+                    "select R.id, R.id_utilizador, R.id_obra, R.entrada, R.saida, R.status, O.nome as nome_obra from registo as R\n"
+                        + "join obra as O on R.id_obra = O.id\n"
+                        + "where id_utilizador = ? and R.status = 'unfinished'"
+                )
+                pStatement2.setInt(1, userId)
+                val res2 = pStatement2.executeQuery()
+                val list = mutableListOf<RegisterOutputModel>()
+                while (res2.next()) {
+                    res2.getTimestamp("saida") != null
+                        list.add(
+                            RegisterOutputModel(
+                                res2.getInt("id"),
+                                res2.getInt("id_utilizador"),
+                                res2.getInt("id_obra"),
+                                res2.getString("nome_obra"),
+                                res2.getTimestamp("entrada").toLocalDateTime(),
+                                res2.getTimestamp("saida").toLocalDateTime(),
+                                res2.getString("status"),
+                            )
+                        )
+                }
+                list
+            } catch (e: Exception) {
                 it.rollback()
                 throw e
             } finally {

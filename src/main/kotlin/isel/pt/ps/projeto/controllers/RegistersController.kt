@@ -9,6 +9,9 @@ import isel.pt.ps.projeto.services.RegistersUserInfoError
 import isel.pt.ps.projeto.utils.Failure
 import isel.pt.ps.projeto.utils.Success
 import jakarta.servlet.http.HttpServletResponse
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toKotlinLocalDateTime
+import kotlinx.datetime.toLocalDateTime
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -61,7 +64,7 @@ class RegistersController(
         @RequestBody register: RegisterInputModel
     ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        val res = registersService.addUserRegisterEntry(authUser.user.id, register.obraId, register.time)
+        val res = registersService.addUserRegisterEntry(authUser.user.id, register.obraId, register.time.toKotlinLocalDateTime())
         return when (res) {
             is Success ->
                 ResponseEntity.status(201)
@@ -85,7 +88,7 @@ class RegistersController(
     ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         println("Registo NFC")
-        val res = registersService.addRegisterEntryByNFC(authUser.user.id, register.nfcId, register.time)
+        val res = registersService.addRegisterEntryByNFC(authUser.user.id, register.nfcId, register.time.toKotlinLocalDateTime())
         return when (res) {
             is Success ->
                 ResponseEntity.status(201)
@@ -108,7 +111,7 @@ class RegistersController(
         @RequestBody register: RegisterInputModel
     ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        val res = registersService.addUserRegisterExit(authUser.user.id, register.obraId, register.time)
+        val res = registersService.addUserRegisterExit(authUser.user.id, register.obraId, register.time.toKotlinLocalDateTime())
         return when (res) {
             is Success ->
                 ResponseEntity.status(201)
@@ -327,10 +330,61 @@ class RegistersController(
             }
         }
     }
-    @GetMapping("/registos/saida)")
+    @GetMapping("/registos/incompletos")
     fun getRegisterWithoutExit(
         @RequestHeader("Authorization") userToken: String
     ): ResponseEntity<*> {
-        TODO()
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        val res = registersService.getIncompleteRegisters(authUser.user.id)
+        return when (res) {
+            is Success ->
+                ResponseEntity.status(200)
+                    .body(
+                        UserRegistersOutputModel(
+                            res.value.map {
+                                RegisterOutputModel(
+                                    it.id,
+                                    it.id_utilizador,
+                                    it.id_obra,
+                                    it.nome_obra,
+                                    it.entrada,
+                                    it.saida,
+                                    it.status
+                                )
+                            },
+                            null
+                        )
+                    )
+            is Failure ->
+                when (res.value) {
+                    RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                    RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                }
+        }
+    }
+
+    @PutMapping("/registos/incompletos")
+    fun insertExitOnWeb(
+        @RequestBody input: ExitWebInputModel,
+        @RequestHeader("Authorization") userToken: String
+    ): ResponseEntity<*> {
+        val authUser
+            = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        val res = registersService.insertExitOnWeb(authUser.user.id, input.registerId, input.oid, input.endTime.toLocalDateTime())
+        return when (res) {
+            is Success ->
+                ResponseEntity.status(201)
+                    .body(RegisterInfoModel("Successful"))
+            is Failure ->
+                when (res.value) {
+                    RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                    RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                    RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
+                    RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                    RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                    RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                }
+        }
     }
 }
