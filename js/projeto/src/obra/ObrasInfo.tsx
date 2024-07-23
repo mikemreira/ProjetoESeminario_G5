@@ -49,7 +49,7 @@ export interface Obra {
     function: string;
 }
 
-interface Registo {
+export interface Registo {
     id: number;
     id_utilizador: number;
     id_obra: number;

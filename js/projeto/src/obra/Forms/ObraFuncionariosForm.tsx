@@ -1,6 +1,6 @@
 import {
     Avatar,
-    Box,
+    Box, CircularProgress,
     IconButton,
     Stack,
     Table, TableBody,
@@ -37,7 +37,7 @@ export default function ObraFuncionariosForm({
     handleRemoveUser
 }: ObraFuncionariosFormProps) {
     const [cookies] = useCookies(['token']);
-    const [currUser, setCurrUser] = useState<UserModel>()
+    const [currUser, setCurrUser] = useState<UserModel | undefined>(undefined)
 
     useEffect(() => {
         fetch(`${path}/users/me`, {
@@ -59,6 +59,10 @@ export default function ObraFuncionariosForm({
             console.error("Error fetching: ", error);
         })
     }, [cookies.token]);
+
+    if (currUser === undefined) {
+        return <div><CircularProgress /></div>;
+    }
 
     return (
         <Stack sx={{ m: '2rem 0' }}>

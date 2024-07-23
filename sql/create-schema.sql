@@ -12,8 +12,7 @@ create table if not exists Utilizador (
                             password varchar(64),
                             nome varchar(64),
                             email varchar(64) unique,
-                            morada varchar(64) default null,
-                            foto bytea default null
+                            morada varchar(64) default null
 );
 
 -- Ainda em Testes

@@ -25,6 +25,13 @@ import AddIcon from "@mui/icons-material/Add";
 import {useNavigate} from "react-router-dom";
 import Button from "@mui/material/Button";
 import {path} from "../App";
+import NavBar from "../NavBar";
+import {FilterList} from "react-admin";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import RegistoExitForm from "./RegistoExitForm";
+import EditIcon from "@mui/icons-material/Edit";
 
 const columns = [
     { accessorKey: 'nome_obra', header: 'Nome da obra' },
@@ -33,7 +40,7 @@ const columns = [
     { accessorKey: 'status', header: 'Estado' }
 ];
 
-interface DateObject {
+export interface DateObject {
     year: number;
     dayOfMonth: number;
     month: string;
@@ -43,7 +50,7 @@ interface DateObject {
     value$kotlinx_datetime: string;
 }
 
-interface Registo {
+export interface Registo {
     id: number;
     id_utilizador: number;
     id_obra: number;
@@ -53,6 +60,12 @@ interface Registo {
     status: string | null;
 }
 
+interface ExitWebInputModel {
+    endTime: DateObject
+    registerId: number
+    oid: number
+}
+
 export default function Registos () {
     const [cookies] = useCookies(["token"]);
     const [registos, setRegistos] = useState<Registo[]>([])
@@ -60,8 +73,12 @@ export default function Registos () {
     const [openForm, setOpenForm] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const navigate = useNavigate();
+    const [exitOpenForm, setExitOpenForm] = useState(false);
+    const [selectedRegisto, setSelectedRegisto] = useState<Registo | null>(null);
 
     const fetchRegistos = () => {
+        handleMenuClose()
+        console.log("fetching registos")
         fetch(`${path}/registos`, {
             method: "GET",
             headers: {
@@ -125,6 +142,52 @@ export default function Registos () {
         paginationDisplayMode: 'pages',
     });
 
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+
+    const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorEl(event.currentTarget)
+    }
+    const handleMenuClose = () => {
+        setAnchorEl(null)
+    }
+
+    const isMenuOpen = Boolean(anchorEl)
+
+    const fetchRegistosIncompletos = () => {
+        handleMenuClose()
+        console.log("fetching registos incompletos")
+        fetch(`${path}/registos/incompletos`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`
+            },
+        }).then((res) => {
+            if (res.ok) return res.json()
+            else return null
+        }).then((body) => {
+            console.log("incompletos: " + body)
+            if (body) {
+                setRegistos(body.registers);
+            }
+        }).catch(error => {
+            console.error("Error fetching registos: ", error)
+        })
+    }
+
+    const handleClickExitOpenForm = (registo: Registo) => {
+        setSelectedRegisto(registo)
+        setExitOpenForm(true);
+    };
+
+    const handleExitCloseForm = (reload: boolean) => {
+        setExitOpenForm(false);
+        if (reload) {
+            fetchRegistosIncompletos();
+        }
+    };
+
+
     if (!cookies.token) {
         return (
             <Stack sx={{ m: '5rem 0', alignItems: 'center' }}>
@@ -138,6 +201,7 @@ export default function Registos () {
     }
 
     return (
+        <><NavBar />
         <Stack sx={{ m: '2rem 0' }}>
             <Box
                 sx={{
@@ -147,7 +211,20 @@ export default function Registos () {
                 }}
             >
                 <Typography variant="h4" color={"black"}>Registos</Typography>
-                <MRT_GlobalFilterTextField table={table} />
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <IconButton onClick={handleMenuOpen} color="primary">
+                        <FilterList  icon={<FilterListIcon/>} label={""} title={"Filtro"}/>
+                    </IconButton>
+                    <MRT_GlobalFilterTextField table={table} />
+                        <Menu
+                            anchorEl={anchorEl}
+                            open={isMenuOpen}
+                            onClose={handleMenuClose}
+                        >
+                            <MenuItem onClick={() => fetchRegistos()}>Todos</MenuItem>
+                            <MenuItem onClick={() => fetchRegistosIncompletos()}>Incompletos</MenuItem>
+                        </Menu>
+                </Box>
                 <IconButton onClick={handleClickOpenForm} color="primary" sx={{
                     bgcolor: 'primary.main',
                     borderRadius: '40%',
@@ -203,6 +280,11 @@ export default function Registos () {
                                                     staticRowIndex={rowIndex}
                                                 />
                                             )}
+                                            {cell.column.id === 'status' && cell.row.original.status === "unfinished" ? (
+                                                <IconButton style={{ color: '#3547a1' }} title={"Finalizar"} onClick={() => handleClickExitOpenForm(cell.row.original)}>
+                                                    <EditIcon/>
+                                                </IconButton>
+                                            ) : null}
                                         </TableCell>
                                     ))}
                                 </TableRow>
@@ -215,6 +297,7 @@ export default function Registos () {
             <MRT_TablePagination table={table} />
             </Box>
             <RegistoForm open={openForm} onHandleClose={handleCloseForm} obra={undefined}/>
+            <RegistoExitForm open={exitOpenForm} onHandleClose={handleExitCloseForm} registo={selectedRegisto}/>
 
             <Snackbar
                 open={snackbarOpen}
@@ -224,6 +307,7 @@ export default function Registos () {
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             />
         </Stack>
+        </>
     );
 };
 
