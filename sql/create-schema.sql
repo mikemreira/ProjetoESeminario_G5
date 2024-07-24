@@ -71,7 +71,7 @@ create table if not exists Registo (
 CREATE TABLE if not exists Convite (
                         email VARCHAR(255) NOT NULL,
                         funcao VARCHAR(255),
-                        status VARCHAR(10) NOT NULL DEFAULT 'pending' CHECK (status IN ('rejected', 'pending', 'accepted', 'unfinished')),
+                        status VARCHAR(10) NOT NULL DEFAULT 'pending' CHECK (status IN ('rejected', 'pending', 'accepted')),
                         id_obra INT NOT NULL,
                         papel VARCHAR(255) CHECK (papel IN ('admin', 'funcionario')),
                         PRIMARY KEY (email, id_obra),
