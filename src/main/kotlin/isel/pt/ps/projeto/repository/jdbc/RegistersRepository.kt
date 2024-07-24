@@ -424,7 +424,8 @@ class RegistersRepository : RegistersRepository {
                 val res2 = pStatement2.executeQuery()
                 val list = mutableListOf<RegisterOutputModel>()
                 while (res2.next()) {
-                    res2.getTimestamp("saida") != null
+                    //res2.getTimestamp("saida") != null
+                    val saida = res2.getTimestamp("saida")
                         list.add(
                             RegisterOutputModel(
                                 res2.getInt("id"),
@@ -432,7 +433,7 @@ class RegistersRepository : RegistersRepository {
                                 res2.getInt("id_obra"),
                                 res2.getString("nome_obra"),
                                 res2.getTimestamp("entrada").toLocalDateTime(),
-                                res2.getTimestamp("saida").toLocalDateTime(),
+                                if(saida != null) saida.toLocalDateTime() else null,
                                 res2.getString("status"),
                             )
                         )

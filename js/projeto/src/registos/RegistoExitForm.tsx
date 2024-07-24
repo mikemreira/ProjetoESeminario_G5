@@ -10,7 +10,7 @@ import {Box} from "@mui/material";
 import {useState} from "react";
 import {useCookies} from "react-cookie";
 import {path} from "../App";
-import {DateObject, Registo} from "./Registos";
+import {Registo} from "./Registos";
 
 interface RegistoFormProps {
     open: boolean,
@@ -18,15 +18,16 @@ interface RegistoFormProps {
     registo: Registo | null;
 }
 
-interface ExitWebInputModel {
-    endTime: DateObject
-    registerId: number
-    oid: number
-}
-
 export default function RegistoExitForm(props: RegistoFormProps) {
     const [cookies] = useCookies(["token"]);
     const [requiredDateTime, setRequiredDateTime] = useState<string>('');
+
+    console.log("registo: "+ JSON.stringify(props.registo))
+    console.log("regito id: "+ props.registo?.id)
+    console.log("id_obra: "+ props.registo?.id_obra)
+    console.log("requiredDateTime: "+ requiredDateTime)
+
+    const obra_id = props.registo?.id_obra === undefined ? props.registo?.oid : props.registo?.id_obra;
 
     return (
         <React.Fragment>
@@ -46,9 +47,10 @@ export default function RegistoExitForm(props: RegistoFormProps) {
                             body: JSON.stringify({
                                 endTime: requiredDateTime,
                                 registerId: props.registo?.id,
-                                oid: props.registo?.id_obra
+                                oid: obra_id
                             })
                         }).then(res => {
+                            console.log(res)
                             if (res.ok) {
                                 props.onHandleClose(true);
                             } else {

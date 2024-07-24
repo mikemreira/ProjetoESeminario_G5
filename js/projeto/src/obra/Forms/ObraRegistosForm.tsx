@@ -16,6 +16,10 @@ import MenuItem from "@mui/material/MenuItem";
 import FilterListIcon from '@mui/icons-material/FilterList';
 import {useCookies} from "react-cookie";
 import {Obra, RegistosOutputModel} from "../ObrasInfo";
+import EditIcon from "@mui/icons-material/Edit";
+import {Registo} from "../../registos/Registos";
+import RegistoExitForm from "../../registos/RegistoExitForm";
+import {path} from "../../App";
 
 interface ObraRegistosFormProps {
     obra: Obra;
@@ -38,7 +42,11 @@ export default function ObraRegistosForm({
 }: ObraRegistosFormProps) {
     const [cookies] = useCookies(["token"]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-    const [selectedFilter, setSelectedFilter] = useState<string | null>(null)
+    const [selectedFilter, setSelectedFilter] = useState<string>(`${path}/obras/${obra.oid}/registos/me`)
+    const [title, setTitle] = useState<string>("Registos")
+    const [exitOpenForm, setExitOpenForm] = useState(false);
+    const [selectedRegisto, setSelectedRegisto] = useState<Registo | null>(null);
+
     const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget)
     }
@@ -46,8 +54,9 @@ export default function ObraRegistosForm({
         setAnchorEl(null)
     }
 
-    const handleFilterSelect = (filter: string) => {
+    const handleFilterSelect = (filter: string, title: string) => {
         setSelectedFilter(filter)
+        setTitle(title)
         handleMenuClose()
         fetch(filter, {
             method: "GET",
@@ -73,6 +82,18 @@ export default function ObraRegistosForm({
 
     }
 
+    const handleClickExitOpenForm = (registo: Registo) => {
+        setSelectedRegisto(registo)
+        setExitOpenForm(true);
+    };
+
+    const handleExitCloseForm = (reload: boolean) => {
+        setExitOpenForm(false);
+        if (reload) {
+            handleFilterSelect(selectedFilter, title);
+        }
+    };
+
     const isMenuOpen = Boolean(anchorEl)
 
     return (
@@ -85,7 +106,7 @@ export default function ObraRegistosForm({
                         alignItems: 'center',
                     }}
                 >
-                    <Typography variant="h4" color={"black"}>Registos</Typography>
+                    <Typography variant="h4" color={"black"}>{title}</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <IconButton onClick={handleMenuOpen} color="primary">
                             <FilterList  icon={<FilterListIcon/>} label={""} title={"Filtro"}/>
@@ -97,9 +118,9 @@ export default function ObraRegistosForm({
                                 open={isMenuOpen}
                                 onClose={handleMenuClose}
                             >
-                                <MenuItem onClick={() => handleFilterSelect(registo.meRoute)}>Meus</MenuItem>
-                                <MenuItem onClick={() => handleFilterSelect(registo.allRoute)}>Todos</MenuItem>
-                                <MenuItem onClick={() => handleFilterSelect(registo.pendingRoute)}>Pendentes</MenuItem>
+                                <MenuItem onClick={() => handleFilterSelect(registo.allRoute, "Registos")}>Todos</MenuItem>
+                                <MenuItem onClick={() => handleFilterSelect(registo.meRoute, "Registos Pessoais")}>Meus</MenuItem>
+                                <MenuItem onClick={() => handleFilterSelect(registo.pendingRoute, "Registos Pendentes")}>Pendentes</MenuItem>
                             </Menu>
                         )}
                     </Box>
@@ -139,11 +160,17 @@ export default function ObraRegistosForm({
                                 <TableRow key={row.id} selected={row.getIsSelected()}>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell align="center" variant="body" key={cell.id}>
-                                            <MRT_TableBodyCellValue
-                                                cell={cell}
-                                                table={table}
-                                                staticRowIndex={rowIndex}
-                                            />
+                                            {cell.column.id === 'endTime' && row.original.status === 'unfinished' ? (
+                                                <IconButton color="primary" title={"Finalizar"} onClick={() => handleClickExitOpenForm(row.original)}>
+                                                    <EditIcon />
+                                                </IconButton>
+                                            ) : (
+                                                <MRT_TableBodyCellValue
+                                                    cell={cell}
+                                                    table={table}
+                                                    staticRowIndex={rowIndex}
+                                                />
+                                            )}
                                         </TableCell>
                                     ))}
                                 </TableRow>
@@ -156,6 +183,7 @@ export default function ObraRegistosForm({
                 </Box>
                 <MRT_ToolbarAlertBanner stackAlertBanner table={table} />
                 <RegistoForm open={openForm} onHandleClose={handleCloseForm} obra={obra}/>
+                <RegistoExitForm open={exitOpenForm} onHandleClose={handleExitCloseForm} registo={selectedRegisto}/>
             </Stack>
         </>
     );

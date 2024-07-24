@@ -372,8 +372,6 @@ export default function ObrasInfo() {
         setOpenForm(false);
         if (reload) {
             handleGetRegistersMine()
-            handleGetRegistersAll()
-            handleGetPendingRegisters()
         }
     };
 

@@ -40,6 +40,7 @@ const columns = [
     { accessorKey: 'status', header: 'Estado' }
 ];
 
+
 export interface DateObject {
     year: number;
     dayOfMonth: number;
@@ -58,12 +59,7 @@ export interface Registo {
     entrada: DateObject;
     saida: DateObject | null;
     status: string | null;
-}
-
-interface ExitWebInputModel {
-    endTime: DateObject
-    registerId: number
-    oid: number
+    oid: number | null;
 }
 
 export default function Registos () {
@@ -75,9 +71,11 @@ export default function Registos () {
     const navigate = useNavigate();
     const [exitOpenForm, setExitOpenForm] = useState(false);
     const [selectedRegisto, setSelectedRegisto] = useState<Registo | null>(null);
+    const [title, setTitle] = useState<string>("Registos")
 
     const fetchRegistos = () => {
         handleMenuClose()
+        setTitle("Registos")
         console.log("fetching registos")
         fetch(`${path}/registos`, {
             method: "GET",
@@ -155,7 +153,7 @@ export default function Registos () {
 
     const fetchRegistosIncompletos = () => {
         handleMenuClose()
-        console.log("fetching registos incompletos")
+        setTitle("Registos Incompletos")
         fetch(`${path}/registos/incompletos`, {
             method: "GET",
             headers: {
@@ -183,10 +181,9 @@ export default function Registos () {
     const handleExitCloseForm = (reload: boolean) => {
         setExitOpenForm(false);
         if (reload) {
-            fetchRegistosIncompletos();
+            fetchRegistos();
         }
     };
-
 
     if (!cookies.token) {
         return (
@@ -210,7 +207,7 @@ export default function Registos () {
                     alignItems: 'center',
                 }}
             >
-                <Typography variant="h4" color={"black"}>Registos</Typography>
+                <Typography variant="h4" color={"black"}>{title}</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <IconButton onClick={handleMenuOpen} color="primary">
                         <FilterList  icon={<FilterListIcon/>} label={""} title={"Filtro"}/>
@@ -273,18 +270,26 @@ export default function Registos () {
                                                 <Button onClick={() => handleClickOpenObra(row.original.id_obra)} style={{ textTransform: 'none' }}>
                                                     {cell.row.original.nome_obra}
                                                 </Button>
-                                            ) : (
+                                            ) : cell.column.id === 'saida' ? (
+                                                row.original.status === "unfinished" ? (
+                                                    <IconButton color="primary" title={"Finalizar"} onClick={() => handleClickExitOpenForm(row.original)}>
+                                                        <EditIcon />
+                                                    </IconButton>
+                                                )
+                                             : (
                                                 <MRT_TableBodyCellValue
                                                     cell={cell}
                                                     table={table}
                                                     staticRowIndex={rowIndex}
                                                 />
+                                                    )
+                                            ) : (
+                                                <MRT_TableBodyCellValue
+                                                cell={cell}
+                                                table={table}
+                                                staticRowIndex={rowIndex}
+                                                 />
                                             )}
-                                            {cell.column.id === 'status' && cell.row.original.status === "unfinished" ? (
-                                                <IconButton style={{ color: '#3547a1' }} title={"Finalizar"} onClick={() => handleClickExitOpenForm(cell.row.original)}>
-                                                    <EditIcon/>
-                                                </IconButton>
-                                            ) : null}
                                         </TableCell>
                                     ))}
                                 </TableRow>
