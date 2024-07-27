@@ -135,7 +135,7 @@ class RegistersRepository : RegistersRepository {
             it.autoCommit = false
             return try {
                 val pStatement = it.prepareStatement(
-                    "select * registo " +
+                    "select * from registo " +
                         "where id_utilizador=? and id_obra=? \n" +
                         "order by entrada desc\n" +
                         "limit 1 "
@@ -165,14 +165,14 @@ class RegistersRepository : RegistersRepository {
         }
     }
 
-    override fun addUserRegisterExit(regId: Int,userId: Int, obraId: Int, time: java.time.LocalDateTime) : Boolean {
+    override fun addUserRegisterExit(regId: Int,userId: Int, obraId: Int, time: LocalDateTime) : Boolean {
         initializeConnection().use {
             it.autoCommit = false
             return try {
                 val pStatement = it.prepareStatement(
                     "update registo " +
                         "set saida=?, " +
-                        "    status= 'completed'" +
+                        "    status= 'pending' " +
                         "where id_utilizador=? and id_obra=? and id = ?"
                 )
                 val stamp = Timestamp.valueOf(time)
@@ -182,6 +182,40 @@ class RegistersRepository : RegistersRepository {
                 pStatement.setInt(4, regId)
                 pStatement.executeUpdate()
 
+                true
+            } catch (e: Exception) {
+                it.rollback()
+                false
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun addUserRegisterNFC(regId: Int?, userId: Int, obraId: Int, time: LocalDateTime): Boolean {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                if(regId != null){
+                    val saidaStatement = it.prepareStatement("" +
+                        "update registo\n" +
+                        "set saida = ?\n" +
+                        "where id_utilizador = ? and id_obra = ? and id = ?"
+                    )
+                    saidaStatement.setInt(1, userId)
+                    saidaStatement.setInt(2, obraId)
+                    saidaStatement.setInt(3, regId)
+                    saidaStatement.executeUpdate()
+                } else {
+                    val pStatement = it.prepareStatement(
+                        "insert into registo(id_utilizador, id_obra, entrada, status) values(?, ?, ?, 'unfinished')"
+                    )
+                    pStatement.setInt(1, userId)
+                    pStatement.setInt(2, obraId)
+                    val stamp = Timestamp.valueOf(time)
+                    pStatement.setTimestamp(3, stamp)
+                    pStatement.executeUpdate()
+                }
                 true
             } catch (e: Exception) {
                 it.rollback()

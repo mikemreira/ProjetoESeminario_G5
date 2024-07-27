@@ -72,7 +72,13 @@ class RegistersService(
         if (construction.status == "recoverable")
             return failure(RegistersInfoError.ConstructionSuspended)
 
-        val res = registersRepository.addUserRegisterEntry(uid, construction.oid, entry.toJavaLocalDateTime())
+        val lastRegister = registersRepository.getLatestEntryRegisterId(uid, construction.oid)
+        val res = if (lastRegister == null){
+            registersRepository.addUserRegisterEntry(uid, construction.oid, entry.toJavaLocalDateTime())
+        } else {
+            registersRepository.addUserRegisterNFC(lastRegister.id, uid, construction.oid, entry.toJavaLocalDateTime())
+        }
+
         return if (res) {
             success(true)
         } else {
