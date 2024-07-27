@@ -199,7 +199,8 @@ class RegistersRepository : RegistersRepository {
                 if(regId != null){
                     val saidaStatement = it.prepareStatement("" +
                         "update registo\n" +
-                        "set saida = ?\n" +
+                        "set saida = ?, \n" +
+                        "    status = 'completed' \n" +
                         "where id_utilizador = ? and id_obra = ? and id = ?"
                     )
                     saidaStatement.setInt(1, userId)
