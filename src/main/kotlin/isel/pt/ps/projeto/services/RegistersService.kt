@@ -76,7 +76,7 @@ class RegistersService(
         val res = if (lastRegister == null){
             registersRepository.addUserRegisterEntry(uid, construction.oid, entry.toJavaLocalDateTime())
         } else {
-            registersRepository.addUserRegisterNFC(lastRegister.id, uid, construction.oid, entry.toJavaLocalDateTime())
+            registersRepository.addUserRegisterNFC(lastRegister, uid, construction.oid, entry.toJavaLocalDateTime())
         }
 
         return if (res) {

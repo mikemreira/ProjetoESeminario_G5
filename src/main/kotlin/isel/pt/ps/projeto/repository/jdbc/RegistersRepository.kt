@@ -4,7 +4,6 @@ import isel.pt.ps.projeto.models.registers.Register
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
 import isel.pt.ps.projeto.models.registers.RegisterOutputModel
 import isel.pt.ps.projeto.repository.RegistersRepository
-import kotlinx.datetime.toJavaLocalDateTime
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.stereotype.Component
 import java.sql.Connection
@@ -73,43 +72,7 @@ class RegistersRepository : RegistersRepository {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                /*
-                val checkEntryStatement = it.prepareStatement("" +
-                    "select exists ( " +
-                    "select * from registo\n" +
-                    "Where id_utilizador = ? and saida = null and id_obra = ? " +
-                    ")"
-                )
 
-                checkEntryStatement.setInt(1 ,userId)
-                checkEntryStatement.setInt(2 , obraId)
-                val check = checkEntryStatement.executeQuery()
-                check.next()
-                if(check.getBoolean("exists")){
-                    val saidaStatement = it.prepareStatement("" +
-                        "update registo\n" +
-                        "set saida = ?\n" +
-                        "where id_utilizador = ? and id_obra = ? "
-                    )
-                    saidaStatement.setInt(1, userId)
-                    saidaStatement.setInt(2, obraId)
-                    saidaStatement.executeUpdate()
-                }
-                else {
-                    val pStatement = it.prepareStatement(
-                        "insert into registo(id_utilizador, id_obra, entrada) values(?, ?, ?)"
-                    )
-                    pStatement.setInt(1, userId)
-                    pStatement.setInt(2, obraId)
-
-                    val stamp = Timestamp.valueOf(time)
-                    pStatement.setTimestamp(3, stamp)
-
-                    pStatement.executeUpdate()
-
-                }
-
-                 */
                 val pStatement = it.prepareStatement(
                     "insert into registo(id_utilizador, id_obra, entrada, status) values(?, ?, ?, 'unfinished')"
                 )
@@ -192,24 +155,30 @@ class RegistersRepository : RegistersRepository {
         }
     }
 
-    override fun addUserRegisterNFC(regId: Int?, userId: Int, obraId: Int, time: LocalDateTime): Boolean {
+    override fun addUserRegisterNFC(reg: Register?, userId: Int, obraId: Int, time: LocalDateTime): Boolean {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                if(regId != null){
+                if(reg != null){
                     val saidaStatement = it.prepareStatement("" +
                         "update registo\n" +
                         "set saida = ?, \n" +
-                        "    status = 'completed' \n" +
+                        "    status = ? \n" +
                         "where id_utilizador = ? and id_obra = ? and id = ?"
                     )
-                    saidaStatement.setInt(1, userId)
-                    saidaStatement.setInt(2, obraId)
-                    saidaStatement.setInt(3, regId)
+                    val stamp = Timestamp.valueOf(time)
+                    saidaStatement.setTimestamp(1, stamp)
+                    if (reg.status == "unfinished_nfc")
+                        saidaStatement.setString(2, "completed")
+                    else
+                        saidaStatement.setString(2, "pending")
+                    saidaStatement.setInt(3, userId)
+                    saidaStatement.setInt(4, obraId)
+                    saidaStatement.setInt(5, reg.id)
                     saidaStatement.executeUpdate()
                 } else {
                     val pStatement = it.prepareStatement(
-                        "insert into registo(id_utilizador, id_obra, entrada, status) values(?, ?, ?, 'unfinished')"
+                        "insert into registo(id_utilizador, id_obra, entrada, status) values(?, ?, ?, 'unfinished_nfc')"
                     )
                     pStatement.setInt(1, userId)
                     pStatement.setInt(2, obraId)
@@ -453,7 +422,7 @@ class RegistersRepository : RegistersRepository {
                 val pStatement2 = it.prepareStatement(
                     "select R.id, R.id_utilizador, R.id_obra, R.entrada, R.saida, R.status, O.nome as nome_obra from registo as R\n"
                         + "join obra as O on R.id_obra = O.id\n"
-                        + "where id_utilizador = ? and R.status = 'unfinished'"
+                        + "where id_utilizador = ? and R.status in ('unfinished','unfinished_nfc')"
                 )
                 pStatement2.setInt(1, userId)
                 val res2 = pStatement2.executeQuery()
