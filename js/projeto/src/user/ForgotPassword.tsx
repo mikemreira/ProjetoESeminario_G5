@@ -7,6 +7,7 @@ import signUpIn from "../assets/sign.png";
 // @ts-ignore
 import logo from "../assets/logo-black-transparent.png";
 import {path} from "../App";
+import {handleInputChange} from "../Utils";
 
 interface UserForgotPasswordInputModel {
     email: string
@@ -14,21 +15,10 @@ interface UserForgotPasswordInputModel {
 
 export default function ForgotPassword() {
     const [values, setValues] = useState<UserForgotPasswordInputModel>({ email: "" })
-    const [cookies] = useCookies(["token"])
     const [submitted, setSubmitted] = useState(false)
     const [valid, setValid] = useState(false)
     const [error, setError] = useState("")
-    const [open, setOpen] = useState(false)
     const navigate = useNavigate()
-
-    const handleInputChange = (event: { preventDefault: () => void; target: { name: any; value: any; }; }) => {
-        event.preventDefault()
-        const { name, value } = event.target;
-        setValues((values) => ({
-            ...values,
-            [name]: value
-        }))
-    }
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -42,7 +32,6 @@ export default function ForgotPassword() {
             setSubmitted(true)
             if (res.status == 201) {
                 setValid(true)
-                setOpen(true)
                 return res.json()
             }
             else {
@@ -80,7 +69,7 @@ export default function ForgotPassword() {
                                 placeholder="E-mail"
                                 name="email"
                                 value={values.email}
-                                onChange={handleInputChange}
+                                onChange={handleInputChange(setValues)}
                             />
                             {submitted && !values.email && (
                                 <span id="last-name-error">Please enter an email</span>

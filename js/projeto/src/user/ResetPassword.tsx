@@ -6,6 +6,7 @@ import signUpIn from "../assets/sign.png";
 import logo from "../assets/logo-black-transparent.png";
 import Alert from "@mui/material/Alert";
 import {path} from "../App";
+import {handleInputChange} from "../Utils";
 
 interface UserResetPasswordInputModel {
     password: string
@@ -29,16 +30,6 @@ export default function ResetPassword() {
             setError("Missing email or token")
         }
     }, [email, token])
-
-
-    const handleInputChange = (event: { preventDefault: () => void; target: { name: any; value: any; }; }) => {
-        event.preventDefault()
-        const { name, value } = event.target;
-        setValues((values) => ({
-            ...values,
-            [name]: value
-        }))
-    }
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -96,7 +87,7 @@ export default function ResetPassword() {
                                 placeholder="Nova Password"
                                 name="password"
                                 value={values.password}
-                                onChange={handleInputChange}
+                                onChange={handleInputChange(setValues)}
                             />
                             <input
                                 className="form-field"
@@ -104,7 +95,7 @@ export default function ResetPassword() {
                                 placeholder="Confirmar a nova password"
                                 name="confirmPassword"
                                 value={values.confirmPassword}
-                                onChange={handleInputChange}
+                                onChange={handleInputChange(setValues)}
                             />
                             {submitted && !values.password && (
                                 <span id="last-name-error">Adicione uma password</span>

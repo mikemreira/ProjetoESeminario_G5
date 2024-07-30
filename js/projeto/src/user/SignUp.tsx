@@ -6,6 +6,7 @@ import logo from "../assets/logo-black-transparent.png";
 // @ts-ignore
 import signUpIn from "../assets/sign.png";
 import {path} from "../App";
+import {handleInputChange} from "../Utils";
 
 export default function SignUp() {
   const [values, setValues] = useState({
@@ -19,17 +20,6 @@ export default function SignUp() {
     const handleClick = () => {
         setOpen(true);
     };
-
-
-  const handleInputChange = (event: { preventDefault: () => void; target: { name: any; value: any; }; }) => {
-    event.preventDefault();
-
-    const { name, value } = event.target;
-    setValues((values) => ({
-      ...values,
-      [name]: value
-    }));
-  };
 
   const [submitted, setSubmitted] = useState(false);
   const [valid, setValid] = useState(false);
@@ -84,7 +74,7 @@ export default function SignUp() {
                           placeholder="Username"
                           name="name"
                           value={values.name}
-                          onChange={handleInputChange}
+                          onChange={handleInputChange(setValues)}
                       />
                   )}
 
@@ -99,7 +89,7 @@ export default function SignUp() {
                           placeholder="E-mail"
                           name="email"
                           value={values.email}
-                          onChange={handleInputChange}
+                          onChange={handleInputChange(setValues)}
                       />
                   )}
 
@@ -115,7 +105,7 @@ export default function SignUp() {
                               placeholder="Password"
                               name="password"
                               value={values.password}
-                              onChange={handleInputChange}
+                              onChange={handleInputChange(setValues)}
                           />
                           <input
                               className="form-field"
@@ -123,7 +113,7 @@ export default function SignUp() {
                               placeholder="Confirmar password"
                               name="confirmPassword"
                               value={values.confirmPassword}
-                              onChange={handleInputChange}
+                              onChange={handleInputChange(setValues)}
                           />
                       </>
                   )}

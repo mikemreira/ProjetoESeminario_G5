@@ -9,6 +9,7 @@ import {Stack, Typography} from "@mui/material";
 // @ts-ignore
 import signUpIn from "../assets/sign.png";
 import {path} from "../App";
+import {handleInputChange} from "../Utils";
 
 interface UserEditPasswordInputModel {
     password: string
@@ -21,17 +22,7 @@ export default function ChangePassword() {
     const [submitted, setSubmitted] = useState(false)
     const [valid, setValid] = useState(false)
     const [error, setError] = useState("")
-    const [open, setOpen] = React.useState(false)
     const navigate = useNavigate()
-
-    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        event.preventDefault()
-        const { name, value } = event.target;
-        setValues((values) => ({
-            ...values,
-            [name]: value
-        }))
-    }
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -53,7 +44,6 @@ export default function ChangePassword() {
             console.log(res)
             if (res.status == 201) {
                 setValid(true)
-                setOpen(true)
                 return res.json()
             }
             else {
@@ -103,7 +93,7 @@ export default function ChangePassword() {
                                 placeholder="Nova password"
                                 name="password"
                                 value={values.password}
-                                onChange={handleInputChange}
+                                onChange={handleInputChange(setValues)}
                             />
                             <input
                                 className="form-field"
@@ -111,7 +101,7 @@ export default function ChangePassword() {
                                 placeholder="Confirmar a nova password"
                                 name="confirmPassword"
                                 value={values.confirmPassword}
-                                onChange={handleInputChange}
+                                onChange={handleInputChange(setValues)}
                             />
                             {submitted && !values.password && (
                                 <span id="last-name-error">Introduza uma nova password</span>

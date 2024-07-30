@@ -76,7 +76,6 @@ export default function Registos () {
     const fetchRegistos = () => {
         handleMenuClose()
         setTitle("Registos")
-        console.log("fetching registos")
         fetch(`${path}/registos`, {
             method: "GET",
             headers: {

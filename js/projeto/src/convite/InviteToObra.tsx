@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
-import {FormControl, InputLabel, MenuItem, Select, Snackbar, Stack, Typography} from "@mui/material";
+import {CircularProgress, FormControl, InputLabel, MenuItem, Select, Snackbar, Stack, Typography} from "@mui/material";
 import {Navigate, useNavigate, useParams} from "react-router-dom"
 import {path} from "../App";
 
@@ -64,10 +64,6 @@ export default function InviteToObra() {
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-
-        console.log("Form values:", values);
-        console.log("id obra:", oid);
-
         fetch(`${path}/obras/${oid}/convite`, {
             method: "POST",
             headers: {
@@ -187,6 +183,17 @@ export default function InviteToObra() {
                         Convidar
                     </Button>
                 </Box>
+                {success && (
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <CircularProgress />
+                    </Box>
+                )}
                 {submitted && !valid && <Alert severity="error" sx={{ m: 1 }}>{error}</Alert>}
                 {submitted && valid && <Alert severity="success" sx={{ m: 1 }}>Membro convidado com sucesso!</Alert>}
             </Box>
