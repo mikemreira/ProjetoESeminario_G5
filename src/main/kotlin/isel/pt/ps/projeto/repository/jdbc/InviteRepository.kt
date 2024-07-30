@@ -7,16 +7,21 @@ import isel.pt.ps.projeto.models.users.SimpleUser
 import isel.pt.ps.projeto.repository.InviteRepository
 import kotlinx.datetime.toLocalDate
 import org.postgresql.ds.PGSimpleDataSource
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
 import org.springframework.stereotype.Component
 import java.sql.Connection
 import java.sql.SQLException
 
 @Component
-class InviteRepository() : InviteRepository {
+class InviteRepository(
+    private val config: DataSourceProperties
+) : InviteRepository {
 
     private fun initializeConnection(): Connection {
         val dataSource = PGSimpleDataSource()
-        dataSource.setURL(JDBC_URL)
+        dataSource.setURL(config.url)
+        dataSource.user = config.username
+        dataSource.password = config.password
         return dataSource.connection
     }
 

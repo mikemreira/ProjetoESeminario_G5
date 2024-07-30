@@ -234,7 +234,7 @@ export default function Profile() {
                             Perfil
                         </Typography>
                         <Grid container spacing={2}>
-                            {loading ? (
+                            {!loading ? (
                                 <Box
                                     sx={{
                                         display: 'flex',

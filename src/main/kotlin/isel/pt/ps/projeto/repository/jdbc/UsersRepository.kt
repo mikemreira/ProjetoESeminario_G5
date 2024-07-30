@@ -11,21 +11,23 @@ import isel.pt.ps.projeto.models.users.UserAndToken
 import isel.pt.ps.projeto.repository.UserRepository
 import kotlinx.datetime.Instant
 import org.postgresql.ds.PGSimpleDataSource
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
 import org.springframework.stereotype.Component
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException
 import java.util.*
 
-const val JDBC_URL = "jdbc:postgresql://localhost:5432/postgres?user=postgres&password=postgres"//"jdbc:postgresql://ps-postgresql.postgres.database.azure.com:5432/postgres?user=admin_ps&password=Mikemtcool1!&sslmode=require"
-
 @Component
 class UsersRepository(
-    private val utils: UtilsServices
+    private val config: DataSourceProperties
 ) : UserRepository {
     private fun initializeConnection(): Connection {
         val dataSource = PGSimpleDataSource()
-        dataSource.setURL(JDBC_URL)
+        dataSource.setURL(config.url)
+        dataSource.user = config.username
+        dataSource.password = config.password
         return dataSource.connection
     }
 

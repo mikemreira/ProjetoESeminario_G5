@@ -1,7 +1,6 @@
 package isel.pt.ps.projeto.casbin
 
 import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
-import isel.pt.ps.projeto.repository.jdbc.JDBC_URL
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
 import jakarta.annotation.PostConstruct
 import org.casbin.adapter.JDBCAdapter
@@ -9,13 +8,15 @@ import org.casbin.jcasbin.main.Enforcer
 import org.casbin.jcasbin.main.SyncedEnforcer
 import org.casbin.jcasbin.model.Model
 import org.postgresql.ds.PGSimpleDataSource
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Service
 
 @Service
 class AuthorizationService(
     private val usersRepository: UsersRepository,
-    private val constructionsRepository: ConstructionsRepository
+    private val constructionsRepository: ConstructionsRepository,
+    private val config: DataSourceProperties
 ) {
 
     @PostConstruct
@@ -118,9 +119,9 @@ class AuthorizationService(
         model.loadModelFromText(modelText)
 
         val dataSource = PGSimpleDataSource().apply {
-            setURL(JDBC_URL)
-            user = "postgres"//"admin_ps"
-            password = "postgres"//"Mikemtcool1!"
+            setURL(config.url)
+            user = config.username
+            password = config.password
         }
 
         val jdbcAdapter = JDBCAdapter(dataSource)

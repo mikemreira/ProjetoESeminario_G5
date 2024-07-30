@@ -6,6 +6,7 @@ import isel.pt.ps.projeto.models.registers.RegisterOutputModel
 import isel.pt.ps.projeto.repository.RegistersRepository
 import kotlinx.datetime.toJavaLocalDateTime
 import org.postgresql.ds.PGSimpleDataSource
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
 import org.springframework.stereotype.Component
 import java.sql.Connection
 import java.sql.SQLException
@@ -14,11 +15,15 @@ import java.time.LocalDateTime
 
 
 @Component
-class RegistersRepository : RegistersRepository {
+class RegistersRepository(
+    private val config: DataSourceProperties
+) : RegistersRepository {
 
     private fun initializeConnection(): Connection {
     val dataSource = PGSimpleDataSource()
-    dataSource.setURL(JDBC_URL)
+    dataSource.setURL(config.url)
+    dataSource.user = config.username
+    dataSource.password = config.password
     return dataSource.connection
 }
     override fun getUserRegisters(userId: Int): List<RegisterOutputModel> {
@@ -135,7 +140,7 @@ class RegistersRepository : RegistersRepository {
             it.autoCommit = false
             return try {
                 val pStatement = it.prepareStatement(
-                    "select * registo " +
+                    "select * from registo " +
                         "where id_utilizador=? and id_obra=? \n" +
                         "order by entrada desc\n" +
                         "limit 1 "

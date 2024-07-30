@@ -91,7 +91,7 @@ class RegistersService(
         val lastRegister = registersRepository.getLatestEntryRegisterId(uid, obraId)
             ?: return failure(RegistersInfoError.InvalidRegister)
 
-        if (lastRegister.endTime == null)
+        if (lastRegister.endTime != null)
             return failure(RegistersInfoError.InvalidRegister)
 
         val res = registersRepository.addUserRegisterExit(lastRegister.id, uid, obraId, exit.toJavaLocalDateTime())

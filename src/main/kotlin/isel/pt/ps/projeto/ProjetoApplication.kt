@@ -8,6 +8,7 @@ import isel.pt.ps.projeto.domain.users.Sha256TokenEncoder
 import isel.pt.ps.projeto.domain.users.UsersDomainConfig
 import kotlinx.datetime.Clock
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -19,6 +20,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import kotlin.time.Duration.Companion.hours
 
 @SpringBootApplication
+@EnableConfigurationProperties
 class ProjetoApplication {
     @Bean
     fun passwordEncoder() = BCryptPasswordEncoder()

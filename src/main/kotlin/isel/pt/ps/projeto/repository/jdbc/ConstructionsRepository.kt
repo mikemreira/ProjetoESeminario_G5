@@ -14,6 +14,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toLocalDate
 import org.postgresql.ds.PGSimpleDataSource
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
 import org.springframework.stereotype.Component
 import java.sql.Connection
 import java.sql.Date
@@ -24,10 +25,13 @@ import java.sql.Timestamp
 @Component
 class ConstructionsRepository(
     private val utils: UtilsServices,
+    private val config: DataSourceProperties
 ) : ConstructionRepository {
     private fun initializeConnection(): Connection {
         val dataSource = PGSimpleDataSource()
-        dataSource.setURL(JDBC_URL)
+        dataSource.setURL(config.url)
+        dataSource.user = config.username
+        dataSource.password = config.password
         return dataSource.connection
     }
 
