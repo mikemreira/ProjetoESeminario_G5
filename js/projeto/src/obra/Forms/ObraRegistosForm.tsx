@@ -160,7 +160,7 @@ export default function ObraRegistosForm({
                                 <TableRow key={row.id} selected={row.getIsSelected()}>
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell align="center" variant="body" key={cell.id}>
-                                            {cell.column.id === 'endTime' && row.original.status === 'unfinished' ? (
+                                            {cell.column.id === 'endTime' && (row.original.status === 'unfinished' || row.original.status === "unfinished_nfc") ? (
                                                 <IconButton color="primary" title={"Finalizar"} onClick={() => handleClickExitOpenForm(row.original)}>
                                                     <EditIcon />
                                                 </IconButton>

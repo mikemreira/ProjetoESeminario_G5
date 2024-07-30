@@ -12,6 +12,7 @@ import signUpIn from '../assets/sign.png';
 import {path} from "../App";
 import {CircularProgress} from "@mui/material";
 import Box from "@mui/material/Box";
+import {handleInputChange} from "../Utils";
 
 
 export default function LogIn() {
@@ -27,19 +28,8 @@ export default function LogIn() {
   const setUser = useSetUser();
   const setAvatar = useSetAvatar();
 
-  const handleInputChange = (event: { preventDefault: () => void; target: { name: any; value: any; }; }) => {
-    event.preventDefault();
-    const { name, value } = event.target;
-    setValues((values) => ({
-      ...values,
-      [name]: value
-    }));
-  };
-
-
   const handleSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
-
     fetch(`${path}/users/signin`, {
         method: "POST",
         headers: {
@@ -83,8 +73,6 @@ export default function LogIn() {
                 setError(error.message)
                 setLoading(false)
             })
-            //setAvatar(body.foto)
-           // localStorage.setItem("avatar", body.foto)
         }
     }).catch(error => {
         setError(error.message)
@@ -112,7 +100,7 @@ export default function LogIn() {
                                 placeholder="E-mail"
                                 name="email"
                                 value={values.email}
-                                onChange={handleInputChange}
+                                onChange={handleInputChange(setValues)}
                             />
                             {submitted && !values.email && (
                                 <span id="last-name-error">Please enter an email</span>
@@ -123,7 +111,7 @@ export default function LogIn() {
                                 placeholder="Password"
                                 name="password"
                                 value={values.password}
-                                onChange={handleInputChange}
+                                onChange={handleInputChange(setValues)}
                             />
                             {submitted && !values.password && (
                                 <span id="password-error">Please enter a password</span>

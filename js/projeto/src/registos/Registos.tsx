@@ -76,7 +76,6 @@ export default function Registos () {
     const fetchRegistos = () => {
         handleMenuClose()
         setTitle("Registos")
-        console.log("fetching registos")
         fetch(`${path}/registos`, {
             method: "GET",
             headers: {
@@ -271,7 +270,7 @@ export default function Registos () {
                                                     {cell.row.original.nome_obra}
                                                 </Button>
                                             ) : cell.column.id === 'saida' ? (
-                                                row.original.status === "unfinished" ? (
+                                                (row.original.status === "unfinished" || row.original.status === "unfinished_nfc") ? (
                                                     <IconButton color="primary" title={"Finalizar"} onClick={() => handleClickExitOpenForm(row.original)}>
                                                         <EditIcon />
                                                     </IconButton>

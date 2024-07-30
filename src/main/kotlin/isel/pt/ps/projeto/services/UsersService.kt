@@ -153,6 +153,7 @@ class UsersService(
         usersRepository.editPasswordIfForgotten(user.id, email, passVal)
         return success("Password changed")
     }
+
     fun getUserByToken(token: String): User? {
         if(!usersDomain.canBeToken(token)) {
             return null

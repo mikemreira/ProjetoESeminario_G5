@@ -21,12 +21,6 @@ interface RegistoFormProps {
 export default function RegistoExitForm(props: RegistoFormProps) {
     const [cookies] = useCookies(["token"]);
     const [requiredDateTime, setRequiredDateTime] = useState<string>('');
-
-    console.log("registo: "+ JSON.stringify(props.registo))
-    console.log("regito id: "+ props.registo?.id)
-    console.log("id_obra: "+ props.registo?.id_obra)
-    console.log("requiredDateTime: "+ requiredDateTime)
-
     const obra_id = props.registo?.id_obra === undefined ? props.registo?.oid : props.registo?.id_obra;
 
     return (

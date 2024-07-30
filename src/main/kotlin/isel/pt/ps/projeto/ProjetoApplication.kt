@@ -35,8 +35,8 @@ class ProjetoApplication {
     fun usersDomainConfig() =
         UsersDomainConfig(
             tokenSizeInBytes = 256 / 8,
-            tokenTtl = 24.hours,
-            tokenRollingTtl = 1.hours,
+            tokenTtl = 48.hours,
+            tokenRollingTtl = 48.hours,
             maxTokensPerUser = 3
         )
 

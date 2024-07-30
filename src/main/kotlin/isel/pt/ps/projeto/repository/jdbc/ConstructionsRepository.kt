@@ -91,7 +91,7 @@ class ConstructionsRepository(
                         result.getString("localização"),
                         result.getString("descrição"),
                         result.getDate("data_inicio").toString().toLocalDate(),
-                        if (dateFim == null) dateFim else dateFim.toString().toLocalDate(),
+                        if (dateFim == null) null else dateFim.toString().toLocalDate(),
                         result.getString("status"),
                         result.getBytes("foto")
                     )

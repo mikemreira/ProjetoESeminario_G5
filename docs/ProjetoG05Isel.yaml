@@ -21,7 +21,7 @@ tags:
 - name: users
   description: Calls for users
 - name: convites
-  description: Calls o convites
+  description: Calls for convites
 paths:
   /users:
     get:
@@ -104,6 +104,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UserEditInputModel'
+        required: true
       responses:
         "201":
           description: user edited successfully
@@ -130,6 +131,7 @@ paths:
           application/json:
             schema:
               type: string
+        required: true
       responses:
         "201":
           description: successfully changed password
@@ -141,6 +143,35 @@ paths:
                   $ref: '#/components/schemas/UserChangePasswordOutputModel'
         "400":
           description: "invalid input, object invalid"
+        "404":
+          description: a user with that token could not be found
+  /users/me/imagem:
+    get:
+      tags:
+      - users
+      summary: Get user Image
+      description: Get user Image by specified type
+      operationId: getImage
+      parameters:
+      - name: type
+        in: query
+        description: The type of image to retrieve
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: image output successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImageOutputModel'
+        "400":
+          description: "invalid query, object invalid"
         "404":
           description: a user with that token could not be found
   /users/signin:
@@ -662,6 +693,95 @@ paths:
           description: unauthorized user
         "404":
           description: could not find such construction with that id
+  /obras/{oid}/nfc:
+    get:
+      tags:
+      - admins
+      - obras
+      summary: Get nfc id
+      description: Get nfc id of a construction
+      operationId: getNfc
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: registers obtained successfully
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NfcOutputModel'
+        "403":
+          description: unauthorized user
+        "404":
+          description: could not find such construction with that id
+    put:
+      tags:
+      - admins
+      - obras
+      summary: Edit nfc id
+      description: Edif nfc id for a construction
+      operationId: editNfc
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        "201":
+          description: register accept or deny successefuly
+          content:
+            aplication/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NfcOutputModel'
+        "403":
+          description: unauthorized user
+        "404":
+          description: could not find such construction with that id
+  /registos/nfc:
+    post:
+      tags:
+      - registos
+      summary: Add register entry by NFC
+      description: Add a register entry for a specific user using NFC through token
+      operationId: addRegisterEntryByNfc
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterByNfcInputModel'
+        required: true
+      responses:
+        "201":
+          description: register entry added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterInfoModel'
+        "400":
+          description: invalid register
+        "403":
+          description: unauthorized user
+        "404":
+          description: registers or construction not found
   /registos:
     get:
       tags:
@@ -749,9 +869,56 @@ paths:
           content:
             aplication/json:
               schema:
+                $ref: '#/components/schemas/UserRegistersAndObraOutputModel'
+        "400":
+          description: invalid register
+        "403":
+          description: unauthorized user
+        "404":
+          description: registers not found
+  /registos/incompletos:
+    get:
+      tags:
+      - registos
+      summary: Get unfinished registers for specific user
+      description: Get unfinished registers for specific user through token
+      operationId: getRegisterWithoutExit
+      responses:
+        "200":
+          description: records obtained successfully
+          content:
+            aplication/json:
+              schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/RegisterAndUser'
+                  $ref: '#/components/schemas/UserRegistersAndObraOutputModel'
+        "400":
+          description: invalid register
+        "403":
+          description: unauthorized user
+        "404":
+          description: registers not found
+    put:
+      tags:
+      - registos
+      summary: Insert exit on web for an unfinished register
+      description: Insert exit time for an unfinished register for a specific user through token
+      operationId: insertExitOnWeb
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExitWebInputModel'
+        required: true
+      responses:
+        "201":
+          description: exit time inserted successfully
+          content:
+            aplication/json:
+              schema:
+                $ref: '#/components/schemas/RegisterInfoModel'
+        "400":
+          description: invalid register
         "403":
           description: unauthorized user
         "404":
@@ -852,7 +1019,7 @@ components:
           type: string
           description: Address of the user
           nullable: true
-        foto:
+        fotoHref:
           type: string
           description: URL of the user's photo
           nullable: true
@@ -868,7 +1035,7 @@ components:
           type: string
           description: Address of the user
           nullable: true
-        foto:
+        fotoHref:
           type: string
           description: URL of the user's photo
           nullable: true
@@ -878,6 +1045,12 @@ components:
         response:
           type: string
           description: Response message indicating the result of the password change
+    ImageOutputModel:
+      type: object
+      properties:
+        foto:
+          type: string
+          nullable: true
     UserSignIn:
       required:
       - email
@@ -896,9 +1069,9 @@ components:
         token:
           type: string
           description: The authentication token for the user
-        foto:
+        hrefIcon:
           type: string
-          description: URL of the user's photo
+          description: URL of the user's icon photo
           nullable: true
     UserSignUp:
       required:
@@ -1126,7 +1299,7 @@ components:
           nullable: true
         meRoute:
           type: string
-          description: Route for "me" information
+          description: Route for me information
           nullable: true
         pendingRoute:
           type: string
@@ -1163,6 +1336,25 @@ components:
         status:
           type: string
           description: Status of the register
+    ExitWebInputModel:
+      type: object
+      properties:
+        endTime:
+          type: string
+          description: End time to be inserted
+          format: date-time
+        registerId:
+          type: integer
+          description: Unique identifier for the register
+        oid:
+          type: integer
+          description: Unique identifier for the construction
+    RegisterInfoModel:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Information message about the register
     UserRegistersOutputModel:
       type: object
       properties:
@@ -1232,6 +1424,22 @@ components:
         obraId:
           type: integer
           description: Unique identifier for the construction project
+    NfcOutputModel:
+      type: object
+      properties:
+        nfcResponse:
+          type: string
+          description: NFC id or null
+    RegisterByNfcInputModel:
+      type: object
+      properties:
+        time:
+          type: string
+          description: Time of the NFC register entry
+          format: date-time
+        nfcId:
+          type: string
+          description: NFC identifier for the register
     ListOfConstructionAndRoleOutputModel:
       type: object
       properties:
