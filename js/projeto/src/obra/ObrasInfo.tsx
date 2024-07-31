@@ -18,13 +18,13 @@ import IconButton from "@mui/material/IconButton";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ObrasVisaoGeralForm from "./Forms/ObrasVisaoGeralForm";
 import ObraRegistosForm from "./Forms/ObraRegistosForm";
-import {useMaterialReactTable} from "material-react-table";
 import ObraFuncionariosForm from "./Forms/ObraFuncionariosForm";
 import ObraRegistosOfAllPendingUsersForm from "./Forms/ObraRegistosOfAllPendingUsersForm";
 import ObraRegistosOfUserForm from "./Forms/ObraRegistosOfUserForm";
 import ObraFuncionarioInfoForm from "./Forms/ObraFuncionarioInfoForm";
 import ObraNFCForm from "./Forms/ObraNFCForm";
 import {path} from "../App";
+import {handleChange, handleFileChange, handleSelectObraChange, table} from "../Utils";
 
 export interface DateObject {
     year: number;
@@ -216,35 +216,9 @@ export default function ObrasInfo() {
         navigate("/obras")
     }
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target
-        setEditedObra((prevObra) => ({
-            ...prevObra!,
-            [name]: name.includes('Date') ? parseDate(value) : value,
-        }))
-    }
-
-    const handleSelectChange = (event: ChangeEvent<{ name?: string; value: unknown }>) => {
-        const { name, value } = event.target
-        setEditedObra((prevObra) => ({
-            ...prevObra!,
-            [name as string]: value,
-        }))
-    }
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (file) {
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                setEditedObra((prevObra) => ({
-                    ...prevObra!,
-                    foto: reader.result as string | null,
-                }))
-            }
-            reader.readAsDataURL(file)
-        }
-    }
+    const handleChangeObra = handleChange(setEditedObra)
+    const handeFileChangeObra = handleFileChange(setEditedObra)
+    const handleSelectChangeObra = handleSelectObraChange(setEditedObra)
 
     const handleSaveObra = () => {
         if (editedObra) {
@@ -375,20 +349,7 @@ export default function ObrasInfo() {
         }
     };
 
-    const tableRegisters = useMaterialReactTable({
-        columns,
-        data: registos.registers,
-        enableRowSelection: false,
-        initialState: {
-            pagination: { pageSize: 5, pageIndex: 0 },
-            showGlobalFilter: true,
-        },
-        muiPaginationProps: {
-            rowsPerPageOptions: [5, 10, 15],
-            variant: 'outlined',
-        },
-        paginationDisplayMode: 'pages',
-    });
+    const tableRegisters = table(columns, registos.registers);
 
     /*
      * Pending Registers
@@ -449,24 +410,7 @@ export default function ObrasInfo() {
             });
     };
 
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
-
-    const tablePendingRegisters = useMaterialReactTable({
-        columns,
-        data: pendingRegisters.registers,
-        enableRowSelection: false,
-        initialState: {
-            pagination: { pageSize: 5, pageIndex: 0 },
-            showGlobalFilter: true,
-        },
-        muiPaginationProps: {
-            rowsPerPageOptions: [5, 10, 15],
-            variant: 'outlined',
-        },
-        paginationDisplayMode: 'pages',
-    });
+    const tablePendingRegisters = table(columns, pendingRegisters.registers);
 
     /*
      * Registo Funcionario
@@ -501,20 +445,7 @@ export default function ObrasInfo() {
         })
     }
 
-    const tableRegistersFuncionario = useMaterialReactTable({
-        columns,
-        data: registosFuncionario.registers,
-        enableRowSelection: false,
-        initialState: {
-            pagination: { pageSize: 5, pageIndex: 0 },
-            showGlobalFilter: true,
-        },
-        muiPaginationProps: {
-            rowsPerPageOptions: [5, 10, 15],
-            variant: 'outlined',
-        },
-        paginationDisplayMode: 'pages',
-    });
+    const tableRegistersFuncionario = table(columns, registosFuncionario.registers);
 
     /*
      *  Funcionarios
@@ -649,7 +580,7 @@ export default function ObrasInfo() {
     if (!obra) {
         return <CircularProgress />;
     }
-    // @ts-ignore
+
     return (
         <Card  sx={{ minWidth: '133vh', minHeight: '85vh', height: 'auto', margin: 'auto', marginTop: '2rem' }}>
             <CardContent>
@@ -681,7 +612,7 @@ export default function ObrasInfo() {
                                 style={{ display: 'none' }}
                                 id="contained-button-file"
                                 type="file"
-                                onChange={handleFileChange}
+                                onChange={handeFileChangeObra}
                             />
                         )}
                         <Tabs
@@ -715,9 +646,9 @@ export default function ObrasInfo() {
                                 editedObra={editedObra}
                                 pendingRegisters={pendingRegisters}
                                 isEditing={isEditing}
-                                handleChange={handleChange}
-                                handleSelectChange={handleSelectChange}
-                                handleFileChange={handleFileChange}
+                                handleChange={handleChangeObra}
+                                handleSelectChange={handleSelectChangeObra}
+                                handleFileChange={handeFileChangeObra}
                                 handleClickPendingRegisters={handleGetPendingRegisters}
                                 handleNFC={handleNFC}
                                 handleClickEditObra={handleClickEditObra}
@@ -773,5 +704,5 @@ export default function ObrasInfo() {
                 </Grid>
             </CardContent>
         </Card>
-    );
+    )
 }

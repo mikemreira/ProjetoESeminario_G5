@@ -457,5 +457,26 @@ class RegistersRepository(
         }
     }
 
+    override fun deleteRegister(userId: Int, obraId: Int, registerId: Int): Boolean {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement(
+                    "delete from Registo " +
+                        "where id = ? and id_utilizador = ? and id_obra = ? "
+                )
+                pStatement.setInt(1, registerId)
+                pStatement.setInt(2, userId)
+                pStatement.setInt(3, obraId)
+                pStatement.executeUpdate()
+                true
+            } catch (e: Exception) {
+                it.rollback()
+                false
+            } finally {
+                it.commit()
+            }
+        }
+    }
 
 }

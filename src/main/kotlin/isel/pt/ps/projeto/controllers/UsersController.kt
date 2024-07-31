@@ -154,29 +154,6 @@ class UsersController(
         }
     }
 
-    @GetMapping("/{uid}/imagem")
-    fun getUserImage(
-        @RequestParam type: String,
-        @PathVariable uid: Int,
-        @RequestHeader("Authorization") token : String
-    ): ResponseEntity<*> {
-        requestTokenProcessor.processAuthorizationHeaderValue(token)?: return ResponseEntity.status(404).body(Problem.invalidToken)
-        val res = usersService.getImage(uid, type)
-        return when (res) {
-            is Success -> {
-                val foto = if (res.value != null) utils.byteArrayToBase64(res.value) else null
-                ResponseEntity.status(200)
-                    .body(ImageOutputModel(foto))
-            }
-
-            is Failure ->
-                when (res.value) {
-                    ImageError.InvalidQuery -> Problem.response(400, Problem.invalidQuery)
-                    ImageError.UserDoesntExist -> Problem.response(404, Problem.userNotFound)
-                }
-        }
-    }
-
     @PostMapping("/signup")
     fun signUp(
         @RequestBody input: UserSignUp,
