@@ -266,7 +266,7 @@ paths:
         "201":
           description: construction created
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: integer
         "400":
@@ -292,7 +292,7 @@ paths:
         "200":
           description: construction obtained successfully
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -326,7 +326,7 @@ paths:
         "201":
           description: construction edited
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -357,7 +357,7 @@ paths:
         "200":
           description: user list obtained successfully
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -393,7 +393,7 @@ paths:
         "200":
           description: user info
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -442,7 +442,7 @@ paths:
         "200":
           description: user info
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -515,7 +515,7 @@ paths:
         "200":
           description: registers obtained successfully
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -603,7 +603,7 @@ paths:
         "200":
           description: registers obtained successfully
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -643,7 +643,7 @@ paths:
         "200":
           description: registers obtained successfully
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -684,7 +684,7 @@ paths:
         "200":
           description: registers obtained successfully
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -713,7 +713,7 @@ paths:
         "200":
           description: registers obtained successfully
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -747,7 +747,7 @@ paths:
         "201":
           description: register accept or deny successefuly
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -756,6 +756,40 @@ paths:
           description: unauthorized user
         "404":
           description: could not find such construction with that id
+  /obras/{oid}/registos/{rid}:
+    delete:
+      tags:
+      - registos
+      - obras
+      summary: Removes a unfinished register
+      description: Removes unfinished register with usertoken
+      operationId: deleteRegister
+      parameters:
+      - name: oid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      - name: rid
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: successfull delete
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegisterInfoModel'
+        "400":
+          description: invalid register
   /registos/nfc:
     post:
       tags:
@@ -793,7 +827,7 @@ paths:
         "200":
           description: registers obtained successfully
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -867,7 +901,7 @@ paths:
         "200":
           description: records obtained successfully
           content:
-            aplication/json:
+            application/json:
               schema:
                 $ref: '#/components/schemas/UserRegistersAndObraOutputModel'
         "400":
@@ -887,7 +921,7 @@ paths:
         "200":
           description: records obtained successfully
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -914,7 +948,7 @@ paths:
         "201":
           description: exit time inserted successfully
           content:
-            aplication/json:
+            application/json:
               schema:
                 $ref: '#/components/schemas/RegisterInfoModel'
         "400":
@@ -968,7 +1002,7 @@ paths:
         "200":
           description: invites obtained successfully
           content:
-            aplication/json:
+            application/json:
               schema:
                 type: array
                 items:
