@@ -57,7 +57,7 @@ export default function Profile() {
                     setUser(body);
                     setEditedUser(body);
                     if (body.fotoHref) {
-                        fetch(`${body.fotoHref}?type=thumbnail`, {
+                        fetch(`${path}/${body.fotoHref}?type=thumbnail`, {
                             method: "GET",
                             headers: {
                                 "Content-type": "application/json",
@@ -127,7 +127,7 @@ export default function Profile() {
                     if (body) {
                         setUser(body)
                         if (body.fotoHref) {
-                            fetch(`${body.fotoHref}?type=thumbnail`, {
+                            fetch(`${path}/${body.fotoHref}?type=thumbnail`, {
                                 method: "GET",
                                 headers: {
                                     "Content-type": "application/json",

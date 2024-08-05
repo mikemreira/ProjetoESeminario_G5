@@ -37,7 +37,7 @@ class UsersController(
                         authUser.user.nome,
                         authUser.user.email,
                         authUser.user.morada,
-                        "${utils.path}/users/me/imagem"
+                        "/users/me/imagem"
                     )
                 )
     }
@@ -94,7 +94,7 @@ class UsersController(
                             res.value.nome,
                             res.value.email,
                             res.value.morada,
-                            "${utils.path}/users/me/imagem"
+                            "/users/me/imagem"
                         )
                     )
             is Failure ->
@@ -184,7 +184,7 @@ class UsersController(
         val res = usersService.signIn(input.email, input.password)
         return when (res) {
             is Success -> {
-                ResponseEntity.status(201).body(UserTokenCreateOutputModel(res.value.tokenValue, "${utils.path}/users/me/imagem?type=icon"))
+                ResponseEntity.status(201).body(UserTokenCreateOutputModel(res.value.tokenValue, "/users/me/imagem?type=icon"))
             }
 
             is Failure ->
