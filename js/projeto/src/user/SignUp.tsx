@@ -7,6 +7,8 @@ import logo from "../assets/logo-black-transparent.png";
 import signUpIn from "../assets/sign.png";
 import {path} from "../App";
 import {handleInputChange} from "../Utils";
+import Box from "@mui/material/Box";
+import {CircularProgress} from "@mui/material";
 
 export default function SignUp() {
   const [values, setValues] = useState({
@@ -23,7 +25,8 @@ export default function SignUp() {
 
   const [submitted, setSubmitted] = useState(false);
   const [valid, setValid] = useState(false);
-  const [error, setError] = useState("")
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
@@ -40,6 +43,7 @@ export default function SignUp() {
         },
         body: JSON.stringify(values)
     }).then(res => {
+        setLoading(true)
         setSubmitted(true)
         if (res.status == 201) {
             setValid(true)
@@ -49,6 +53,7 @@ export default function SignUp() {
         if (!valid){
             setError(body.error)
         }
+        setLoading(false)
     }).catch(error => {
         setError(error.message)
     })
@@ -130,6 +135,17 @@ export default function SignUp() {
                       </button>
                   )}
                   {submitted && !valid && <Alert severity="error" sx={{m: 1}}>{error}</Alert>}
+                  {loading && (
+                      <Box
+                          sx={{
+                              display: 'flex',
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                          }}
+                      >
+                          <CircularProgress />
+                      </Box>
+                  )}
               </form>
               <form className="info-pass-form">
                   <p>A password deve ter pelo menos:</p>

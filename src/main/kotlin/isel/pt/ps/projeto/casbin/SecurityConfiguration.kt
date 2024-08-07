@@ -29,6 +29,7 @@ class SecurityConfiguration {
             authorizeHttpRequests {
                 authorize("/users/signin", permitAll)
                 authorize("/users/signup", permitAll)
+                authorize("/users/signout", authenticated)
                 authorize("/users/me", authenticated)
                 authorize("/registos", authenticated)
                 authorize("/obras", authenticated)

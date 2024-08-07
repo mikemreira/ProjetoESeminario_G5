@@ -56,8 +56,7 @@ export default function LogIn() {
             setCookies("token", body.token, { path: '/' })
             setUser(body.token)
             localStorage.setItem("token", body.token)
-
-            fetch(body.hrefIcon, {
+            fetch(`${path}/${body.hrefIcon}`, {
                 method: "GET",
                 headers: {
                     'Content-type': 'application/json',
@@ -65,7 +64,6 @@ export default function LogIn() {
                 }
             }).then(res => res.json())
                 .then(fotoBody => {
-                    console.log(fotoBody)
                     setAvatar(fotoBody.foto)
                     localStorage.setItem("avatar", fotoBody.foto)
                     setLoading(false)
