@@ -11,11 +11,13 @@ import isel.pt.ps.projeto.services.InviteInfoError
 import isel.pt.ps.projeto.services.InviteService
 import isel.pt.ps.projeto.utils.Failure
 import isel.pt.ps.projeto.utils.Success
+import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping
+@Profile("!test")
 class InviteController(
     private val inviteService: InviteService,
     private val authorizationService: AuthorizationService,

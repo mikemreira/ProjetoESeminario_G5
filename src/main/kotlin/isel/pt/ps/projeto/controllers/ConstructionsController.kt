@@ -12,6 +12,7 @@ import isel.pt.ps.projeto.utils.Failure
 import isel.pt.ps.projeto.utils.Success
 import kotlinx.datetime.toLocalDate
 import kotlinx.datetime.toLocalDateTime
+import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/obras")
+@Profile("!test")
 class ConstructionsController(
     private val constructionService: ConstructionsService,
     private val requestTokenProcessor: RequestTokenProcessor,

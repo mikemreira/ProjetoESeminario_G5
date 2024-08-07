@@ -10,9 +10,11 @@ import org.casbin.jcasbin.model.Model
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
+@Profile("!test")
 class AuthorizationService(
     private val usersRepository: UsersRepository,
     private val constructionsRepository: ConstructionsRepository,
