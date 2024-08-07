@@ -61,7 +61,6 @@ export default function RegistoForm(props: RegistoFormProps) {
                     } else {
                         return null;
                     }
-
                 })
                 .then(body => {
                     if (body) {

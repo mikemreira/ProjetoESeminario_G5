@@ -20,6 +20,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import {Registo} from "../../registos/Registos";
 import RegistoExitForm from "../../registos/RegistoExitForm";
 import {path} from "../../App";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface ObraRegistosFormProps {
     obra: Obra;
@@ -80,6 +81,24 @@ export default function ObraRegistosForm({
             console.error("Error fetching registos: ", error)
         })
 
+    }
+
+    const handleClickDeleteRegister = (registo: Registo) => {
+        fetch(`${path}/obras/${registo.id_obra}/registos/${registo.id}`, {
+            method: "DELETE",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`
+            },
+        }).then((res) => {
+            if (res.ok) {
+                handleFilterSelect(selectedFilter, title)
+            } else {
+                console.error("Error deleting registo: ", res)
+            }
+        }).catch(error => {
+            console.error("Error deleting registo: ", error)
+        })
     }
 
     const handleClickExitOpenForm = (registo: Registo) => {
@@ -161,9 +180,14 @@ export default function ObraRegistosForm({
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell align="center" variant="body" key={cell.id}>
                                             {cell.column.id === 'endTime' && (row.original.status === 'unfinished' || row.original.status === "unfinished_nfc") ? (
-                                                <IconButton color="primary" title={"Finalizar"} onClick={() => handleClickExitOpenForm(row.original)}>
-                                                    <EditIcon />
-                                                </IconButton>
+                                                <>
+                                                    <IconButton color="primary" title={"Finalizar"} onClick={() => handleClickExitOpenForm(row.original)}>
+                                                        <EditIcon />
+                                                    </IconButton>
+                                                    <IconButton color="error" title={"Eliminar"} onClick={() => handleClickDeleteRegister(row.original)}>
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </>
                                             ) : (
                                                 <MRT_TableBodyCellValue
                                                     cell={cell}

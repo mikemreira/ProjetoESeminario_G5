@@ -32,6 +32,8 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import RegistoExitForm from "./RegistoExitForm";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import {table} from "../Utils";
 
 const columns = [
     { accessorKey: 'nome_obra', header: 'Nome da obra' },
@@ -124,20 +126,7 @@ export default function Registos () {
         navigate(`/obras/${oid}`)
     }
 
-    const table = useMaterialReactTable({
-        columns,
-        data: registos,
-        enableRowSelection: false,
-        initialState: {
-            pagination: { pageSize: 5, pageIndex: 0 },
-            showGlobalFilter: true,
-        },
-        muiPaginationProps: {
-            rowsPerPageOptions: [5, 10, 15],
-            variant: 'outlined',
-        },
-        paginationDisplayMode: 'pages',
-    });
+    const regTable = table(columns, registos)
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -163,12 +152,29 @@ export default function Registos () {
             if (res.ok) return res.json()
             else return null
         }).then((body) => {
-            console.log("incompletos: " + body)
             if (body) {
                 setRegistos(body.registers);
             }
         }).catch(error => {
             console.error("Error fetching registos: ", error)
+        })
+    }
+
+    const handleClickDeleteRegister = (registo: Registo) => {
+        fetch(`${path}/obras/${registo.id_obra}/registos/${registo.id}`, {
+            method: "DELETE",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`
+            },
+        }).then((res) => {
+            if (res.ok) {
+                fetchRegistos()
+            } else {
+                console.error("Error deleting registo: ", res)
+            }
+        }).catch(error => {
+            console.error("Error deleting registo: ", error)
         })
     }
 
@@ -211,7 +217,7 @@ export default function Registos () {
                     <IconButton onClick={handleMenuOpen} color="primary">
                         <FilterList  icon={<FilterListIcon/>} label={""} title={"Filtro"}/>
                     </IconButton>
-                    <MRT_GlobalFilterTextField table={table} />
+                    <MRT_GlobalFilterTextField table={regTable} />
                         <Menu
                             anchorEl={anchorEl}
                             open={isMenuOpen}
@@ -236,7 +242,7 @@ export default function Registos () {
             <TableContainer sx={{ backgroundColor: '#cccccc' }}>
                 <Table sx={{ tableLayout: 'fixed' }}>
                     <TableHead>
-                        {table.getHeaderGroups().map((headerGroup) => (
+                        {regTable.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
                                     <TableCell align="center" variant="head" key={header.id}>
@@ -254,14 +260,14 @@ export default function Registos () {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            table.getRowModel().rows.length == 0 ?
+                            regTable.getRowModel().rows.length == 0 ?
                                 <TableRow>
                                     <TableCell colSpan={4} align="center">
                                         Ainda não efetuou nenhum registo.
                                     </TableCell>
                                 </TableRow>
                                 :
-                            table.getRowModel().rows.map((row, rowIndex) => (
+                            regTable.getRowModel().rows.map((row, rowIndex) => (
                                 <TableRow key={row.id} selected={row.getIsSelected()}>
                                     {row.getVisibleCells().map((cell, _columnIndex) => (
                                         <TableCell align="center" variant="body" key={cell.id}>
@@ -271,21 +277,26 @@ export default function Registos () {
                                                 </Button>
                                             ) : cell.column.id === 'saida' ? (
                                                 (row.original.status === "unfinished" || row.original.status === "unfinished_nfc") ? (
-                                                    <IconButton color="primary" title={"Finalizar"} onClick={() => handleClickExitOpenForm(row.original)}>
-                                                        <EditIcon />
-                                                    </IconButton>
+                                                    <>
+                                                        <IconButton color="primary" title={"Finalizar"} onClick={() => handleClickExitOpenForm(row.original as Registo)}>
+                                                            <EditIcon />
+                                                        </IconButton>
+                                                        <IconButton color="error" title={"Eliminar"} onClick={() => handleClickDeleteRegister(row.original as Registo)}>
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </>
                                                 )
                                              : (
                                                 <MRT_TableBodyCellValue
                                                     cell={cell}
-                                                    table={table}
+                                                    table={regTable}
                                                     staticRowIndex={rowIndex}
                                                 />
                                                     )
                                             ) : (
                                                 <MRT_TableBodyCellValue
                                                 cell={cell}
-                                                table={table}
+                                                table={regTable}
                                                 staticRowIndex={rowIndex}
                                                  />
                                             )}
@@ -298,7 +309,7 @@ export default function Registos () {
                 </Table>
             </TableContainer>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-            <MRT_TablePagination table={table} />
+            <MRT_TablePagination table={regTable} />
             </Box>
             <RegistoForm open={openForm} onHandleClose={handleCloseForm} obra={undefined}/>
             <RegistoExitForm open={exitOpenForm} onHandleClose={handleExitCloseForm} registo={selectedRegisto}/>

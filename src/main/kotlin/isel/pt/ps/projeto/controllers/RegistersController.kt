@@ -3,6 +3,7 @@ package isel.pt.ps.projeto.controllers
 import isel.pt.ps.projeto.controllers.pipeline.RequestTokenProcessor
 import isel.pt.ps.projeto.models.Problem
 import isel.pt.ps.projeto.models.registers.*
+import isel.pt.ps.projeto.services.RegisterDeleteError
 import isel.pt.ps.projeto.services.RegistersInfoError
 import isel.pt.ps.projeto.services.RegistersService
 import isel.pt.ps.projeto.services.RegistersUserInfoError
@@ -153,11 +154,11 @@ class RegistersController(
                     },
                     res.value.constructionStatus
                     ,
-                    "${utils.path}/obras/$oid/registos/me"
+                    "/obras/$oid/registos/me"
                     ,
-                    "${utils.path}/obras/$oid/registos/pendente"
+                    "/obras/$oid/registos/pendente"
                     ,
-                    "${utils.path}/obras/$oid/registos"
+                    "/obras/$oid/registos"
                 )
             )
             is Failure -> when (res.value) {
@@ -384,6 +385,26 @@ class RegistersController(
                     RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                     RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                     RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                }
+        }
+    }
+
+    @DeleteMapping("/obras/{oid}/registos/{rid}")
+    fun deleteRegister(
+        @PathVariable oid: Int,
+        @PathVariable rid: Int,
+        @RequestHeader("Authorization") userToken: String
+    ): ResponseEntity<*> {
+        val authUser
+            = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        val res = registersService.deleteRegister(authUser.user.id, oid, rid)
+        return when (res) {
+            is Success ->
+                ResponseEntity.status(200)
+                    .body(RegisterInfoModel("Successful"))
+            is Failure ->
+                when (res.value) {
+                    RegisterDeleteError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 }
         }
     }

@@ -18,6 +18,7 @@ import TextField from "@mui/material/TextField";
 import {useSetAvatar} from "../context/Authn";
 import {useNavigate} from "react-router-dom";
 import {path} from "../App";
+import {handleChange, handleFileChange} from "../Utils";
 
 export interface UserModel {
     id: number
@@ -34,7 +35,7 @@ export default function Profile() {
     const [user, setUser] = useState<UserModel>()
     const [isEditing, setIsEditing] = useState(false)
     const [editedUser, setEditedUser] = useState<UserModel | null>(null)
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         fetch(`${path}/users/me`, {
@@ -46,7 +47,6 @@ export default function Profile() {
         })
             .then((res) => {
                 if (res.ok) {
-                    setLoading(true)
                     return res.json()
                 } else {
                     return null
@@ -57,7 +57,7 @@ export default function Profile() {
                     setUser(body);
                     setEditedUser(body);
                     if (body.fotoHref) {
-                        fetch(`${body.fotoHref}?type=thumbnail`, {
+                        fetch(`${path}/${body.fotoHref}?type=thumbnail`, {
                             method: "GET",
                             headers: {
                                 "Content-type": "application/json",
@@ -80,51 +80,29 @@ export default function Profile() {
                                 )
                                 setAvatar(fotoBody.foto)
                                 localStorage.setItem("avatar", fotoBody.foto)
-                                setLoading(false)
                             })
                             .catch((error) => {
                                 console.error("Error fetching thumbnail image:", error)
                             })
+                            .finally(() => {
+                                setLoading(false);
+                            });
+                    } else {
+                        setLoading(false);
                     }
+                } else {
+                setLoading(false)
                 }
             })
             .catch((error) => {
                 console.error("Error fetching profile:", error)
+                setLoading(false)
             })
     }, [cookies.token])
 
     const handleEditProfile = () => {
         setIsEditing(true)
     }
-/*
-    const handleSaveProfile = () => {
-        if (editedUser) {
-            fetch(`${path}/users/me`, {
-                method: "PUT",
-                headers: {
-                    "Content-type": "application/json",
-                    "Authorization": `Bearer ${cookies.token}`,
-                },
-                body: JSON.stringify(editedUser),
-            })
-                .then((res) => {
-                    if (res.ok) {
-                        setUser(editedUser)
-                        if (editedUser.foto != null) {
-                            setAvatar(editedUser.foto)
-                            sessionStorage.setItem('avatar', editedUser.foto)
-                        }
-                        setIsEditing(false)
-                    } else {
-                        console.error("Failed to update profile")
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error updating profile:", error)
-                })
-        }
-    }
- */
 
     const handleSaveProfile = () => {
         if (editedUser) {
@@ -149,7 +127,7 @@ export default function Profile() {
                     if (body) {
                         setUser(body)
                         if (body.fotoHref) {
-                            fetch(`${body.fotoHref}?type=thumbnail`, {
+                            fetch(`${path}/${body.fotoHref}?type=thumbnail`, {
                                 method: "GET",
                                 headers: {
                                     "Content-type": "application/json",
@@ -164,17 +142,22 @@ export default function Profile() {
                                     }) as UserModel)
                                     setAvatar(fotoBody.foto)
                                     localStorage.setItem("avatar", fotoBody.foto)
-                                    setLoading(false)
                                 })
                                 .catch((error) => {
                                     console.error("Error fetching thumbnail image:", error)
-                                });
+                                })
+                                .finally(() => {
+                                    setLoading(false)
+                                })
+                        } else {
+                            setLoading(false)
                         }
                         setIsEditing(false)
                     }
                 })
                 .catch((error) => {
                     console.error("Error updating profile:", error)
+                    setLoading(false)
                 })
         }
     }
@@ -185,27 +168,8 @@ export default function Profile() {
         setIsEditing(false)
     }
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target
-        setEditedUser((prevUser) => ({
-            ...prevUser!,
-            [name]: value,
-        }))
-    }
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (file) {
-            const reader = new FileReader()
-            reader.onloadend = () => {
-                setEditedUser((prevUser) => ({
-                    ...prevUser!,
-                    foto: reader.result as string | null,
-                }))
-            }
-            reader.readAsDataURL(file)
-        }
-    }
+    const handleChangeProfile = handleChange(setEditedUser)
+    const handleFileChangeProfile = handleFileChange(setEditedUser)
 
     const navigate = useNavigate()
 
@@ -234,7 +198,7 @@ export default function Profile() {
                             Perfil
                         </Typography>
                         <Grid container spacing={2}>
-                            {!loading ? (
+                            {loading ? (
                                 <Box
                                     sx={{
                                         display: 'flex',
@@ -265,7 +229,7 @@ export default function Profile() {
                                                 style={{ display: 'none' }}
                                                 id="contained-button-file"
                                                 type="file"
-                                                onChange={handleFileChange}
+                                                onChange={handleFileChangeProfile}
                                             />
                                         )}
                                     </Grid>
@@ -280,7 +244,7 @@ export default function Profile() {
                                                                 fullWidth
                                                                 name="nome"
                                                                 value={editedUser?.nome || ""}
-                                                                onChange={handleChange}
+                                                                onChange={handleChangeProfile}
                                                             />
                                                         ) : (
                                                             user.nome
@@ -307,7 +271,7 @@ export default function Profile() {
                                                                 fullWidth
                                                                 name="morada"
                                                                 value={editedUser?.morada || ""}
-                                                                onChange={handleChange}
+                                                                onChange={handleChangeProfile}
                                                             />
                                                         ) : (
                                                             user.morada

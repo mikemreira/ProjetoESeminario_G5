@@ -28,11 +28,16 @@ sealed class RegistersUserInfoError {
     object InvalidRegister : RegistersUserInfoError()
 }
 
+sealed class RegisterDeleteError {
+    object InvalidRegister : RegisterDeleteError()
+}
+
 typealias RegistersInfoResult = Either<RegistersUserInfoError, List<RegisterOutputModel>>
 typealias ListOfUsersRegistersInfoResult = Either<RegistersInfoError, List<RegisterAndUser>>
 typealias ListOfUsersRegistersAndConstructionStatusInfoResult = Either<RegistersInfoError, ConstructionStatusAndUserRegisters>
 typealias EntryOrExitRegisterResult = Either<RegistersInfoError, Boolean>
 typealias AcceptOrDenyRegisterResult = Either<RegistersInfoError, Boolean>
+typealias DeleteRegisterResult = Either<RegisterDeleteError, Boolean>
 
 @Component
 class RegistersService(
@@ -201,5 +206,10 @@ class RegistersService(
         return success(res)
     }
 
+    fun deleteRegister(userId: Int, obraId: Int, registerId: Int): DeleteRegisterResult {
+        val res = registersRepository.deleteRegister(userId, obraId, registerId)
+        if (!res) return failure(RegisterDeleteError.InvalidRegister)
+        return success(true)
+    }
 
 }

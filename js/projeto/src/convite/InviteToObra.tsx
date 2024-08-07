@@ -8,6 +8,7 @@ import Alert from '@mui/material/Alert';
 import {CircularProgress, FormControl, InputLabel, MenuItem, Select, Snackbar, Stack, Typography} from "@mui/material";
 import {Navigate, useNavigate, useParams} from "react-router-dom"
 import {path} from "../App";
+import {handleInputChange, handleRoleChange, handleSelectChange} from "../Utils";
 
 interface InviteValues {
     email: string
@@ -31,7 +32,6 @@ export default function InviteToObra() {
         function: "",
         role: ""
     });
-
     const [submitted, setSubmitted] = useState(false);
     const [valid, setValid] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
@@ -39,31 +39,15 @@ export default function InviteToObra() {
     const { oid } = useParams<{ oid: string }>();
     const [success, setSuccess] = useState(false);
     const navigate = useNavigate()
+    const [loading, setLoading] = useState(false);
 
-    const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = event.target
-        setValues((values) => ({
-            ...values,
-            [name]: value
-        }))
-    }
-
-    const handleFunctionChange = (event: { target: { value: string; }; }) => {
-        setValues((values) => ({
-            ...values,
-            function: event.target.value as string
-        }))
-    }
-
-    const handleRoleChange = (event: { target: { value: string; }; }) => {
-        setValues((values) => ({
-            ...values,
-            role: event.target.value as string
-        }))
-    }
+    const handleInputChangeInvite = handleInputChange(setValues);
+    const handleFunctionChangeInvite = handleSelectChange(setValues);
+    const handleRoleChangeInvite = handleRoleChange(setValues);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
+        setLoading(true);
         fetch(`${path}/obras/${oid}/convite`, {
             method: "POST",
             headers: {
@@ -76,20 +60,19 @@ export default function InviteToObra() {
             if (res.ok) {
                 setValid(true);
                 setSuccess(true);
-                navigate(-1)
+                return res.json();
             } else {
                 setValid(false);
+                return res.json().then(body => { throw new Error(body.error) });
             }
-            return res.json();
-        }).then(body => {
-            if (!valid) {
-                setError(body.error);
-                console.log(body.error);
-            } else {
-                setRedirect(<Navigate to="/obras" replace={true} />)
+        }).then(() => {
+            setLoading(false);
+            if (valid) {
+                setRedirect(<Navigate to="/obras" replace={true} />);
             }
         }).catch(error => {
             setError(error.message);
+            setLoading(false);
         });
     };
 
@@ -130,7 +113,7 @@ export default function InviteToObra() {
                     id="email"
                     label="Email"
                     value={values.email}
-                    onChange={handleInputChange}
+                    onChange={handleInputChangeInvite}
                     name="email"
                 />
                 <FormControl sx={{ m: 1, width: '25ch' }}>
@@ -139,7 +122,7 @@ export default function InviteToObra() {
                         labelId="function-label"
                         id="function"
                         value={values.function}
-                        onChange={handleFunctionChange}
+                        onChange={handleFunctionChangeInvite}
                         label="Função"
                         name="function"
                     >
@@ -156,7 +139,7 @@ export default function InviteToObra() {
                         labelId="role-label"
                         id="role"
                         value={values.role}
-                        onChange={handleRoleChange}
+                        onChange={handleRoleChangeInvite}
                         label="Papel"
                         name="role"
                     >
@@ -167,23 +150,25 @@ export default function InviteToObra() {
                         ))}
                     </Select>
                 </FormControl>
-                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                    <Button variant="outlined" color="primary"  sx={{
-                        m: 1,
-                        borderColor: 'red',
-                        color: 'red',
-                        '&:hover': {
-                            borderColor: 'darkred',
-                            color: 'darkred',
-                        }
-                    }}  onClick={handleCancel}>
-                        Cancelar
-                    </Button>
-                    <Button type="submit" variant="contained" color="primary" sx={{ m: 1 }}>
-                        Convidar
-                    </Button>
-                </Box>
-                {success && (
+                {!submitted && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                        <Button variant="outlined" color="primary"  sx={{
+                            m: 1,
+                            borderColor: 'red',
+                            color: 'red',
+                            '&:hover': {
+                                borderColor: 'darkred',
+                                color: 'darkred',
+                            }
+                        }}  onClick={handleCancel}>
+                            Cancelar
+                        </Button>
+                        <Button type="submit" variant="contained" color="primary" sx={{ m: 1 }}>
+                            Convidar
+                        </Button>
+                    </Box>
+                )}
+                {loading && (
                     <Box
                         sx={{
                             display: 'flex',
@@ -195,8 +180,13 @@ export default function InviteToObra() {
                     </Box>
                 )}
                 {submitted && !valid && <Alert severity="error" sx={{ m: 1 }}>{error}</Alert>}
-                {submitted && valid && <Alert severity="success" sx={{ m: 1 }}>Membro convidado com sucesso!</Alert>}
+                {!loading && submitted && valid && (
+                    <Box>
+                        <Alert severity="success" sx={{ m: 1 }}>Membro convidado com sucesso!</Alert>
+                        <Button variant="contained" color="primary" onClick={() => navigate(-1)}>Voltar</Button>
+                    </Box>
+                )}
             </Box>
         </div>
-    );
+    )
 }

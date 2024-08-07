@@ -72,9 +72,7 @@ export default function RegistoExitForm(props: RegistoFormProps) {
                                 shrink: true,
                             }}
                         />
-
                     </Box>
-
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => props.onHandleClose(false)}>Cancelar</Button>

@@ -20,4 +20,5 @@ interface RegistersRepository {
     fun acceptOrDeny(userId: Int, oid: Int, registerId: Int, response: String) : Boolean
     fun getLatestEntryRegisterId(userId: Int, oid: Int): Register?
     fun getIncompleteRegisters(userId: Int): List<RegisterOutputModel>
+    fun deleteRegister(userId: Int, obraId: Int, registerId: Int): Boolean
 }

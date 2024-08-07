@@ -7,10 +7,11 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
-import {FormControl, InputLabel, MenuItem, Select, Snackbar, Stack} from "@mui/material";
+import {CircularProgress, FormControl, InputLabel, MenuItem, Select, Snackbar, Stack} from "@mui/material";
 import {Navigate, useNavigate} from "react-router-dom"
 import Typography from "@mui/material/Typography";
 import {path} from "../App";
+import {handleFileChange, handleInputChange, handleSelectChange, VisuallyHiddenInput} from "../Utils";
 
 interface ObraValues {
     name: string
@@ -28,12 +29,13 @@ const roles = [
 ];
 
 export default function AddObra() {
-    const [cookies] = useCookies(["token"]);
+    const [cookies] = useCookies(["token"] || undefined);
     const [submitted, setSubmitted] = useState(false);
     const [valid, setValid] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
     const [redirect, setRedirect] = useState<JSX.Element | null>(null);
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
     const [values, setValues] = useState<ObraValues>({
         name: "",
         location: "",
@@ -45,50 +47,13 @@ export default function AddObra() {
         function: ""
     });
 
-    const VisuallyHiddenInput = styled('input')({
-        clip: 'rect(0 0 0 0)',
-        clipPath: 'inset(50%)',
-        height: 1,
-        overflow: 'hidden',
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        whiteSpace: 'nowrap',
-        width: 1,
-    });
-
-    const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = event.target;
-        setValues((values) => ({
-            ...values,
-            [name]: value
-        }));
-    };
-
-    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setValues((values) => ({
-                    ...values,
-                    foto: reader.result as string
-                }));
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const handleSelectChange = (event: { target: { value: string; }; }) => {
-        setValues((values) => ({
-            ...values,
-            function: event.target.value as string
-        }));
-    };
+    const handleInputChangeAddObra = handleInputChange(setValues);
+    const handleFileChangeAddObra = handleFileChange(setValues);
+    const handleSelectChangeAddObra = handleSelectChange(setValues);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-
+        setLoading(true);
         fetch(`${path}/obras`, {
             method: "POST",
             headers: {
@@ -103,11 +68,13 @@ export default function AddObra() {
                 setRedirect(<Navigate to="/obras" state={{ success: true }} replace={true} />);
             } else {
                 setValid(false);
+                setLoading(false);
             }
             return res.json();
         }).then(body => {
             if (!valid) {
                 setError(body.error);
+                setLoading(false);
             } else {
                 setRedirect(<Navigate to="/obras" replace={true} />)
             }
@@ -153,7 +120,7 @@ export default function AddObra() {
                 id="name"
                 label="Nome"
                 value={values.name}
-                onChange={handleInputChange}
+                onChange={handleInputChangeAddObra}
                 name="name"
             />
             <TextField
@@ -161,7 +128,7 @@ export default function AddObra() {
                 id="location"
                 label="Localização"
                 value={values.location}
-                onChange={handleInputChange}
+                onChange={handleInputChangeAddObra}
                 name="location"
             />
             <TextField
@@ -169,7 +136,7 @@ export default function AddObra() {
                 id="description"
                 label="Descrição"
                 value={values.description}
-                onChange={handleInputChange}
+                onChange={handleInputChangeAddObra}
                 name="description"
             />
             <TextField
@@ -181,7 +148,7 @@ export default function AddObra() {
                     shrink: true,
                 }}
                 value={values.startDate}
-                onChange={handleInputChange}
+                onChange={handleInputChangeAddObra}
                 name="startDate"
             />
             <TextField
@@ -192,7 +159,7 @@ export default function AddObra() {
                     shrink: true,
                 }}
                 value={values.endDate}
-                onChange={handleInputChange}
+                onChange={handleInputChangeAddObra}
                 name="endDate"
             />
             <FormControl sx={{ m: 1, width: '25ch' }}>
@@ -201,7 +168,7 @@ export default function AddObra() {
                     labelId="function-label"
                     id="function"
                     value={values.function}
-                    onChange={handleSelectChange}
+                    onChange={handleSelectChangeAddObra}
                     label="Função"
                     name="function"
                 >
@@ -222,7 +189,7 @@ export default function AddObra() {
                 Adicionar Foto
                 <VisuallyHiddenInput
                     type="file"
-                    onChange={handleFileChange}
+                    onChange={handleFileChangeAddObra}
                 />
             </Button>
             <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
@@ -241,6 +208,17 @@ export default function AddObra() {
                     Adicionar
                 </Button>
             </Box>
+            {loading && (
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
+            )}
             {submitted && !valid && <Alert severity="error" sx={{ m: 1 }}>{error}</Alert>}
         </Box>
         </div>
