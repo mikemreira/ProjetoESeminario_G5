@@ -25,6 +25,8 @@ import ObraFuncionarioInfoForm from "./Forms/ObraFuncionarioInfoForm";
 import ObraNFCForm from "./Forms/ObraNFCForm";
 import {path} from "../App";
 import {handleChange, handleFileChange, handleSelectObraChange, table} from "../Utils";
+// @ts-ignore
+import emptyFoto from "../assets/noImage.png";
 
 export interface DateObject {
     year: number;
@@ -596,7 +598,7 @@ export default function ObrasInfo() {
                         </Typography>
                         <Avatar
                             alt={obra.name}
-                            src={obra.foto || "https://t-obra.com/wp-content/uploads/2019/09/graca16.jpg"}
+                            src={obra.foto || emptyFoto}
                             variant="rounded"
                             sx={{
                                 width: "40vh",

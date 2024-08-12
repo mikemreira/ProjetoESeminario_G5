@@ -74,6 +74,7 @@ export default function ObraFuncionariosForm({
                 }}
             >
                 <Typography variant="h4" color="black">Membros</Typography>
+                <Typography variant="h6" color="black">Total: {users.users.length}</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <IconButton
                         onClick={handleClickAddFuncionario}
@@ -97,7 +98,7 @@ export default function ObraFuncionariosForm({
                 <Table sx={{ tableLayout: 'fixed' }}>
                     <TableHead>
                         <TableRow>
-                            <TableCell align="center"></TableCell>
+                            <TableCell align="left">Total: {users.users.length}</TableCell>
                             <TableCell align="left">Nome</TableCell>
                             <TableCell align="left">Função</TableCell>
                             <TableCell align="center">Registos</TableCell>

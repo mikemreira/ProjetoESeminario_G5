@@ -14,6 +14,8 @@ import InfoIcon from "@mui/icons-material/Info";
 import {useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import {path} from "../App";
+// @ts-ignore
+import emptyFoto from "../assets/noImage.png";
 
 interface DateObject {
     year: number;
@@ -149,7 +151,7 @@ export default function Obras() {
                                         <TableCell align="center">
                                             <Avatar
                                                 alt={obra.name}
-                                                src={obra.foto || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"}
+                                                src={obra.foto || emptyFoto}
                                                 variant="rounded"
                                                 sx={{ width: "40%", height: "40%" }}
                                             />
