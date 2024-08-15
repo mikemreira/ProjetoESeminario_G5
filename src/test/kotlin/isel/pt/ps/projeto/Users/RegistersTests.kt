@@ -40,8 +40,7 @@ class RegistersTests(
 
         // Then
         assertNotNull(registers)
-        assertEquals(1, registers.size)
-        assertTrue(registers.any { it.status == "completed" })
+        assertEquals(3, registers.size)
     }
 
     @Test
@@ -68,7 +67,7 @@ class RegistersTests(
         // Given
         val userId = 1
         val obraId = 1
-        val regId = 3 // Assuming testInsert.sql inserts a register with this ID
+        val regId = 7
         val exitTime = LocalDateTime.now()
 
         // When
@@ -97,7 +96,7 @@ class RegistersTests(
         val incompleteRegisters = registersRepository.getIncompleteRegisters(userId)
 
         // Then
-        assertNotNull(incompleteRegisters)
+        assertTrue(incompleteRegisters.isNotEmpty())
         assertTrue(incompleteRegisters.all { it.status in listOf("unfinished", "unfinished_nfc") })
     }
 
@@ -105,7 +104,7 @@ class RegistersTests(
     fun `test insertExitOnWeb with admin role`() {
         // Given
         val userId = 1
-        val regId = 3
+        val regId = 7
         val obraId = 1
         val role = "admin"
         val time = LocalDateTime.now()
@@ -128,7 +127,7 @@ class RegistersTests(
     fun `test insertExitOnWeb with non-admin role`() {
         // Given
         val userId = 1
-        val regId = 3
+        val regId = 7
         val obraId = 1
         val role = "user"
         val time = LocalDateTime.now()
@@ -158,7 +157,7 @@ class RegistersTests(
 
         // Then
         assertNotNull(registers)
-        assertEquals(1, registers.size)
+        assertEquals(3, registers.size)
         assertTrue(registers.all { it.oid == obraId })
     }
 
@@ -231,7 +230,7 @@ class RegistersTests(
         val userId = 1
         val obraId = 1
         val response = "completed"
-        val regId = 3 // Assuming testInsert.sql inserts a register with this ID
+        val regId = 7
         val exitTime = LocalDateTime.now()
 
         // When

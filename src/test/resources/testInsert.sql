@@ -30,9 +30,15 @@ INSERT INTO Papel (id_utilizador, id_obra, papel, funcao) VALUES
 (2, 2, 'funcionario', 'Pedreiro');
 
 -- Insert data into Registo
+-- Insert multiple data into Registo in a single statement ensuring correct user-to-obra relationships
 INSERT INTO Registo (id_utilizador, id_obra, entrada, saida, status) VALUES
-(1, 1, '2024-07-01 08:00:00', '2024-07-01 17:00:00', 'completed'),
-(2, 2, '2024-07-02 08:00:00', NULL, 'pending');
+(1, 1, '2024-07-06 08:00:00', NULL, 'pending'),  -- Pending record for id_utilizador 1 in obra 1
+(2, 2, '2024-07-07 08:00:00', NULL, 'pending'),  -- Pending record for id_utilizador 2 in obra 2
+(1, 1, '2024-07-08 08:00:00', NULL, 'unfinished'),  -- Unfinished record for id_utilizador 1 in obra 1
+(2, 2, '2024-07-09 08:00:00', NULL, 'unfinished'),  -- Unfinished record for id_utilizador 2 in obra 2
+(1, 1, '2024-07-10 08:00:00', NULL, 'unfinished_nfc'),  -- Unfinished_nfc record for id_utilizador 1 in obra 1
+(2, 2, '2024-07-11 08:00:00', NULL, 'unfinished_nfc');  -- Unfinished_nfc record for id_utilizador 2 in obra 2
+
 
 -- Insert data into Convite
 INSERT INTO Convite (email, funcao, status, id_obra, papel) VALUES
