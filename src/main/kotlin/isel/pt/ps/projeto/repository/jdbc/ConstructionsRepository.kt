@@ -53,8 +53,8 @@ class ConstructionsRepository(
                     Construction(
                         result.getInt("id"),
                         result.getString("nome"),
-                        result.getString("localização"),
-                        result.getString("descrição"),
+                        result.getString("localizacao"),
+                        result.getString("descricao"),
                         result.getDate("data_inicio").toString().toLocalDate(),
                         if (dateFim == null) dateFim else dateFim.toString().toLocalDate(),
                         result.getString("status"),
@@ -76,7 +76,7 @@ class ConstructionsRepository(
             return try {
                 val pStatement =
                     it.prepareStatement(
-                        "select id, nome, localização, descrição, data_inicio, data_fim, status, foto from obra \n" +
+                        "select id, nome, localizacao, descricao, data_inicio, data_fim, status, foto from obra \n" +
                             "where id_nfc = ?",
                     )
                 pStatement.setString(1, nfcId)
@@ -88,8 +88,8 @@ class ConstructionsRepository(
                     Construction(
                         result.getInt("id"),
                         result.getString("nome"),
-                        result.getString("localização"),
-                        result.getString("descrição"),
+                        result.getString("localizacao"),
+                        result.getString("descricao"),
                         result.getDate("data_inicio").toString().toLocalDate(),
                         if (dateFim == null) null else dateFim.toString().toLocalDate(),
                         result.getString("status"),
@@ -182,7 +182,7 @@ class ConstructionsRepository(
             return try {
                 val pStatement =
                     it.prepareStatement(
-                        "select o.id, o.nome, o.localização, o.descrição, o.data_inicio, o.data_fim, o.status, o.foto from utilizador u\n" +
+                        "select o.id, o.nome, o.localizacao, o.descricao, o.data_inicio, o.data_fim, o.status, o.foto from utilizador u\n" +
                             "inner join papel p on p.id_utilizador = u.id\n" +
                             "inner join obra o on o.id = p.id_obra\n" +
                             "where 1=1 \n" +
@@ -199,8 +199,8 @@ class ConstructionsRepository(
                         Construction(
                             result.getInt("id"),
                             result.getString("nome"),
-                            result.getString("localização"),
-                            result.getString("descrição"),
+                            result.getString("localizacao"),
+                            result.getString("descricao"),
                             result.getDate("data_inicio").toString().toLocalDate(),
                             if (dataF != null) dataF.toString().toLocalDate() else null,
                             result.getString("status"),
@@ -235,8 +235,8 @@ class ConstructionsRepository(
                 println("foto: $foto")
                 val generatedColumns = arrayOf("id")
                 val insertStatement = it.prepareStatement(
-                    "INSERT INTO Obra (nome, localização, descrição, data_inicio, data_fim, foto)\n" +
-                    "VALUES (?,?,?,?,?,?) ", generatedColumns
+                    "INSERT INTO Obra (nome, localizacao, descricao, data_inicio, data_fim, foto)\n" +
+                        "VALUES (?,?,?,?,?,?) ", generatedColumns
                 )
                 insertStatement.setString(1,name)
                 insertStatement.setString(2,location)
@@ -250,8 +250,8 @@ class ConstructionsRepository(
                         val oid = generatedKeys.getInt(1)
                         val insertStatementRole = it.prepareStatement(
                             "INSERT INTO Papel (id_utilizador, id_obra, papel, funcao)\n" +
-                            "VALUES\n" +
-                            " (?, ?, 'admin',?)")
+                                "VALUES\n" +
+                                " (?, ?, 'admin',?)")
                         insertStatementRole.setInt(1, userId)
                         insertStatementRole.setInt(2, oid)
                         insertStatementRole.setString(3, function)
@@ -270,6 +270,8 @@ class ConstructionsRepository(
             }
         }
     }
+
+    //---
 
     override fun getUserRoleFromConstruction(id: Int, oid: Int): Role? {
         initializeConnection().use {
@@ -337,14 +339,14 @@ class ConstructionsRepository(
             it.autoCommit = false
             return try {
                 val query = """
-                    SELECT EXISTS (
-                        SELECT *
-                        FROM utilizador u
-                        INNER JOIN papel p ON p.id_utilizador = u.id
-                        INNER JOIN obra o ON o.id = p.id_obra
-                        WHERE u.email = ? AND o.id = ?
-                    ) as resp
-                """
+                SELECT EXISTS (
+                    SELECT *
+                    FROM utilizador u
+                    INNER JOIN papel p ON p.id_utilizador = u.id
+                    INNER JOIN obra o ON o.id = p.id_obra
+                    WHERE u.email = ? AND o.id = ?
+                ) as resp
+            """
                 val pstmt = it.prepareStatement(query)
                 pstmt.setString(1, email)
                 pstmt.setInt(2, oid)
@@ -367,7 +369,7 @@ class ConstructionsRepository(
                 val fotoBytes = if (inputModel.foto != null) utils.base64ToByteArray(inputModel.foto) else null
                 val pStatement = it.prepareStatement(
                     "UPDATE Obra\n" +
-                        "SET nome = ?, localização = ?, descrição = ?, data_inicio = ?, data_fim = ?, foto = ?, status = ? \n" +
+                        "SET nome = ?, localizacao = ?, descricao = ?, data_inicio = ?, data_fim = ?, foto = ?, status = ? \n" +
                         "WHERE id = ?"
                 )
                 pStatement.setString(1, inputModel.name)
@@ -400,8 +402,8 @@ class ConstructionsRepository(
                 Construction(
                     result.getInt("id"),
                     result.getString("nome"),
-                    result.getString("localização"),
-                    result.getString("descrição"),
+                    result.getString("localizacao"),
+                    result.getString("descricao"),
                     result.getDate("data_inicio").toString().toLocalDate(),
                     if (dataF != null) dataF.toString().toLocalDate() else null,
                     result.getString("status"),
@@ -412,7 +414,6 @@ class ConstructionsRepository(
                 throw e
             } finally {
                 it.commit()
-
             }
         }
     }
@@ -423,7 +424,7 @@ class ConstructionsRepository(
             return try {
                 val papelStatement = it.prepareStatement(
                     "delete from papel\n" +
-                    "where id_obra = ? and id_utilizador = ?\n"
+                        "where id_obra = ? and id_utilizador = ?\n"
                 )
                 papelStatement.setInt(1, oid)
                 papelStatement.setInt(2, uid)
@@ -441,7 +442,8 @@ class ConstructionsRepository(
             } finally {
                 it.commit()
             }
-        }    }
+        }
+    }
 
     override fun getNfc(oid: Int): String? {
         initializeConnection().use {
@@ -488,6 +490,7 @@ class ConstructionsRepository(
         }
     }
 
+    // --
     override fun inviteToConstruction(oid: Int, email: String): Boolean {
         initializeConnection().use {
             it.autoCommit = false

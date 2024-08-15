@@ -30,9 +30,11 @@ class RegistersRepository(
             it.autoCommit = false
             return try {
                 val pStatement2 = it.prepareStatement(
-                    "select R.id, R.id_utilizador, R.id_obra, R.entrada, R.saida, R.status, O.nome as nome_obra from registo as R\n"
-                    + "join obra as O on R.id_obra = O.id\n"
-                    + "where id_utilizador = ?")
+                    "select R.id, R.id_utilizador, R.id_obra, R.entrada, R.saida, R.status, O.nome as nome_obra from registo as R\n" +
+                        "join obra as O on R.id_obra = O.id\n" +
+                        "where id_utilizador = ?\n" +
+                        "order by R.entrada desc"
+                )
                 pStatement2.setInt(1, userId)
                 val res2 = pStatement2.executeQuery()
                 val list = mutableListOf<RegisterOutputModel>()

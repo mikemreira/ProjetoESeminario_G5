@@ -24,7 +24,7 @@ class InviteRepository(
         dataSource.password = config.password
         return dataSource.connection
     }
-
+/*
     override fun getInvitedToConstruction(oid: Int): List<SimpleUser> {
         initializeConnection().use {
             it.autoCommit = false
@@ -58,6 +58,8 @@ class InviteRepository(
             }
         }
     }
+
+ */
 
     override fun inviteToConstruction(oid: Int, email: String, function: String, role: String): Boolean {
         initializeConnection().use {
@@ -103,8 +105,8 @@ class InviteRepository(
                             Construction(
                                 result.getInt("id"),
                                 result.getString("nome"),
-                                result.getString("localização"),
-                                result.getString("descrição"),
+                                result.getString("localizacao"),
+                                result.getString("descricao"),
                                 result.getString("data_inicio").toLocalDate(),
                                 if(dt_fim != null) result.getString("data_fim").toLocalDate() else null,
                                 result.getString("status"),
