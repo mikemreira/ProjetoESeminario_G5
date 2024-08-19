@@ -9,16 +9,68 @@ import {
 import IconButton from "@mui/material/IconButton";
 import {Delete, Edit} from "@mui/icons-material";
 import * as React from "react";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import {Registo} from "../../registos/Registos";
+import {path} from "../../App";
+import {useCookies} from "react-cookie";
+import RegistoForm from "../../registos/RegistoForm";
+import RegistoExitForm from "../../registos/RegistoExitForm";
+import {useState} from "react";
+import {Obra} from "../ObrasInfo";
 
 interface ObraRegistosOfUserFormProps {
+    obra: Obra;
     table: any;
     username: string;
+    handleGetUserRegisters: (uid: number) => void;
+    handleCloseForm: (reload: boolean) => void;
+    openForm: boolean;
 }
 
 export default function ObraRegistosOfUserForm({
+    obra,
     table,
-    username
+    username,
+    handleGetUserRegisters,
+    handleCloseForm,
+    openForm
 }: ObraRegistosOfUserFormProps) {
+    const [cookies] = useCookies(["token"]);
+    const [exitOpenForm, setExitOpenForm] = useState(false);
+    const [selectedRegisto, setSelectedRegisto] = useState<Registo | null>(null);
+
+    const handleClickDeleteRegister = (registo: Registo) => {
+        console.log(registo)
+        fetch(`${path}/obras/${registo.oid}/registos/${registo.id}`, {
+            method: "DELETE",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`
+            },
+        }).then((res) => {
+            if (res.ok) {
+                // @ts-ignore
+                handleGetUserRegisters(registo.uid)
+            } else {
+                console.error("Error deleting registo: ", res)
+            }
+        }).catch(error => {
+            console.error("Error deleting registo: ", error)
+        })
+    }
+
+    const handleClickExitOpenForm = (registo: Registo) => {
+        setSelectedRegisto(registo)
+        setExitOpenForm(true);
+    };
+    const handleExitCloseForm = (reload: boolean) => {
+        setExitOpenForm(false);
+        if (reload) {
+            // @ts-ignore
+            handleGetUserRegisters(selectedRegisto.id_utilizador)
+        }
+    };
 
     return (
         <>
@@ -48,9 +100,7 @@ export default function ObraRegistosOfUserForm({
                                                     header.getContext(),
                                                 )}
                                         </TableCell>
-
                                     ))}
-                                    <TableCell/>
                                 </TableRow>
                             ))}
                         </TableHead>
@@ -59,21 +109,24 @@ export default function ObraRegistosOfUserForm({
                                 <TableRow key={row.id} selected={row.getIsSelected()}>
                                     {row.getVisibleCells().map((cell, _columnIndex) => (
                                         <TableCell align="center" variant="body" key={cell.id}>
-                                            <MRT_TableBodyCellValue
-                                                cell={cell}
-                                                table={table}
-                                                staticRowIndex={rowIndex}
-                                            />
+                                            {cell.column.id === 'endTime' && (row.original.status === 'unfinished' || row.original.status === "unfinished_nfc") ? (
+                                                <>
+                                                    <IconButton color="primary" title={"Finalizar"} onClick={() => handleClickExitOpenForm(row.original)}>
+                                                        <EditIcon />
+                                                    </IconButton>
+                                                    <IconButton color="error" title={"Eliminar"} onClick={() => handleClickDeleteRegister(row.original)}>
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </>
+                                            ) : (
+                                                <MRT_TableBodyCellValue
+                                                    cell={cell}
+                                                    table={table}
+                                                    staticRowIndex={rowIndex}
+                                                />
+                                            )}
                                         </TableCell>
                                     ))}
-                                    <TableCell>
-                                        <IconButton style={{ color: '#3547a1' }}>
-                                            <Edit/>
-                                        </IconButton>
-                                        <IconButton style={{ color: '#c24242' }} >
-                                            <Delete/>
-                                        </IconButton>
-                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -83,6 +136,8 @@ export default function ObraRegistosOfUserForm({
                     <MRT_TablePagination table={table} />
                 </Box>
                 <MRT_ToolbarAlertBanner stackAlertBanner table={table} />
+                <RegistoForm open={openForm} onHandleClose={handleCloseForm} obra={obra}/>
+                <RegistoExitForm open={exitOpenForm} onHandleClose={handleExitCloseForm} registo={selectedRegisto}/>
             </Stack>
         </>
     );

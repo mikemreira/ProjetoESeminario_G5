@@ -15,7 +15,7 @@ import {FilterList} from "react-admin";
 import MenuItem from "@mui/material/MenuItem";
 import FilterListIcon from '@mui/icons-material/FilterList';
 import {useCookies} from "react-cookie";
-import {Obra, RegistosOutputModel} from "../ObrasInfo";
+import {Obra, RegistosOutputModel, UserRegistersAndObraOutputModel} from "../ObrasInfo";
 import EditIcon from "@mui/icons-material/Edit";
 import {Registo} from "../../registos/Registos";
 import RegistoExitForm from "../../registos/RegistoExitForm";
@@ -28,8 +28,8 @@ interface ObraRegistosFormProps {
     handleCloseForm: (reload: boolean) => void;
     table: any;
     openForm: boolean;
-    registo: RegistosOutputModel;
-    setRegistos: (registos: RegistosOutputModel) => void;
+    registo: UserRegistersAndObraOutputModel;
+    setRegistos: (registos: UserRegistersAndObraOutputModel) => void;
 }
 
 export default function ObraRegistosForm({
@@ -66,16 +66,13 @@ export default function ObraRegistosForm({
                 "Authorization": `Bearer ${cookies.token}`
             },
         }).then((res) => {
+            console.log(res)
             if (res.ok) return res.json()
             else return null
         }).then((body) => {
+            console.log(body)
             if (body) {
-                setRegistos({
-                    ...body,
-                    meRoute: registo.meRoute,
-                    pendingRoute: registo.pendingRoute,
-                    allRoute: registo.allRoute,
-                });
+                setRegistos(body);
             }
         }).catch(error => {
             console.error("Error fetching registos: ", error)
@@ -84,7 +81,7 @@ export default function ObraRegistosForm({
     }
 
     const handleClickDeleteRegister = (registo: Registo) => {
-        fetch(`${path}/obras/${registo.id_obra}/registos/${registo.id}`, {
+        fetch(`${path}/obras/${registo.oid}/registos/${registo.id}`, {
             method: "DELETE",
             headers: {
                 "Content-type": "application/json",

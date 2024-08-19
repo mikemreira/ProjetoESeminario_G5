@@ -63,6 +63,7 @@ export default function AddObra() {
             body: JSON.stringify(values)
         }).then(res => {
             setSubmitted(true);
+            console.log(res);
             if (res.status === 201) {
                 setValid(true);
                 setRedirect(<Navigate to="/obras" state={{ success: true }} replace={true} />);

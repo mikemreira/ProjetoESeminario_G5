@@ -61,6 +61,25 @@ export interface Registo {
     status: string | null;
 }
 
+export interface RegistoAndUser {
+    userName: string;
+    id: number;
+    oid: number;
+    uid: number;
+    startTime: DateObject;
+    endTime: DateObject | null;
+    status: string;
+}
+
+export interface UserRegistersAndObraOutputModel {
+    registers: RegistoAndUser[],
+    constructionStatus: string,
+    meRoute: string,
+    pendingRoute: string,
+    allRoute: string,
+
+}
+
 export interface RegistosOutputModel {
     registers: Registo[],
     meRoute: string,
@@ -289,9 +308,12 @@ export default function ObrasInfo() {
     /*
      *  Registers
      */
-    const [registos, setRegistos] = useState<RegistosOutputModel>({
-        allRoute: "",
-        meRoute: "", pendingRoute: "", registers: [] })
+    const [registos, setRegistos] = useState<UserRegistersAndObraOutputModel>({
+        registers: [],
+        constructionStatus: "",
+        meRoute: "",
+        pendingRoute: "",
+        allRoute: "",})
     const [searchParams, setSearchParams] = useSearchParams();
     const [openForm, setOpenForm] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -331,6 +353,7 @@ export default function ObrasInfo() {
             if (res.ok) return res.json()
             else return null
         }).then((body) => {
+            console.log("ads: " + body.registers)
             if (body) {
                 setRegistos(body)
                 setLoading(false)
@@ -339,6 +362,7 @@ export default function ObrasInfo() {
             console.error("Error fetching registos: ", error)
         })
     }
+
 
     const handleClickOpenForm = () => {
         setOpenForm(true);
@@ -356,11 +380,13 @@ export default function ObrasInfo() {
     /*
      * Pending Registers
      */
-    const [pendingRegisters, setPendingRegisters] = useState<RegistosOutputModel>({
-        allRoute: "",
+    const [pendingRegisters, setPendingRegisters] = useState<UserRegistersAndObraOutputModel>({
+        registers: [],
+        constructionStatus: "",
         meRoute: "",
         pendingRoute: "",
-        registers: [] });
+        allRoute: "",
+       });
     const [open, setOpen] = useState(false);
 
     const handleGetPendingRegisters = () => {
@@ -417,11 +443,12 @@ export default function ObrasInfo() {
     /*
      * Registo Funcionario
      */
-    const [registosFuncionario, setRegistosFuncionario] = useState<RegistosOutputModel>({
-        allRoute: "",
+    const [registosFuncionario, setRegistosFuncionario] = useState<UserRegistersAndObraOutputModel>({
+        registers: [],
+        constructionStatus: "",
         meRoute: "",
         pendingRoute: "",
-        registers: [] })
+        allRoute: "", })
     const [username, setUsername] = useState<string>("")
 
     const handleGetUserRegisters = (uid: number) => {
@@ -686,8 +713,12 @@ export default function ObrasInfo() {
                         )}
                         {state.value === "registoFuncionario" && obra.role === "admin" && (
                             <ObraRegistosOfUserForm
+                                obra={obra}
                                 table={tableRegistersFuncionario}
                                 username={username}
+                                handleGetUserRegisters={handleGetUserRegisters}
+                                handleCloseForm={handleCloseForm}
+                                openForm={openForm}
                             />
                         )}
                         {state.value === "funcionarioInfo" && obra.role === "admin" && (

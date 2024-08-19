@@ -41,7 +41,7 @@ create table if not exists Token(
 create table if not exists Obra (
                       id int generated always as identity primary key,
                       nome varchar(64) not null,
-                      localizaxcao varchar(64) not null,
+                      localizacao varchar(64) not null,
                       descricao varchar(260),
                       data_inicio date not null default current_date,
                       data_fim date default null,

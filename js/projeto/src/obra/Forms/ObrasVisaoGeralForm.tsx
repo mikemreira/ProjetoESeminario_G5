@@ -22,12 +22,12 @@ import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import DeleteIcon from '@mui/icons-material/Delete';
 import NfcIcon from '@mui/icons-material/Nfc';
 
-import {RegistosOutputModel, DateObject, Obra} from '../ObrasInfo';
+import {RegistosOutputModel, DateObject, Obra, UserRegistersAndObraOutputModel} from '../ObrasInfo';
 
 interface VisaoGeralProps {
     obra: Obra;
     editedObra: Obra | undefined;
-    pendingRegisters: RegistosOutputModel;
+    pendingRegisters: UserRegistersAndObraOutputModel;
     isEditing: boolean;
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleSelectChange: (event: ChangeEvent<{ name?: string; value: unknown }>) => void;
