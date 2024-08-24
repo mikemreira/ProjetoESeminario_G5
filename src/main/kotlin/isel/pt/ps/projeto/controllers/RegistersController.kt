@@ -28,10 +28,13 @@ class RegistersController(
     @GetMapping("/registos")
     fun getUserRegisters(
         @RequestHeader("Authorization") userToken: String,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam initialDate: String?,
+        @RequestParam endDate: String?,
         response: HttpServletResponse
     ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        val res = registersService.getUserRegisters(authUser.user.id)
+        val res = registersService.getUserRegisters(authUser.user.id, page, initialDate, endDate)
         return when (res) {
             is Success ->
                 ResponseEntity.status(200)
@@ -55,6 +58,7 @@ class RegistersController(
                 when (res.value) {
                     RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                     RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                    RegistersUserInfoError.InvalidParams -> TODO()
                 }
         }
     }
@@ -361,6 +365,7 @@ class RegistersController(
                 when (res.value) {
                     RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                     RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                    RegistersUserInfoError.InvalidParams -> TODO()
                 }
         }
     }

@@ -8,10 +8,10 @@ import isel.pt.ps.projeto.repository.jdbc.RegistersRepository
 import isel.pt.ps.projeto.utils.Either
 import isel.pt.ps.projeto.utils.failure
 import isel.pt.ps.projeto.utils.success
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.*
 
 import org.springframework.stereotype.Component
+import java.time.LocalDate
 
 
 sealed class RegistersInfoError {
@@ -26,6 +26,7 @@ sealed class RegistersInfoError {
 sealed class RegistersUserInfoError {
     object NoRegisters : RegistersUserInfoError()
     object InvalidRegister : RegistersUserInfoError()
+    object InvalidParams : RegistersUserInfoError()
 }
 
 sealed class RegisterDeleteError {
@@ -42,12 +43,29 @@ typealias DeleteRegisterResult = Either<RegisterDeleteError, Boolean>
 @Component
 class RegistersService(
     private val registersRepository: RegistersRepository,
-    private val constructionRepository: ConstructionRepository
+    private val constructionRepository: ConstructionRepository,
+    private val utilsServices: UtilsServices
 ) {
 
-    fun getUserRegisters(uid: Int): RegistersInfoResult {
+    fun getUserRegisters(uid: Int, page: Int, startDate: String?, endDate: String?): RegistersInfoResult {
+        var startDateRep: LocalDate? = null
+        var endDateRep: LocalDate? = null
+        if (startDate != null) {
+            if (!(utilsServices.isValidLocalDate(startDate)))
+                return failure(RegistersUserInfoError.InvalidParams)
+            startDateRep = startDate.toLocalDate().toJavaLocalDate()
+        }
+        if (endDate != null) {
+            if (!(utilsServices.isValidLocalDate(endDate)))
+                return failure(RegistersUserInfoError.InvalidParams)
+            endDateRep = endDate.toLocalDate().toJavaLocalDate()
+        }
+        var pg = page
+        if (page <= 0)
+            pg = 1
 
-        val register = registersRepository.getUserRegisters(uid)
+        val register = registersRepository.getUserRegisters(uid, pg, startDateRep?.atStartOfDay(), endDateRep?.plusDays(1L)?.atStartOfDay())
+
         return if (register.isEmpty()) {
             failure(RegistersUserInfoError.NoRegisters)
         } else {

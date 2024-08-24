@@ -5,6 +5,9 @@ import java.awt.Graphics2D
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 import java.util.Base64
 import javax.imageio.ImageIO
 
@@ -57,6 +60,18 @@ class UtilsServices {
     fun encodeToBase64(byteArray: ByteArray): String {
         return Base64.getEncoder().encodeToString(byteArray)
     }
+
+
+    fun isValidLocalDate(dateStr: String, format: String = "yyyy-MM-dd"): Boolean {
+        return try {
+            val formatter = DateTimeFormatter.ofPattern(format)
+            LocalDate.parse(dateStr, formatter)
+            true
+        } catch (e: DateTimeParseException) {
+            false
+        }
+    }
+
 
 
 

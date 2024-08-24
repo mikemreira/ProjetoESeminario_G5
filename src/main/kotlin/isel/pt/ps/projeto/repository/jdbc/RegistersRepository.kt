@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.Timestamp
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 
@@ -25,18 +26,23 @@ class RegistersRepository(
     dataSource.password = config.password
     return dataSource.connection
 }
-    override fun getUserRegisters(userId: Int): List<RegisterOutputModel> {
+    override fun getUserRegisters(userId: Int, pg: Int, startDate: LocalDateTime?, endDate: LocalDateTime?): List<RegisterOutputModel> {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pStatement2 = it.prepareStatement(
+
+                val pStatement = it.prepareStatement(
                     "select R.id, R.id_utilizador, R.id_obra, R.entrada, R.saida, R.status, O.nome as nome_obra from registo as R\n" +
                         "join obra as O on R.id_obra = O.id\n" +
-                        "where id_utilizador = ?\n" +
-                        "order by R.entrada desc"
+                        "where id_utilizador = ? and (R.entrada >= COALESCE(?, R.entrada)) and (R.entrada <= COALESCE(?, R.entrada))\n" +
+                        "order by R.entrada desc\n" +
+                        "limit 10 offset ?\n"
                 )
-                pStatement2.setInt(1, userId)
-                val res2 = pStatement2.executeQuery()
+                pStatement.setInt(1, userId)
+                pStatement.setTimestamp(2, if (startDate == null) null  else Timestamp.valueOf(startDate))
+                pStatement.setTimestamp(3, if (endDate == null) null else Timestamp.valueOf(endDate))
+                pStatement.setInt(4, (pg-1)*10)
+                val res2 = pStatement.executeQuery()
                 val list = mutableListOf<RegisterOutputModel>()
                 while (res2.next()) {
                     if (res2.getTimestamp("saida") != null)
@@ -46,10 +52,10 @@ class RegistersRepository(
                                 res2.getInt("id_utilizador"),
                                 res2.getInt("id_obra"),
                                 res2.getString("nome_obra"),
-                            res2.getTimestamp("entrada").toLocalDateTime(),
-                            res2.getTimestamp("saida").toLocalDateTime(),
+                                res2.getTimestamp("entrada").toLocalDateTime(),
+                                res2.getTimestamp("saida").toLocalDateTime(),
                                 res2.getString("status"),
-                        )
+                            )
                         )
                     else {
                         list.add(
@@ -58,10 +64,10 @@ class RegistersRepository(
                                 res2.getInt("id_utilizador"),
                                 res2.getInt("id_obra"),
                                 res2.getString("nome_obra"),
-                            res2.getTimestamp("entrada").toLocalDateTime(),
-                            null,
-                            res2.getString("status")
-                        )
+                                res2.getTimestamp("entrada").toLocalDateTime(),
+                                null,
+                                res2.getString("status")
+                            )
                         )
                     }
                 }
