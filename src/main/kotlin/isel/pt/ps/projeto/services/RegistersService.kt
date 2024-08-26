@@ -34,6 +34,8 @@ sealed class RegisterDeleteError {
 }
 
 typealias RegistersInfoResult = Either<RegistersUserInfoError, List<RegisterOutputModel>>
+typealias RegistersSizeInfoResult = Either<RegistersUserInfoError, Int>
+
 typealias ListOfUsersRegistersInfoResult = Either<RegistersInfoError, List<RegisterAndUser>>
 typealias ListOfUsersRegistersAndConstructionStatusInfoResult = Either<RegistersInfoError, ConstructionStatusAndUserRegisters>
 typealias EntryOrExitRegisterResult = Either<RegistersInfoError, Boolean>
@@ -71,6 +73,15 @@ class RegistersService(
         } else {
             success(register)
         }
+    }
+
+    fun getUserRegistersSize(uid: Int, type: String): RegistersSizeInfoResult{
+
+        if (type != "total" && type != "pending" && type != "unfinished")
+            return failure(RegistersUserInfoError.InvalidParams)
+        val register = registersRepository.getUserRegistersSize(uid, type)
+
+        return success(register)
     }
 
     fun addUserRegisterEntry(uid: Int, obraId: Int, entry: LocalDateTime) : EntryOrExitRegisterResult {

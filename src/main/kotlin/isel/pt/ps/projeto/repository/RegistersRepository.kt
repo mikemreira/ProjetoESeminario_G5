@@ -10,6 +10,7 @@ import java.time.LocalDateTime
 interface RegistersRepository {
     //fun getRegistersOfUser(uid: Int): List<Register>
     fun getUserRegisters(userId: Int, pg: Int, startDate: LocalDateTime?, endDate: LocalDateTime?): List<RegisterOutputModel>
+    fun getUserRegistersSize(userId: Int, type: String): Int
     fun addUserRegisterEntry(userId: Int, obraId: Int, time: LocalDateTime) : Boolean
     fun addUserRegisterExit(regId: Int, userId: Int, obraId: Int, time: LocalDateTime) : Boolean
     fun addUserRegisterNFC(reg: Register?, userId: Int, obraId: Int, time: LocalDateTime) : Boolean

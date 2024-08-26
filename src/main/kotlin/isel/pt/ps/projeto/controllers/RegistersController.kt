@@ -35,6 +35,16 @@ class RegistersController(
     ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         val res = registersService.getUserRegisters(authUser.user.id, page, initialDate, endDate)
+        val regSize = registersService.getUserRegistersSize(authUser.user.id, "total")
+        var size = 0
+        when(regSize) {
+            is Success -> size = regSize.value
+            is Failure -> return when (regSize.value) {
+                RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
+            }
+        }
         return when (res) {
             is Success ->
                 ResponseEntity.status(200)
@@ -52,6 +62,8 @@ class RegistersController(
                                 )
                             },
                             "/registos/pendente"
+                            ,
+                            size
                         )
                     )
             is Failure ->
@@ -290,7 +302,8 @@ class RegistersController(
                             it.endTime,
                             it.status
                         )
-                    })
+                    }
+                )
             )
             is Failure -> when (res.value) {
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
@@ -310,6 +323,7 @@ class RegistersController(
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+
         return when (val res = registersService.getPendingRegistersFromUsers(authUser.user.id, page)) {
             is Success -> ResponseEntity.status(200).body(
                 UserRegistersAndObraOutputModel(
@@ -323,7 +337,9 @@ class RegistersController(
                             it.endTime,
                             it.status
                         )
-                    })
+                    },
+                    registersSize = 0
+                )
             )
             is Failure -> when (res.value) {
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
@@ -342,6 +358,16 @@ class RegistersController(
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         val res = registersService.getIncompleteRegisters(authUser.user.id)
+        val regSize = registersService.getUserRegistersSize(authUser.user.id, "unfinished")
+        var size = 0
+        when(regSize) {
+            is Success -> size = regSize.value
+            is Failure -> return when (regSize.value) {
+                RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
+            }
+        }
         return when (res) {
             is Success ->
                 ResponseEntity.status(200)
@@ -359,6 +385,8 @@ class RegistersController(
                                 )
                             },
                             null
+                            ,
+                            size
                         )
                     )
             is Failure ->
@@ -378,6 +406,7 @@ class RegistersController(
         val authUser
             = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         val res = registersService.insertExitOnWeb(authUser.user.id, input.registerId, input.oid, input.endTime.toLocalDateTime())
+
         return when (res) {
             is Success ->
                 ResponseEntity.status(201)

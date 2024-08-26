@@ -5,5 +5,6 @@ data class UserRegistersAndObraOutputModel(
     val constructionStatus: String? = null,
     val meRoute: String? = null,
     val pendingRoute: String? = null,
-    val allRoute: String? = null
+    val allRoute: String? = null,
+    val registersSize: Int? = null
 )

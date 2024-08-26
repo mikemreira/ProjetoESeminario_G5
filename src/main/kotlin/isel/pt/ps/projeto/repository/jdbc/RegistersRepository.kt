@@ -36,7 +36,7 @@ class RegistersRepository(
                         "join obra as O on R.id_obra = O.id\n" +
                         "where id_utilizador = ? and (R.entrada >= COALESCE(?, R.entrada)) and (R.entrada <= COALESCE(?, R.entrada))\n" +
                         "order by R.entrada desc\n" +
-                        "limit 10 offset ?\n"
+                        "limit 5 offset ?\n"
                 )
                 pStatement.setInt(1, userId)
                 pStatement.setTimestamp(2, if (startDate == null) null  else Timestamp.valueOf(startDate))
@@ -80,6 +80,40 @@ class RegistersRepository(
             }
         }
     }
+
+    override fun getUserRegistersSize(userId: Int, type: String): Int {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                if (type == "unfinished") {
+                    val pStatement = it.prepareStatement(
+                        "select Count(*) from registo R\n" +
+                            "where id_utilizador = ? and (R.status = ? or R.status = ?)"
+                    )
+                    pStatement.setInt(1, userId)
+                    pStatement.setString(2, type)
+                    pStatement.setString(3, "unfinished_nfc")
+                    val res = pStatement.executeQuery()
+                    res.getInt("Count")
+
+                } else {
+                    val pStatement = it.prepareStatement(
+                        "select Count(*) from registo R\n" +
+                            "where id_utilizador = ? and R.status >= COALESCE(?, R.status)"
+                    )
+                    pStatement.setInt(1, userId)
+                    pStatement.setString(2, if (type == "total") null else type)
+                    val res = pStatement.executeQuery()
+                    res.getInt("Count")
+                }
+
+            } catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }    }
 
     override fun addUserRegisterEntry(userId: Int, obraId: Int, time: LocalDateTime): Boolean {
         initializeConnection().use {
