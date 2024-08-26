@@ -41,7 +41,7 @@ class RegistersRepository(
                 pStatement.setInt(1, userId)
                 pStatement.setTimestamp(2, if (startDate == null) null  else Timestamp.valueOf(startDate))
                 pStatement.setTimestamp(3, if (endDate == null) null else Timestamp.valueOf(endDate))
-                pStatement.setInt(4, (pg-1)*10)
+                pStatement.setInt(4, (pg-1)*5)
                 val res2 = pStatement.executeQuery()
                 val list = mutableListOf<RegisterOutputModel>()
                 while (res2.next()) {
@@ -94,6 +94,7 @@ class RegistersRepository(
                     pStatement.setString(2, type)
                     pStatement.setString(3, "unfinished_nfc")
                     val res = pStatement.executeQuery()
+                    res.next()
                     res.getInt("Count")
 
                 } else {
@@ -104,8 +105,10 @@ class RegistersRepository(
                     pStatement.setInt(1, userId)
                     pStatement.setString(2, if (type == "total") null else type)
                     val res = pStatement.executeQuery()
+                    res.next()
                     res.getInt("Count")
                 }
+
 
             } catch (e: Exception) {
                 it.rollback()
@@ -113,7 +116,8 @@ class RegistersRepository(
             } finally {
                 it.commit()
             }
-        }    }
+        }
+    }
 
     override fun addUserRegisterEntry(userId: Int, obraId: Int, time: LocalDateTime): Boolean {
         initializeConnection().use {
