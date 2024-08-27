@@ -18,9 +18,9 @@ interface RegistersRepository {
     fun getUsersRegistersFromConstruction(oid: Int, page: Int): List<RegisterAndUser>
     fun getUserRegisterFromConstruction(userId: Int, oid: Int, page: Int): List<RegisterAndUser>
     fun getPendingRegistersFromConstruction(oid: Int, page: Int): List<RegisterAndUser>
-    fun getPendingRegisters(userId: Int, page: Int): List<RegisterAndUser>
+    fun getPendingRegisters(userId: Int, page: Int, startDate: LocalDateTime?, endDate: LocalDateTime?): List<RegisterAndUser>
     fun acceptOrDeny(userId: Int, oid: Int, registerId: Int, response: String) : Boolean
     fun getLatestEntryRegisterId(userId: Int, oid: Int): Register?
-    fun getIncompleteRegisters(userId: Int): List<RegisterOutputModel>
+    fun getIncompleteRegisters(userId: Int, page: Int, startDate: LocalDateTime?, endDate: LocalDateTime?): List<RegisterOutputModel>
     fun deleteRegister(userId: Int, obraId: Int, registerId: Int): Boolean
 }

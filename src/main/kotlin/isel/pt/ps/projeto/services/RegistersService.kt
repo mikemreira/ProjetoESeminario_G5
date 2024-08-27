@@ -21,6 +21,8 @@ sealed class RegistersInfoError {
     object NoPermission : RegistersInfoError()
     object NoAccessToConstruction : RegistersInfoError()
     object ConstructionSuspended : RegistersInfoError()
+    object InvalidParams : RegistersInfoError()
+
 }
 
 sealed class RegistersUserInfoError {
@@ -197,11 +199,26 @@ class RegistersService(
         return success(registers)
     }
 
-    fun getPendingRegistersFromUsers(userId: Int, page: Int): ListOfUsersRegistersInfoResult {
+
+    fun getPendingRegistersFromUsers(userId: Int, page: Int, startDate: String?, endDate: String?): ListOfUsersRegistersInfoResult {
+
+        var startDateRep: LocalDate? = null
+        var endDateRep: LocalDate? = null
+        val valid = !utilsServices.isValidLocalDate(startDate) && !utilsServices.isValidLocalDate(endDate)
+        if (!valid)
+            return failure(RegistersInfoError.InvalidParams)
+        if (startDate != null) {
+            startDateRep = startDate.toLocalDate().toJavaLocalDate()
+        }
+
+        if (endDate != null) {
+            endDateRep = endDate.toLocalDate().toJavaLocalDate()
+        }
+
         var pg = page
         if (page <= 0)
             pg = 1
-        val registers = registersRepository.getPendingRegisters(userId, pg)
+        val registers = registersRepository.getPendingRegisters(userId, pg, startDateRep?.atStartOfDay(), endDateRep?.plusDays(1L)?.atStartOfDay())
         return success(registers)
     }
 
@@ -219,8 +236,26 @@ class RegistersService(
         return success(res)
     }
 
-    fun getIncompleteRegisters(userId: Int): RegistersInfoResult {
-        val res = registersRepository.getIncompleteRegisters(userId)
+    fun getIncompleteRegisters(userId: Int, page: Int, startDate: String?, endDate: String?): RegistersInfoResult {
+
+        var startDateRep: LocalDate? = null
+        var endDateRep: LocalDate? = null
+        if (startDate != null) {
+            if (!(utilsServices.isValidLocalDate(startDate)))
+                return failure(RegistersUserInfoError.InvalidParams)
+            startDateRep = startDate.toLocalDate().toJavaLocalDate()
+        }
+        if (endDate != null) {
+            if (!(utilsServices.isValidLocalDate(endDate)))
+                return failure(RegistersUserInfoError.InvalidParams)
+            endDateRep = endDate.toLocalDate().toJavaLocalDate()
+        }
+
+        var pg = page
+        if (page <= 0)
+            pg = 1
+
+        val res = registersRepository.getIncompleteRegisters(userId, pg, startDateRep?.atStartOfDay(), endDateRep?.plusDays(1L)?.atStartOfDay())
         return success(res)
     }
 

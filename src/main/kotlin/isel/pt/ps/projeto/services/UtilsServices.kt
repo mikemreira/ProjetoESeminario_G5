@@ -62,7 +62,9 @@ class UtilsServices {
     }
 
 
-    fun isValidLocalDate(dateStr: String, format: String = "yyyy-MM-dd"): Boolean {
+    fun isValidLocalDate(dateStr: String?, format: String = "yyyy-MM-dd"): Boolean {
+        if (dateStr == null)
+            return true
         return try {
             val formatter = DateTimeFormatter.ofPattern(format)
             LocalDate.parse(dateStr, formatter)

@@ -104,7 +104,7 @@ class RegistersTests(
 
         // When
         registersRepository.addUserRegisterEntry(userId, obraId, time)
-        val incompleteRegisters = registersRepository.getIncompleteRegisters(userId)
+        val incompleteRegisters = registersRepository.getIncompleteRegisters(userId, 1, null, null)
 
         // Then
         assertTrue(incompleteRegisters.isNotEmpty())
@@ -208,7 +208,7 @@ class RegistersTests(
         val page = 1
 
         // When
-        val registers = registersRepository.getPendingRegisters(adminUserId, page)
+        val registers = registersRepository.getPendingRegisters(adminUserId, page, null, null)
 
         // Then
         assertNotNull(registers)

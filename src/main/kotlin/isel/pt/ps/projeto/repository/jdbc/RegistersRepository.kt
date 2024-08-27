@@ -30,7 +30,6 @@ class RegistersRepository(
         initializeConnection().use {
             it.autoCommit = false
             return try {
-
                 val pStatement = it.prepareStatement(
                     "select R.id, R.id_utilizador, R.id_obra, R.entrada, R.saida, R.status, O.nome as nome_obra from registo as R\n" +
                         "join obra as O on R.id_obra = O.id\n" +
@@ -400,21 +399,23 @@ class RegistersRepository(
         }
     }
 
-    override fun getPendingRegisters(userId: Int, page: Int): List<RegisterAndUser> {
+    override fun getPendingRegisters(userId: Int, page: Int, startDate: LocalDateTime?, endDate: LocalDateTime?): List<RegisterAndUser> {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pg = (page-1)*10
                 val pStatement = it.prepareStatement(
                     "Select * from Registo r \n" +
                         "inner join utilizador u on r.id_utilizador = u.id \n" +
                         "where r.id_obra in (Select id_obra From Utilizador u2 \n" +
                         "Inner join Papel p on u2.id = p.id_utilizador \n" +
-                        "where u2.id = ? and papel = 'admin') and r.status = 'pending'\n" +
-                        "LIMIT 10 offset ?"
+                        "where u2.id = ? and papel = 'admin') and r.status = 'pending' and (R.entrada >= COALESCE(?, R.entrada)) and (R.entrada <= COALESCE(?, R.entrada))\n" +
+                        "order by R.entrada desc\n" +
+                        "LIMIT 5 offset ?"
                 )
                 pStatement.setInt(1, userId)
-                pStatement.setInt(2, pg)
+                pStatement.setTimestamp(2, if (startDate == null) null  else Timestamp.valueOf(startDate))
+                pStatement.setTimestamp(3, if (endDate == null) null else Timestamp.valueOf(endDate))
+                pStatement.setInt(4, (page-1)*5)
                 val result = pStatement.executeQuery()
                 val registers = mutableListOf<RegisterAndUser>()
                 while (result.next()){
@@ -466,17 +467,22 @@ class RegistersRepository(
         }
     }
 
-    override fun getIncompleteRegisters(userId: Int): List<RegisterOutputModel> {
+    override fun getIncompleteRegisters(userId: Int, page: Int, startDate: LocalDateTime?, endDate: LocalDateTime?): List<RegisterOutputModel> {
         initializeConnection().use {
             it.autoCommit = false
             return try {
-                val pStatement2 = it.prepareStatement(
+                val pStatement = it.prepareStatement(
                     "select R.id, R.id_utilizador, R.id_obra, R.entrada, R.saida, R.status, O.nome as nome_obra from registo as R\n"
                         + "join obra as O on R.id_obra = O.id\n"
-                        + "where id_utilizador = ? and R.status in ('unfinished','unfinished_nfc')"
+                        + "where id_utilizador = ? and R.status in ('unfinished','unfinished_nfc') and (R.entrada >= COALESCE(?, R.entrada)) and (R.entrada <= COALESCE(?, R.entrada))\n"
+                        + "order by R.entrada desc\n"
+                        + "limit 5 offset ?\n"
                 )
-                pStatement2.setInt(1, userId)
-                val res2 = pStatement2.executeQuery()
+                pStatement.setInt(1, userId)
+                pStatement.setTimestamp(2, if (startDate == null) null  else Timestamp.valueOf(startDate))
+                pStatement.setTimestamp(3, if (endDate == null) null else Timestamp.valueOf(endDate))
+                pStatement.setInt(4, (page-1)*5)
+                val res2 = pStatement.executeQuery()
                 val list = mutableListOf<RegisterOutputModel>()
                 while (res2.next()) {
                     //res2.getTimestamp("saida") != null

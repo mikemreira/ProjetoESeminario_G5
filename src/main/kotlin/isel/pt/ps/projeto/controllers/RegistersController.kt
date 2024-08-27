@@ -94,6 +94,7 @@ class RegistersController(
                     RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                     RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                     RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                    RegistersInfoError.InvalidParams -> TODO()
                 }
         }
     }
@@ -118,6 +119,7 @@ class RegistersController(
                     RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                     RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                     RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                    RegistersInfoError.InvalidParams -> TODO()
                 }
         }
     }
@@ -141,6 +143,7 @@ class RegistersController(
                     RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                     RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                     RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                    RegistersInfoError.InvalidParams -> TODO()
                 }
         }
     }
@@ -184,6 +187,7 @@ class RegistersController(
                 RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                RegistersInfoError.InvalidParams -> TODO()
             }
         }
     }
@@ -206,6 +210,7 @@ class RegistersController(
                 RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                RegistersInfoError.InvalidParams -> TODO()
             }
         }
     }
@@ -242,6 +247,7 @@ class RegistersController(
                 RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                RegistersInfoError.InvalidParams -> TODO()
             }
         }
     }
@@ -277,6 +283,7 @@ class RegistersController(
                 RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                RegistersInfoError.InvalidParams -> TODO()
             }
         }
     }
@@ -312,19 +319,31 @@ class RegistersController(
                 RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                RegistersInfoError.InvalidParams -> TODO()
             }
         }
     }
 
     @GetMapping("/registos/pendente")
     fun getPendingRegistersOfUsers(
-        @RequestParam(defaultValue = "0") page: Int,
         @RequestHeader("Authorization") userToken: String,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam initialDate: String?,
+        @RequestParam endDate: String?
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-
-        return when (val res = registersService.getPendingRegistersFromUsers(authUser.user.id, page)) {
+        val regSize = registersService.getUserRegistersSize(authUser.user.id, "unfinished")
+        var size = 0
+        when(regSize) {
+            is Success -> size = regSize.value
+            is Failure -> return when (regSize.value) {
+                RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
+            }
+        }
+        return when (val res = registersService.getPendingRegistersFromUsers(authUser.user.id, page, initialDate, endDate)) {
             is Success -> ResponseEntity.status(200).body(
                 UserRegistersAndObraOutputModel(
                     res.value.map {
@@ -338,7 +357,7 @@ class RegistersController(
                             it.status
                         )
                     },
-                    registersSize = 0
+                    registersSize = size
                 )
             )
             is Failure -> when (res.value) {
@@ -348,16 +367,20 @@ class RegistersController(
                 RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                RegistersInfoError.InvalidParams -> TODO()
             }
         }
     }
     @GetMapping("/registos/incompletos")
     fun getRegisterWithoutExit(
-        @RequestHeader("Authorization") userToken: String
+        @RequestHeader("Authorization") userToken: String,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam initialDate: String?,
+        @RequestParam endDate: String?
     ): ResponseEntity<*> {
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        val res = registersService.getIncompleteRegisters(authUser.user.id)
+        val res = registersService.getIncompleteRegisters(authUser.user.id, page, initialDate, endDate)
         val regSize = registersService.getUserRegistersSize(authUser.user.id, "unfinished")
         var size = 0
         when(regSize) {
@@ -419,6 +442,7 @@ class RegistersController(
                     RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                     RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                     RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                    RegistersInfoError.InvalidParams -> TODO()
                 }
         }
     }
