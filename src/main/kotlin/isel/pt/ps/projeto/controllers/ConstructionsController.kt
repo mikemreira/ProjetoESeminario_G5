@@ -383,4 +383,19 @@ class ConstructionsController(
         }
     }
 
+    @GetMapping("/isAdmin")
+    fun isAdmin(
+        @RequestHeader("Authorization") userToken: String,
+    ): ResponseEntity<*> {
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        val res = constructionService.isAdmin(authUser.user.id)
+        return when (res) {
+            is Success -> ResponseEntity.status(200).body(res.value)
+            is Failure -> when (res.value) {
+                IsAdminError.UserNotFound -> Problem.response(404, Problem.userNotFound)
+            }
+        }
+    }
+
 }

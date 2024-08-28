@@ -32,5 +32,6 @@ interface ConstructionRepository {
     fun removeConstructionUser(oid: Int, uid: Int): Boolean
     fun getNfc(oid: Int): String?
     fun editNfc(oid: Int, nfcId: String): String
+    fun isAdmin(uid: Int): Boolean
 
 }

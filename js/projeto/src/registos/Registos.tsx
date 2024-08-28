@@ -15,7 +15,7 @@ import {
     TableRow,
     Typography,
     CircularProgress,
-    IconButton
+    IconButton, FormControl, InputLabel, Select
 } from '@mui/material';
 import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
@@ -34,6 +34,11 @@ import RegistoExitForm from "./RegistoExitForm";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {table} from "../Utils";
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import TextField from "@mui/material/TextField";
+import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
+import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 
 const columns = [
     { accessorKey: 'nome_obra', header: 'Nome da obra' },
@@ -41,7 +46,6 @@ const columns = [
     { accessorKey: 'saida', header: 'Saida' },
     { accessorKey: 'status', header: 'Estado' }
 ];
-
 
 export interface DateObject {
     year: number;
@@ -64,6 +68,8 @@ export interface Registo {
     oid: number | null;
 }
 
+const pageSize = 5;
+
 export default function Registos () {
     const [cookies] = useCookies(["token"]);
     const [registos, setRegistos] = useState<Registo[]>([])
@@ -74,11 +80,26 @@ export default function Registos () {
     const [exitOpenForm, setExitOpenForm] = useState(false);
     const [selectedRegisto, setSelectedRegisto] = useState<Registo | null>(null);
     const [title, setTitle] = useState<string>("Registos")
+    const [filterMode, setFilterMode] = useState<'all' | 'incomplete'>('all')
 
-    const fetchRegistos = () => {
+    const [page, setPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+    const [initialDate, setInitialDate] = useState<string | null>(null);
+    const [endDate, setEndDate] = useState<string | null>(null);
+
+    const fetchRegistos = (pageNumber: number) => {
         handleMenuClose()
+        setFilterMode('all')
         setTitle("Registos")
-        fetch(`${path}/registos`, {
+        setLoading(true)
+        const params = new URLSearchParams({ page: String(pageNumber) });
+        if (filterMode === 'all') {
+            if (initialDate) params.append("initialDate", initialDate);
+            if (endDate) params.append("endDate", endDate);
+        }
+        const queryString = params.toString();
+        fetch(`${path}/registos?${queryString}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -96,6 +117,8 @@ export default function Registos () {
         }).then((body) => {
             if (body) {
                 setRegistos(body.registers);
+                setTotalPages(Math.ceil(body.registersSize / pageSize));
+                console.log("totalPages: ", body.registersSize / pageSize)
                 setLoading(false);
             }
         }).catch(error => {
@@ -103,9 +126,91 @@ export default function Registos () {
         })
     }
 
+    const fetchRegistosIncompletos = (pageNumber: number) => {
+        handleMenuClose()
+        setFilterMode('incomplete')
+        setTitle("Registos Incompletos")
+        setLoading(true)
+        const params = new URLSearchParams({ page: String(pageNumber) });
+        if (filterMode === 'all') {
+            if (initialDate) params.append("initialDate", initialDate);
+            if (endDate) params.append("endDate", endDate);
+        }
+        const queryString = params.toString();
+        fetch(`${path}/registos/incompletos?${queryString}`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`
+            },
+        }).then((res) => {
+            if (res.ok) return res.json()
+            else return null
+        }).then((body) => {
+            if (body) {
+                setRegistos(body.registers)
+                setTotalPages(Math.ceil(body.registersSize / pageSize))
+              //  setInitialDate(null)
+              //  setEndDate(null)
+                setLoading(false)
+            }
+        }).catch(error => {
+            console.error("Error fetching registos: ", error)
+        })
+    }
+
     useEffect(() => {
-        fetchRegistos()
-    }, [cookies.token])
+        console.log("page: ", page)
+        if (filterMode === 'all') {
+            fetchRegistos(page)
+        }
+        if (filterMode === 'incomplete') {
+            fetchRegistosIncompletos(page)
+        }
+        // falta meter a page no incompletos
+    }, [cookies.token, page, initialDate, endDate])
+
+    const handleNextPage = () => {
+        if (page) {
+            setPage(page + 1)
+        }
+    }
+
+    const handlePreviousPage = () => {
+        if (page > 1) {
+            setPage(page - 1)
+        }
+    }
+
+    const handleFilterChange = (event: { target: { value: any; }; }) => {
+        const selectedFilter = event.target.value
+        setFilterMode(selectedFilter)
+        setInitialDate(null)
+        setEndDate(null)
+        if (selectedFilter === 'all') {
+            fetchRegistos(page)
+        } else if (selectedFilter === 'incomplete') {
+            fetchRegistosIncompletos(page)
+        }
+    }
+
+    const handleFilterReset = () => {
+        setInitialDate(null)
+        setEndDate(null)
+        setPage(1)
+    }
+
+    const handlePageChange = (pageNumber: number) => {
+        setPage(pageNumber)
+    }
+
+    const handleFirstPage = () => {
+        setPage(1)
+    }
+
+    const handleLastPage = () => {
+        setPage(totalPages)
+    }
 
     const handleClickOpenForm = () => {
         setOpenForm(true);
@@ -114,7 +219,7 @@ export default function Registos () {
     const handleCloseForm = (reload: boolean) => {
         setOpenForm(false);
         if (reload) {
-            fetchRegistos();
+            fetchRegistos(page);
         }
     };
 
@@ -139,27 +244,6 @@ export default function Registos () {
 
     const isMenuOpen = Boolean(anchorEl)
 
-    const fetchRegistosIncompletos = () => {
-        handleMenuClose()
-        setTitle("Registos Incompletos")
-        fetch(`${path}/registos/incompletos`, {
-            method: "GET",
-            headers: {
-                "Content-type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
-            },
-        }).then((res) => {
-            if (res.ok) return res.json()
-            else return null
-        }).then((body) => {
-            if (body) {
-                setRegistos(body.registers);
-            }
-        }).catch(error => {
-            console.error("Error fetching registos: ", error)
-        })
-    }
-
     const handleClickDeleteRegister = (registo: Registo) => {
         fetch(`${path}/obras/${registo.id_obra}/registos/${registo.id}`, {
             method: "DELETE",
@@ -169,7 +253,7 @@ export default function Registos () {
             },
         }).then((res) => {
             if (res.ok) {
-                fetchRegistos()
+                fetchRegistos(page)
             } else {
                 console.error("Error deleting registo: ", res)
             }
@@ -186,7 +270,7 @@ export default function Registos () {
     const handleExitCloseForm = (reload: boolean) => {
         setExitOpenForm(false);
         if (reload) {
-            fetchRegistos();
+            fetchRegistos(page);
         }
     };
 
@@ -214,32 +298,54 @@ export default function Registos () {
             >
                 <Typography variant="h4" color={"black"}>{title}</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <IconButton onClick={handleMenuOpen} color="primary">
-                        <FilterList  icon={<FilterListIcon/>} label={""} title={"Filtro"}/>
-                    </IconButton>
-                    <MRT_GlobalFilterTextField table={regTable} />
-                        <Menu
-                            anchorEl={anchorEl}
-                            open={isMenuOpen}
-                            onClose={handleMenuClose}
-                        >
-                            <MenuItem onClick={() => fetchRegistos()}>Todos</MenuItem>
-                            <MenuItem onClick={() => fetchRegistosIncompletos()}>Incompletos</MenuItem>
-                        </Menu>
+
+                        <TextField
+                            label="Desde"
+                            type="date"
+                            value={initialDate || ''}
+                            onChange={(e) => setInitialDate(e.target.value)}
+                            InputLabelProps={{ shrink: true }}
+                            sx={{ marginRight: 2 }}
+                        />
+                        <TextField
+                            label="Até"
+                            type="date"
+                            value={endDate || ''}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            InputLabelProps={{ shrink: true }}
+                            sx={{ marginRight: 2 }}
+                        />
+                        <Button variant="contained" color="primary" onClick={handleFilterReset}>
+                            Limpar Pesquisa
+                        </Button>
+
                 </Box>
-                <IconButton onClick={handleClickOpenForm} color="primary" sx={{
-                    bgcolor: 'primary.main',
-                    borderRadius: '40%',
-                    width: '40px',
-                    height: '40px',
-                    '&:hover': {
-                        bgcolor: 'primary.dark',
-                    },
-                }}>
-                    <AddIcon sx={{ fontSize: 32, color: 'white' }}/>
-                </IconButton>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <FormControl variant="outlined" sx={{ marginRight: 2, minWidth: 120 }}>
+                        <InputLabel>Filtro</InputLabel>
+                        <Select
+                            value={filterMode}
+                            onChange={handleFilterChange}
+                            label="Filtro"
+                        >
+                            <MenuItem value="all">Todos</MenuItem>
+                            <MenuItem value="incomplete">Incompletos</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <IconButton onClick={handleClickOpenForm} color="primary" title={"Adicionar registo"} sx={{
+                        bgcolor: 'primary.main',
+                        borderRadius: '40%',
+                        width: '40px',
+                        height: '40px',
+                        '&:hover': {
+                            bgcolor: 'primary.dark',
+                        },
+                    }}>
+                        <AddIcon sx={{ fontSize: 32, color: 'white' }}/>
+                    </IconButton>
+                </Box>
             </Box>
-            <TableContainer sx={{ backgroundColor: '#cccccc' }}>
+            <TableContainer sx={{ backgroundColor: '#cccccc', marginTop: 2}}>
                 <Table sx={{ tableLayout: 'fixed' }}>
                     <TableHead>
                         {regTable.getHeaderGroups().map((headerGroup) => (
@@ -308,8 +414,45 @@ export default function Registos () {
                     </TableBody>
                 </Table>
             </TableContainer>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-            <MRT_TablePagination table={regTable} />
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                { totalPages > 0 && (
+                    <>
+                    <IconButton onClick={handleFirstPage} disabled={page === 1} title={"Retroceder tudo"}>
+                        <KeyboardDoubleArrowLeftIcon />
+                    </IconButton>
+                    <IconButton onClick={handlePreviousPage} disabled={page === 1} title={"Retroceder"}>
+                        <ArrowBackIosIcon />
+                    </IconButton>
+                    {[...Array(3)].map((_, index) => {
+                        const startPage = Math.max(1, Math.min(page - 1, totalPages - 2));
+                        const currentPage = startPage + index;
+                        if (currentPage <= totalPages) {
+                            return (
+                                <Button
+                                    key={currentPage}
+                                    onClick={() => handlePageChange(currentPage)}
+                                    variant={page === currentPage ? "contained" : "outlined"}
+                                    sx={{
+                                        minWidth: '40px',
+                                        minHeight: '40px',
+                                        borderRadius: '50%',
+                                        mx: 1
+                                    }}
+                                >
+                                    {currentPage}
+                                </Button>
+                            );
+                        }
+                        return null;
+                    })}
+                    <IconButton onClick={handleNextPage} disabled={page === totalPages} title={"Avançar"}>
+                        <ArrowForwardIosIcon />
+                    </IconButton>
+                    <IconButton onClick={handleLastPage} disabled={page === totalPages} title={"Avançar tudo"}>
+                        <KeyboardDoubleArrowRightIcon />
+                    </IconButton>
+                </>
+                )}
             </Box>
             <RegistoForm open={openForm} onHandleClose={handleCloseForm} obra={undefined}/>
             <RegistoExitForm open={exitOpenForm} onHandleClose={handleExitCloseForm} registo={selectedRegisto}/>

@@ -36,6 +36,7 @@ class AuthorizationService(
         savePolicy("user", "/obras", "GET")
         savePolicy("user", "/obras", "POST")
         savePolicy("user", "/obras/ongoing", "GET")
+        savePolicy("user", "/obras/isAdmin", "GET")
         savePolicy("user", "/registos", "GET")
         savePolicy("user", "/registos", "POST")
         savePolicy("user", "/registos", "PUT")
