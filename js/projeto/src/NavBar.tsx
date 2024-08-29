@@ -77,6 +77,7 @@ export default function NavBar() {
     const [anchorElNotifications, setAnchorElNotifications] = React.useState(null);
     const [invites, setInvites] = useState<InvitesModel>({ obrasAndRole: [] });
     const [pendingRegisters, setPendingRegisters] = useState<RegistosOutputModel>({ registers: [] });
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
     useEffect(() => {
         if (cookies.token !== undefined) {
@@ -99,30 +100,57 @@ export default function NavBar() {
         }
     }, [cookies.token]);
 
+    const fetchIsAdmin = () => {
+        fetch(`${path}/obras/isAdmin`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`
+            },
+        }).then((res) => {
+            if (res.ok) {
+                return res.json()
+            } else {
+                throw new Error('Failed to fetch isAdmin')
+            }
+        }).then((body) => {
+            setIsAdmin(body)
+        }).catch((error) => {
+            console.error("Error fetching isAdmin:", error)
+        })
+    }
+
+    const fetchPendingRegisters = (pageNumber: number) => {
+        const params = new URLSearchParams({ page: String(pageNumber) });
+        const queryString = params.toString();
+        console.log("aqui");
+        fetch(`${path}/registos/pendente?${queryString}`, {
+            method: "GET",
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": `Bearer ${cookies.token}`,
+            },
+        }).then((res) => {
+            if (res.ok) {
+                return res.json();
+            } else {
+                throw new Error('Failed to fetch registos pendentes');
+            }
+        }).then((body) => {
+            console.log("Registos pendentes: ", body);
+            setPendingRegisters(body);
+        }).catch((error) => {
+            console.error("Error fetching registos pendentes:", error);
+        });
+    }
+
     useEffect(() => {
-        if (cookies.token !== undefined) {
-            fetch(`${path}/registos/pendente`, {
-                method: "GET",
-                headers: {
-                    "Content-type": "application/json",
-                    "Authorization": `Bearer ${cookies.token}`,
-                },
-            }).then((res) => {
-                if (res.ok) {
-                    return res.json();
-                } else {
-                    throw new Error('Failed to fetch registos pendentes');
-                }
-            }).then((body) => {
-                console.log("Registos pendentes: ", body);
-                setPendingRegisters(body);
-
-            }).catch((error) => {
-                console.error("Error fetching registos pendentes:", error);
-            });
+        fetchIsAdmin();
+        console.log("isAdmin: ", isAdmin);
+        if (cookies.token !== undefined && isAdmin) {
+            fetchPendingRegisters(1);
         }
-
-    }, [cookies.token]);
+    }, [cookies.token, isAdmin]);
 
     const handleOpenUserMenu = (event) => {
         setAnchorElUser(event.currentTarget);

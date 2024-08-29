@@ -490,6 +490,23 @@ class ConstructionsRepository(
         }
     }
 
+    override fun isAdmin(uid: Int): Boolean {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement = it.prepareStatement("select 1 from papel where id_utilizador = ? and papel = 'admin'")
+                pStatement.setInt(1, uid)
+                val result = pStatement.executeQuery()
+                result.next()
+            } catch (e: Exception) {
+                it.rollback()
+                false
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
     // --
     override fun inviteToConstruction(oid: Int, email: String): Boolean {
         initializeConnection().use {

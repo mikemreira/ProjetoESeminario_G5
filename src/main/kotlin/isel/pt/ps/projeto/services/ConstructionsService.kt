@@ -45,6 +45,10 @@ sealed class NfcError {
     object NoConstruction: NfcError()
 }
 
+sealed class IsAdminError {
+    object UserNotFound: IsAdminError()
+}
+
 typealias NfcResult = Either<NfcError, String?>
 
 typealias ConstructionAndRoleResult = Either<ConstructionInfoError, ConstructionAndRole>
@@ -57,6 +61,8 @@ typealias RemoveUserFromConstructionResult = Either<ConstructionUserError, Boole
 
 typealias EmployeesInConstructionResult = Either<ConstructionInfoError, List<SimpleUserAndFunc>>
 typealias EmployeeInConstructionResult = Either<ConstructionUserError, SimpleUserAndFunc>
+
+typealias IsAdminResult = Either<IsAdminError, Boolean>
 
 @Component
 class ConstructionsService(
@@ -213,6 +219,10 @@ class ConstructionsService(
             }
         }
         return failure(ConstructionUserError.NoPermission)
+    }
+
+    fun isAdmin(userId: Int): IsAdminResult {
+        return success(constructionsRepository.isAdmin(userId))
     }
 
 }

@@ -3,10 +3,7 @@ package isel.pt.ps.projeto.Users
 import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
 import isel.pt.ps.projeto.repository.jdbc.RegistersRepository
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
-import kotlinx.datetime.Clock
-import kotlinx.datetime.toJavaInstant
-import kotlinx.datetime.toJavaLocalDateTime
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,12 +33,26 @@ class RegistersTests(
         val userId = 1
 
         // When
-        val registers = registersRepository.getUserRegisters(userId)
+        val registers = registersRepository.getUserRegisters(userId,1, null, null )
 
         // Then
         assertNotNull(registers)
         assertEquals(3, registers.size)
     }
+
+    @Test
+    fun `test getUserRegisters by date retrieves correct registers`() {
+        // Given
+        val userId = 1
+        val date = "2024-07-07".toLocalDate().toJavaLocalDate().atStartOfDay()
+        // When
+        val registers = registersRepository.getUserRegisters(userId,1, date, null )
+
+        // Then
+        assertNotNull(registers)
+        assertEquals(2, registers.size)
+    }
+
 
     @Test
     fun `test addUserRegisterEntry adds new register`() {
@@ -57,7 +68,7 @@ class RegistersTests(
         assertTrue(result)
 
         // Verify that the register was added
-        val registers = registersRepository.getUserRegisters(userId)
+        val registers = registersRepository.getUserRegisters(userId, 1, null, null)
 
         assertTrue(registers.first().saida == null)
     }
@@ -78,7 +89,7 @@ class RegistersTests(
         assertTrue(result)
 
         // Verify that the register was updated
-        val registers = registersRepository.getUserRegisters(userId)
+        val registers = registersRepository.getUserRegisters(userId, 1, null, null)
         val updatedRegister = registers.firstOrNull { it.id == regId }
         assertNotNull(updatedRegister)
         assertEquals("pending", updatedRegister?.status)
@@ -93,7 +104,7 @@ class RegistersTests(
 
         // When
         registersRepository.addUserRegisterEntry(userId, obraId, time)
-        val incompleteRegisters = registersRepository.getIncompleteRegisters(userId)
+        val incompleteRegisters = registersRepository.getIncompleteRegisters(userId, 1, null, null)
 
         // Then
         assertTrue(incompleteRegisters.isNotEmpty())
@@ -117,7 +128,7 @@ class RegistersTests(
         assertTrue(result)
 
         // Verify that the register was updated
-        val registers = registersRepository.getUserRegisters(userId)
+        val registers = registersRepository.getUserRegisters(userId, 1, null, null)
         val updatedRegister = registers.firstOrNull { it.id == regId }
         assertNotNull(updatedRegister)
         assertEquals("completed", updatedRegister?.status)
@@ -140,7 +151,7 @@ class RegistersTests(
         assertTrue(result)
 
         // Verify that the register was updated
-        val registers = registersRepository.getUserRegisters(userId)
+        val registers = registersRepository.getUserRegisters(userId, 1, null, null)
         val updatedRegister = registers.firstOrNull { it.id == regId }
         assertNotNull(updatedRegister)
         assertEquals("pending", updatedRegister?.status)
@@ -153,7 +164,7 @@ class RegistersTests(
         val page = 1
 
         // When
-        val registers = registersRepository.getUsersRegistersFromConstruction(obraId, page)
+        val registers = registersRepository.getUsersRegistersFromConstruction(obraId, page, null, null)
 
         // Then
         assertNotNull(registers)
@@ -169,7 +180,7 @@ class RegistersTests(
         val page = 1
 
         // When
-        val registers = registersRepository.getUserRegisterFromConstruction(userId, obraId, page)
+        val registers = registersRepository.getUserRegisterFromConstruction(userId, obraId, page, null, null)
 
         // Then
         assertNotNull(registers)
@@ -183,7 +194,7 @@ class RegistersTests(
         val page = 1
 
         // When
-        val registers = registersRepository.getPendingRegistersFromConstruction(obraId, page)
+        val registers = registersRepository.getPendingRegistersFromConstruction(obraId, page, null ,null)
 
         // Then
         assertNotNull(registers)
@@ -197,7 +208,7 @@ class RegistersTests(
         val page = 1
 
         // When
-        val registers = registersRepository.getPendingRegisters(adminUserId, page)
+        val registers = registersRepository.getPendingRegisters(adminUserId)
 
         // Then
         assertNotNull(registers)
@@ -242,7 +253,7 @@ class RegistersTests(
         assertTrue(result)
 
         // Verify that the status was updated
-        val registers = registersRepository.getUserRegisters(userId)
+        val registers = registersRepository.getUserRegisters(userId, 1, null, null)
         val updatedRegister = registers.firstOrNull { it.id == regId }
         assertNotNull(updatedRegister)
         assertEquals(response, updatedRegister?.status)

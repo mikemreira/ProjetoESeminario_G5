@@ -154,7 +154,7 @@ export default function ObrasInfo() {
      * Obras
      */
 
-    useEffect(() => {
+    const handleGetObra = () => {
         fetch(`${path}/obras/${oid}`, {
             method: "GET",
             headers: {
@@ -176,9 +176,16 @@ export default function ObrasInfo() {
             .catch((error) => {
                 console.error("Error fetching obra:", error);
             });
-    }, [cookies.token, oid]);
+    }
 
     useEffect(() => {
+        handleGetObra()
+        if (obra?.role === "admin") {
+            fetchIsPendingRegisters()
+        }
+    }, [cookies.token, oid, obra?.role]);
+
+    const fetchIsPendingRegisters = () => {
         fetch(`${path}/obras/${oid}/registos/pendente`, {
             method: "GET",
             headers: {
@@ -193,11 +200,10 @@ export default function ObrasInfo() {
             }
         }).then((body) => {
             setPendingRegisters(body);
-
         }).catch((error) => {
             console.error("Error fetching registos pendentes:", error);
         });
-    }, [cookies.token, oid]);
+    }
 
     const handleVisaoGeral = () => {
         fetch(`${path}/obras/${oid}`, {
