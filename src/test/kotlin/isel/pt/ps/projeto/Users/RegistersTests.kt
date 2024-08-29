@@ -234,6 +234,13 @@ class RegistersTests(
     }
 
  */
+    @Test
+    fun `test pending registers size`(){
+
+        val result = registersRepository.getUserRegistersSize(1, "pending", 1)
+
+        assertEquals(1, result)
+    }
 
     @Test
     fun `test acceptOrDeny changes the status of a register`() {

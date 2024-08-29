@@ -105,14 +105,14 @@ class RegistersRepository(
                 } else {
                     val pStatement = it.prepareStatement(
                         "select Count(*) from registo R\n" +
-                            "where id_utilizador = ? and R.status >= COALESCE(?, R.status) and o.id = COALESCE(?, o.id)"
+                            "where id_utilizador = ? and R.status = COALESCE(?, R.status) and R.id_obra = COALESCE(?, R.id_obra)"
                     )
                     pStatement.setInt(1, userId)
                     pStatement.setString(2, if (type == "total") null else type)
                     if (oid != null) {
-                        pStatement.setInt(4, oid)
+                        pStatement.setInt(3, oid)
                     } else {
-                        pStatement.setNull(4, java.sql.Types.INTEGER)
+                        pStatement.setNull(3, java.sql.Types.INTEGER)
                     }
                     val res = pStatement.executeQuery()
                     res.next()
