@@ -3,8 +3,8 @@ name: Push docker image for Spring
 on:
   push:
     branches: [ "main" ]
-    paths-ignore:
-      - 'js/**'
+    paths:
+      - 'src/**'
 
 jobs:
   push:
