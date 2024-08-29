@@ -9,9 +9,14 @@ on:
 jobs:
   push:
     runs-on: [ ubuntu-latest ]
+    container:
+      image: mcr.microsoft.com/azure-cli:2.54.0
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Azure Login
+        run: az login --service-principal -u ${{ secrets.SP_APP_ID }} -t ${{ secrets.SP_TENANT_ID }} -p ${{ secrets.SP_SECRET }}
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -25,3 +30,9 @@ jobs:
           file: ./Dockerfile-js
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/projeto-front-end:1.0.0
+
+      - name: Restart App Services image
+        run: az webapp restart --name registo-acessos --resource-group deploy-ps
+
+      - name: Azure Logout
+        run: az logout
