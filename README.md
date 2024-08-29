@@ -12,4 +12,4 @@
     </li>
 </ul>
 
-<p>Criar issues no Github para o que falta fazer.</p>
+<p>Criar issues no Github para o que falta fazer!</p>
