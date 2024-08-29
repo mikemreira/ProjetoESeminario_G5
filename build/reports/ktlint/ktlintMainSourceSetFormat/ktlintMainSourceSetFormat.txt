@@ -1,4 +1,0 @@
-[90m/Users/miguelmoreira/Downloads/projeto/src/main/kotlin/isel/pt/ps/projeto/[0mProjetoApplication.kt[90m:[0m11[90m:1:[0m Unexpected tab character(s) [90m(standard:indent)[0m
-
-Summary error count (descending) by rule:
-  standard:indent: 1
