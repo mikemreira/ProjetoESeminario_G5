@@ -164,7 +164,7 @@ class RegistersTests(
         val page = 1
 
         // When
-        val registers = registersRepository.getUsersRegistersFromConstruction(obraId, page)
+        val registers = registersRepository.getUsersRegistersFromConstruction(obraId, page, null, null)
 
         // Then
         assertNotNull(registers)
@@ -180,7 +180,7 @@ class RegistersTests(
         val page = 1
 
         // When
-        val registers = registersRepository.getUserRegisterFromConstruction(userId, obraId, page)
+        val registers = registersRepository.getUserRegisterFromConstruction(userId, obraId, page, null, null)
 
         // Then
         assertNotNull(registers)
@@ -194,7 +194,7 @@ class RegistersTests(
         val page = 1
 
         // When
-        val registers = registersRepository.getPendingRegistersFromConstruction(obraId, page)
+        val registers = registersRepository.getPendingRegistersFromConstruction(obraId, page, null ,null)
 
         // Then
         assertNotNull(registers)
@@ -208,7 +208,7 @@ class RegistersTests(
         val page = 1
 
         // When
-        val registers = registersRepository.getPendingRegisters(adminUserId, page, null, null)
+        val registers = registersRepository.getPendingRegisters(adminUserId)
 
         // Then
         assertNotNull(registers)

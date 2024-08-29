@@ -10,7 +10,6 @@ import isel.pt.ps.projeto.services.RegistersUserInfoError
 import isel.pt.ps.projeto.utils.Failure
 import isel.pt.ps.projeto.utils.Success
 import jakarta.servlet.http.HttpServletResponse
-import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
 import kotlinx.datetime.toLocalDateTime
 import org.springframework.http.ResponseEntity
@@ -35,7 +34,8 @@ class RegistersController(
     ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         val res = registersService.getUserRegisters(authUser.user.id, page, initialDate, endDate)
-        val regSize = registersService.getUserRegistersSize(authUser.user.id, "total")
+
+        val regSize = registersService.getRegistersSize(authUser.user.id, "total", null)
         var size = 0
         when(regSize) {
             is Success -> size = regSize.value
@@ -45,6 +45,7 @@ class RegistersController(
                 RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
             }
         }
+
         return when (res) {
             is Success ->
                 ResponseEntity.status(200)
@@ -154,10 +155,22 @@ class RegistersController(
         @PathVariable oid: Int,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestHeader("Authorization") userToken: String,
+        @RequestParam initialDate: String?,
+        @RequestParam endDate: String?
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        return when (val res = registersService.getRegistersFromUsersInConstruction(authUser.user.id, oid, page)) {
+        val regSize = registersService.getRegistersSize(authUser.user.id, "total", oid)
+        var size = 0
+        when(regSize) {
+            is Success -> size = regSize.value
+            is Failure -> return when (regSize.value) {
+                RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
+            }
+        }
+        return when (val res = registersService.getRegistersFromUsersInConstruction(authUser.user.id, oid, page, initialDate, endDate)) {
             is Success -> ResponseEntity.status(200).body(
                 UserRegistersAndObraOutputModel(
                     res.value.registers.map {
@@ -178,6 +191,8 @@ class RegistersController(
                     "${utils.path}/obras/$oid/registos/pendente"
                     ,
                     "${utils.path}/obras/$oid/registos"
+                    ,
+                    size
                 )
             )
             is Failure -> when (res.value) {
@@ -222,9 +237,23 @@ class RegistersController(
         @PathVariable userId: Int,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestHeader("Authorization") userToken: String,
+        @RequestParam initialDate: String?,
+        @RequestParam endDate: String?
     ): ResponseEntity<*>{
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        return when (val res = registersService.getRegistersFromUserInConstruction(authUser.user.id, userId, oid, page,false)) {
+
+        val regSize = registersService.getRegistersSize(userId, "total", oid)
+        var size = 0
+        when(regSize) {
+            is Success -> size = regSize.value
+            is Failure -> return when (regSize.value) {
+                RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
+            }
+        }
+
+        return when (val res = registersService.getRegistersFromUserInConstruction(authUser.user.id, userId, oid, page,false, initialDate, endDate)) {
             is Success -> ResponseEntity.status(200).body(
                 UserRegistersAndObraOutputModel(
                     res.value.map {
@@ -237,7 +266,8 @@ class RegistersController(
                             it.endTime,
                             it.status
                         )
-                    }
+                    },
+                    registersSize = size
                 )
             )
             is Failure -> when (res.value) {
@@ -258,24 +288,40 @@ class RegistersController(
         @PathVariable oid: Int,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestHeader("Authorization") userToken: String,
+        @RequestParam initialDate: String?,
+        @RequestParam endDate: String?
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        return when (val res = registersService.getRegistersFromUserInConstruction(authUser.user.id, authUser.user.id, oid, page, true)) {
+
+        val regSize = registersService.getRegistersSize(authUser.user.id, "total", oid)
+        var size = 0
+        when(regSize) {
+            is Success -> size = regSize.value
+            is Failure -> return when (regSize.value) {
+                RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
+            }
+        }
+
+        return when (val res = registersService.getRegistersFromUserInConstruction(authUser.user.id, authUser.user.id, oid, page, true, initialDate, endDate)) {
             is Success -> ResponseEntity.status(200).body(
                 UserRegistersAndObraOutputModel(
-                res.value.map {
-                    RegisterAndUser(
-                        it.userName,
-                        it.id,
-                        it.oid,
-                        it.uid,
-                        it.startTime,
-                        it.endTime,
-                        it.status
-                    )
-                }
-            ))
+                    res.value.map {
+                        RegisterAndUser(
+                            it.userName,
+                            it.id,
+                            it.oid,
+                            it.uid,
+                            it.startTime,
+                            it.endTime,
+                            it.status
+                        )
+                    },
+                    registersSize = size
+                )
+            )
             is Failure -> when (res.value) {
                 RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                 RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
@@ -293,10 +339,24 @@ class RegistersController(
         @PathVariable oid: Int,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestHeader("Authorization") userToken: String,
+        @RequestParam initialDate: String?,
+        @RequestParam endDate: String?
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        return when (val res = registersService.getPendingRegistersFromUsersInConstruction(authUser.user.id, oid, page)) {
+
+        val regSize = registersService.getRegistersSize(authUser.user.id, "pending", oid)
+        var size = 0
+        when(regSize) {
+            is Success -> size = regSize.value
+            is Failure -> return when (regSize.value) {
+                RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
+            }
+        }
+
+        return when (val res = registersService.getPendingRegistersFromUsersInConstruction(authUser.user.id, oid, page, initialDate, endDate)) {
             is Success -> ResponseEntity.status(200).body(
                 UserRegistersAndObraOutputModel(
                     res.value.map {
@@ -309,7 +369,8 @@ class RegistersController(
                             it.endTime,
                             it.status
                         )
-                    }
+                    },
+                    registersSize = size
                 )
             )
             is Failure -> when (res.value) {
@@ -327,13 +388,10 @@ class RegistersController(
     @GetMapping("/registos/pendente")
     fun getPendingRegistersOfUsers(
         @RequestHeader("Authorization") userToken: String,
-        @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam initialDate: String?,
-        @RequestParam endDate: String?
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        val regSize = registersService.getUserRegistersSize(authUser.user.id, "unfinished")
+        val regSize = registersService.getRegistersSize(authUser.user.id, "pending", null)
         var size = 0
         when(regSize) {
             is Success -> size = regSize.value
@@ -343,7 +401,7 @@ class RegistersController(
                 RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
             }
         }
-        return when (val res = registersService.getPendingRegistersFromUsers(authUser.user.id, page, initialDate, endDate)) {
+        return when (val res = registersService.getPendingRegistersFromUsers(authUser.user.id)) {
             is Success -> ResponseEntity.status(200).body(
                 UserRegistersAndObraOutputModel(
                     res.value.map {
@@ -381,7 +439,7 @@ class RegistersController(
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         val res = registersService.getIncompleteRegisters(authUser.user.id, page, initialDate, endDate)
-        val regSize = registersService.getUserRegistersSize(authUser.user.id, "unfinished")
+        val regSize = registersService.getRegistersSize(authUser.user.id, "unfinished", null)
         var size = 0
         when(regSize) {
             is Success -> size = regSize.value

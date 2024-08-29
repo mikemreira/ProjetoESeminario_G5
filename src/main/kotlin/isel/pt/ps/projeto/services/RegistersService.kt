@@ -77,12 +77,10 @@ class RegistersService(
         }
     }
 
-    fun getUserRegistersSize(uid: Int, type: String): RegistersSizeInfoResult{
-
+    fun getRegistersSize(uid: Int, type: String, oid: Int?): RegistersSizeInfoResult{
         if (type != "total" && type != "pending" && type != "unfinished")
             return failure(RegistersUserInfoError.InvalidParams)
-        val register = registersRepository.getUserRegistersSize(uid, type)
-
+        val register = registersRepository.getUserRegistersSize(uid, type, oid)
         return success(register)
     }
 
@@ -144,7 +142,7 @@ class RegistersService(
         }
     }
 
-    fun getRegistersFromUsersInConstruction(userId: Int, oid: Int, page: Int): ListOfUsersRegistersAndConstructionStatusInfoResult {
+    fun getRegistersFromUsersInConstruction(userId: Int, oid: Int, page: Int, startDate: String?, endDate: String?): ListOfUsersRegistersAndConstructionStatusInfoResult {
         val construction = constructionRepository.getConstruction(oid)
             ?: return failure(RegistersInfoError.NoConstruction)
 
@@ -153,54 +151,6 @@ class RegistersService(
 
         if (role.role != "admin")
             return failure(RegistersInfoError.NoPermission)
-        var pg = page
-        if (page <= 0)
-            pg = 1
-
-        val registers = registersRepository.getUsersRegistersFromConstruction(oid, pg)
-        val res = ConstructionStatusAndUserRegisters(constructionStatus = construction.status, registers = registers)
-        return success(res)
-    }
-
-    fun getRegistersFromUserInConstruction(authId:Int, userId: Int, oid: Int, page: Int, me: Boolean): ListOfUsersRegistersInfoResult {
-        val construction = constructionRepository.getConstruction(oid)
-            ?: return failure(RegistersInfoError.NoConstruction)
-
-        val role = constructionRepository.getUserRoleFromConstruction(authId, construction.oid).also { println("ROLE : $it") }
-            ?: return failure(RegistersInfoError.NoAccessToConstruction)
-
-        if (role.role != "admin" && !me)
-            return failure(RegistersInfoError.NoPermission)
-
-        var pg = page
-        if (page <= 0)
-            pg = 1
-
-        val registers = registersRepository.getUserRegisterFromConstruction(userId, oid, pg)
-        return success(registers)
-    }
-
-    fun getPendingRegistersFromUsersInConstruction(userId: Int, oid: Int, page: Int): ListOfUsersRegistersInfoResult {
-        val construction = constructionRepository.getConstruction(oid)
-            ?: return failure(RegistersInfoError.NoConstruction)
-
-        val role = constructionRepository.getUserRoleFromConstruction(userId, construction.oid)
-            ?: return failure(RegistersInfoError.NoAccessToConstruction)
-
-        if (role.role != "admin")
-            return failure(RegistersInfoError.NoPermission)
-
-        var pg = page
-        if (page <= 0)
-            pg = 1
-
-        val registers = registersRepository.getPendingRegistersFromConstruction(oid, pg)
-
-        return success(registers)
-    }
-
-
-    fun getPendingRegistersFromUsers(userId: Int, page: Int, startDate: String?, endDate: String?): ListOfUsersRegistersInfoResult {
 
         var startDateRep: LocalDate? = null
         var endDateRep: LocalDate? = null
@@ -218,7 +168,96 @@ class RegistersService(
         var pg = page
         if (page <= 0)
             pg = 1
-        val registers = registersRepository.getPendingRegisters(userId, pg, startDateRep?.atStartOfDay(), endDateRep?.plusDays(1L)?.atStartOfDay())
+
+        val registers = registersRepository.getUsersRegistersFromConstruction(oid, pg, startDateRep?.atStartOfDay(), endDateRep?.plusDays(1L)?.atStartOfDay())
+        val res = ConstructionStatusAndUserRegisters(constructionStatus = construction.status, registers = registers)
+        return success(res)
+    }
+
+    fun getRegistersFromUserInConstruction(authId:Int, userId: Int, oid: Int, page: Int, me: Boolean, startDate: String?, endDate: String?): ListOfUsersRegistersInfoResult {
+        val construction = constructionRepository.getConstruction(oid)
+            ?: return failure(RegistersInfoError.NoConstruction)
+
+        val role = constructionRepository.getUserRoleFromConstruction(authId, construction.oid).also { println("ROLE : $it") }
+            ?: return failure(RegistersInfoError.NoAccessToConstruction)
+
+        if (role.role != "admin" && !me)
+            return failure(RegistersInfoError.NoPermission)
+
+        var startDateRep: LocalDate? = null
+        var endDateRep: LocalDate? = null
+        val valid = !utilsServices.isValidLocalDate(startDate) && !utilsServices.isValidLocalDate(endDate)
+        if (!valid)
+            return failure(RegistersInfoError.InvalidParams)
+        if (startDate != null) {
+            startDateRep = startDate.toLocalDate().toJavaLocalDate()
+        }
+
+        if (endDate != null) {
+            endDateRep = endDate.toLocalDate().toJavaLocalDate()
+        }
+
+        var pg = page
+        if (page <= 0)
+            pg = 1
+
+        val registers = registersRepository.getUserRegisterFromConstruction(userId, oid, pg, startDateRep?.atStartOfDay(), endDateRep?.plusDays(1L)?.atStartOfDay())
+        return success(registers)
+    }
+
+    fun getPendingRegistersFromUsersInConstruction(userId: Int, oid: Int, page: Int, startDate: String?, endDate: String?): ListOfUsersRegistersInfoResult {
+        val construction = constructionRepository.getConstruction(oid)
+            ?: return failure(RegistersInfoError.NoConstruction)
+
+        val role = constructionRepository.getUserRoleFromConstruction(userId, construction.oid)
+            ?: return failure(RegistersInfoError.NoAccessToConstruction)
+
+        if (role.role != "admin")
+            return failure(RegistersInfoError.NoPermission)
+
+        var startDateRep: LocalDate? = null
+        var endDateRep: LocalDate? = null
+        val valid = !utilsServices.isValidLocalDate(startDate) && !utilsServices.isValidLocalDate(endDate)
+        if (!valid)
+            return failure(RegistersInfoError.InvalidParams)
+        if (startDate != null) {
+            startDateRep = startDate.toLocalDate().toJavaLocalDate()
+        }
+
+        if (endDate != null) {
+            endDateRep = endDate.toLocalDate().toJavaLocalDate()
+        }
+
+        var pg = page
+        if (page <= 0)
+            pg = 1
+
+        val registers = registersRepository.getPendingRegistersFromConstruction(oid, pg, startDateRep?.atStartOfDay(), endDateRep?.plusDays(1L)?.atStartOfDay())
+
+        return success(registers)
+    }
+
+    /*
+        var startDateRep: LocalDate? = null
+        var endDateRep: LocalDate? = null
+        val valid = !utilsServices.isValidLocalDate(startDate) && !utilsServices.isValidLocalDate(endDate)
+        if (!valid)
+            return failure(RegistersInfoError.InvalidParams)
+        if (startDate != null) {
+            startDateRep = startDate.toLocalDate().toJavaLocalDate()
+        }
+
+        if (endDate != null) {
+            endDateRep = endDate.toLocalDate().toJavaLocalDate()
+        }
+
+        var pg = page
+        if (page <= 0)
+            pg = 1
+     */
+
+    fun getPendingRegistersFromUsers(userId: Int): ListOfUsersRegistersInfoResult {
+        val registers = registersRepository.getPendingRegisters(userId)
         return success(registers)
     }
 
