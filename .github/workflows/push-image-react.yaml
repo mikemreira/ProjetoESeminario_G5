@@ -9,11 +9,14 @@ on:
 jobs:
   push:
     runs-on: [ ubuntu-latest ]
-    container:
-      image: mcr.microsoft.com/azure-cli:2.54.0
+    # container:
+    #   image: mcr.microsoft.com/azure-cli:2.54.0
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup Azure CLI
+        uses: azure/setup-azd@v1.0.0
 
       - name: Azure Login
         run: az login --service-principal --tenant ${{ secrets.SP_TENANT_ID }} -u ${{ secrets.SP_APP_ID }} -p ${{ secrets.SP_SECRET }}
