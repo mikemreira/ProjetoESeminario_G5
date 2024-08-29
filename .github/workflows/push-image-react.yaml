@@ -1,0 +1,41 @@
+name: Push docker image for React.js
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'js/**'
+
+jobs:
+  push:
+    runs-on: [ ubuntu-latest ]
+    # container:
+    #   image: mcr.microsoft.com/azure-cli:2.54.0
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Azure CLI
+        uses: azure/setup-azd@v1.0.0
+
+      - name: Azure Login
+        run: az login --service-principal --tenant ${{ secrets.SP_TENANT_ID }} -u ${{ secrets.SP_APP_ID }} -p ${{ secrets.SP_SECRET }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          file: ./Dockerfile-js
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/projeto-front-end:1.0.0
+
+      - name: Restart App Services image
+        run: az webapp restart --name registo-acessos --resource-group deploy-ps
+
+      - name: Azure Logout
+        run: az logout

@@ -16,8 +16,8 @@ import ChangePassword from "./user/ChangePassword";
 import ForgotPassword from "./user/ForgotPassword";
 import ResetPassword from "./user/ResetPassword";
 
-//export const path = "https://spring-rest-api-isel-test.victoriousground-85ad6252.northeurope.azurecontainerapps.io"
-export const path = "/api"
+export const path = "https://rest-api.braveforest-4129df1b.northeurope.azurecontainerapps.io"
+//export const path = "/api"a
 
 const AppLayout = () => {
   return (

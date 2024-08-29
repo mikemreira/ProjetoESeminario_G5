@@ -1,0 +1,55 @@
+name: Push docker image for Spring
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'src/**'
+
+jobs:
+  push:
+    runs-on: [ ubuntu-latest ]
+    # container:
+      # image: mcr.microsoft.com/azure-cli:2.54.0
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Create bootJar file
+        run: |
+          ./gradlew bootJar
+          ls -al build/libs
+
+      - name: Setup Azure CLI
+        uses: azure/setup-azd@v1.0.0
+
+      - name: Azure Login
+        run: az login --service-principal --tenant ${{ secrets.SP_TENANT_ID }} -u ${{ secrets.SP_APP_ID }} -p ${{ secrets.SP_SECRET }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/projeto:1.0.1
+
+      - name: Restart Spring Apps image
+        run: az spring app restart --name rest-api --resource-group deploy-ps --service spring-apps-isel
+
+      - name: Azure Logout
+        run: az logout
