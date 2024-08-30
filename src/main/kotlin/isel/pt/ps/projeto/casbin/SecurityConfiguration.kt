@@ -34,6 +34,7 @@ class SecurityConfiguration {
                 authorize("/users/signout", authenticated)
                 authorize("/users/me", authenticated)
                 authorize("/registos", authenticated)
+                authorize("/registos/**", authenticated)
                 authorize("/obras", authenticated)
                 authorize("/obras/**", authenticated)
                 authorize("/convites", authenticated)
@@ -41,7 +42,6 @@ class SecurityConfiguration {
                 authorize("/users/signout", authenticated)
                 authorize("/users/forget-password", permitAll)
                 authorize("/users/set-password", permitAll)
-                authorize("/registos/**", authenticated)
                 authorize("/users/me/imagem", authenticated)
                 authorize("/users/me/changepassword", authenticated)
             }

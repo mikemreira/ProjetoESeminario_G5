@@ -63,5 +63,7 @@ class Problem(
 
         val invalidQuery = Problem("Invalid Query")
 
+        val invalidParams = Problem("Invalid Params")
+
     }
 }

@@ -32,12 +32,13 @@ interface VisaoGeralProps {
     handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleSelectChange: (event: ChangeEvent<{ name?: string; value: unknown }>) => void;
     handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    handleClickPendingRegisters: () => void;
+    handleClickPendingRegisters: (pageNumber: number) => void;
     handleNFC: () => void;
     handleClickEditObra: () => void;
     handleSuspendOrRecover: (status: string) => void;
     handleSaveObra: () => void;
     handleCancelEdit: () => void;
+    pageNumber: number;
 }
 
 const func = [
@@ -63,7 +64,8 @@ export default function ObraVisaoGeralForm({
     handleClickEditObra,
     handleSuspendOrRecover,
     handleSaveObra,
-    handleCancelEdit
+    handleCancelEdit,
+    pageNumber
 }: VisaoGeralProps) {
     const handleSuspendObra = () => handleSuspendOrRecover("recoverable");
     const handleCompletedObra = () => handleSuspendOrRecover("completed");
@@ -75,7 +77,7 @@ export default function ObraVisaoGeralForm({
             {obra.role === "admin" && !isEditing && (obra.status === "on going") && (
                 <Box display="flex" justifyContent="flex-end" alignItems="center">
                     <Tooltip title="Registos Pendentes">
-                        <IconButton color="primary" onClick={handleClickPendingRegisters}>
+                        <IconButton color="primary" onClick={() => handleClickPendingRegisters(pageNumber)}>
                             <Badge badgeContent={pendingRegisters.registers ? pendingRegisters.registers.length : 0} color="warning">
                                 <PendingActionsIcon sx={{ color: 'black' }} />
                             </Badge>

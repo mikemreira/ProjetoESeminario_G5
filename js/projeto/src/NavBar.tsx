@@ -120,11 +120,8 @@ export default function NavBar() {
         })
     }
 
-    const fetchPendingRegisters = (pageNumber: number) => {
-        const params = new URLSearchParams({ page: String(pageNumber) });
-        const queryString = params.toString();
-        console.log("aqui");
-        fetch(`${path}/registos/pendente?${queryString}`, {
+    const fetchPendingRegisters = () => {
+        fetch(`${path}/registos/pendente`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -137,7 +134,6 @@ export default function NavBar() {
                 throw new Error('Failed to fetch registos pendentes');
             }
         }).then((body) => {
-            console.log("Registos pendentes: ", body);
             setPendingRegisters(body);
         }).catch((error) => {
             console.error("Error fetching registos pendentes:", error);
@@ -145,10 +141,11 @@ export default function NavBar() {
     }
 
     useEffect(() => {
-        fetchIsAdmin();
-        console.log("isAdmin: ", isAdmin);
-        if (cookies.token !== undefined && isAdmin) {
-            fetchPendingRegisters(1);
+        if (cookies.token !== undefined) {
+            fetchIsAdmin();
+            if (isAdmin) {
+                fetchPendingRegisters();
+            }
         }
     }, [cookies.token, isAdmin]);
 
@@ -185,7 +182,6 @@ export default function NavBar() {
         })
             .then((res) => {
                 if (res.ok) return res;
-
                 else return null;
             })
             .then(() => {

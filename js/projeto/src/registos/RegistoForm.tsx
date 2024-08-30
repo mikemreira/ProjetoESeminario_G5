@@ -86,7 +86,7 @@ export default function RegistoForm(props: RegistoFormProps) {
                     component: 'form',
                     onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
                         event.preventDefault();
-                        fetch(`/obras/${selectedObras}/register`, {
+                        fetch(`${path}/obras/${selectedObras}/register`, {
                             method: "POST",
                             headers: {
                                 "Content-type": "application/json",

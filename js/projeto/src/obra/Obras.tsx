@@ -115,7 +115,7 @@ export default function Obras() {
                 }}
             >
                 <Typography variant="h4" color={"black"}>Obras</Typography>
-                <IconButton onClick={handleClickAddObra} color="primary" sx={{
+                <IconButton onClick={handleClickAddObra} color="primary" title={"Adicionar obra"} sx={{
                     bgcolor: 'primary.main',
                     borderRadius: '40%',
                     width: '40px',
@@ -159,7 +159,7 @@ export default function Obras() {
                                         <TableCell align="left" sx={{ fontSize: '1.1rem' }}>{obra.name}</TableCell>
                                         <TableCell align="left" sx={{ fontSize: '1.1rem' }}>{obra.location}</TableCell>
                                         <TableCell align="center">
-                                            <IconButton onClick={() => handleClickObra(obra.oid)}>
+                                            <IconButton onClick={() => handleClickObra(obra.oid)} title={"Ver obra"}>
                                                 <InfoIcon/>
                                             </IconButton>
                                         </TableCell>

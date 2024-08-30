@@ -154,14 +154,14 @@ class RegistersService(
 
         var startDateRep: LocalDate? = null
         var endDateRep: LocalDate? = null
-        val valid = !utilsServices.isValidLocalDate(startDate) && !utilsServices.isValidLocalDate(endDate)
-        if (!valid)
-            return failure(RegistersInfoError.InvalidParams)
         if (startDate != null) {
+            if (!(utilsServices.isValidLocalDate(startDate)))
+                return failure(RegistersInfoError.InvalidParams)
             startDateRep = startDate.toLocalDate().toJavaLocalDate()
         }
-
         if (endDate != null) {
+            if (!(utilsServices.isValidLocalDate(endDate)))
+                return failure(RegistersInfoError.InvalidParams)
             endDateRep = endDate.toLocalDate().toJavaLocalDate()
         }
 
@@ -186,14 +186,14 @@ class RegistersService(
 
         var startDateRep: LocalDate? = null
         var endDateRep: LocalDate? = null
-        val valid = !utilsServices.isValidLocalDate(startDate) && !utilsServices.isValidLocalDate(endDate)
-        if (!valid)
-            return failure(RegistersInfoError.InvalidParams)
         if (startDate != null) {
+            if (!(utilsServices.isValidLocalDate(startDate)))
+                return failure(RegistersInfoError.InvalidParams)
             startDateRep = startDate.toLocalDate().toJavaLocalDate()
         }
-
         if (endDate != null) {
+            if (!(utilsServices.isValidLocalDate(endDate)))
+                return failure(RegistersInfoError.InvalidParams)
             endDateRep = endDate.toLocalDate().toJavaLocalDate()
         }
 
@@ -217,17 +217,16 @@ class RegistersService(
 
         var startDateRep: LocalDate? = null
         var endDateRep: LocalDate? = null
-        val valid = !utilsServices.isValidLocalDate(startDate) && !utilsServices.isValidLocalDate(endDate)
-        if (!valid)
-            return failure(RegistersInfoError.InvalidParams)
         if (startDate != null) {
+            if (!(utilsServices.isValidLocalDate(startDate)))
+                return failure(RegistersInfoError.InvalidParams)
             startDateRep = startDate.toLocalDate().toJavaLocalDate()
         }
-
         if (endDate != null) {
+            if (!(utilsServices.isValidLocalDate(endDate)))
+                return failure(RegistersInfoError.InvalidParams)
             endDateRep = endDate.toLocalDate().toJavaLocalDate()
         }
-
         var pg = page
         if (page <= 0)
             pg = 1

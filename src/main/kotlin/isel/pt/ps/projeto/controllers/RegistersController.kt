@@ -42,7 +42,7 @@ class RegistersController(
             is Failure -> return when (regSize.value) {
                 RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
-                RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
+                RegistersUserInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
             }
         }
 
@@ -71,7 +71,7 @@ class RegistersController(
                 when (res.value) {
                     RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                     RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
-                    RegistersUserInfoError.InvalidParams -> TODO()
+                    RegistersUserInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
                 }
         }
     }
@@ -95,7 +95,7 @@ class RegistersController(
                     RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                     RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                     RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
-                    RegistersInfoError.InvalidParams -> TODO()
+                    RegistersInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
                 }
         }
     }
@@ -120,7 +120,7 @@ class RegistersController(
                     RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                     RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                     RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
-                    RegistersInfoError.InvalidParams -> TODO()
+                    RegistersInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
                 }
         }
     }
@@ -144,7 +144,7 @@ class RegistersController(
                     RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                     RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                     RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
-                    RegistersInfoError.InvalidParams -> TODO()
+                    RegistersInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
                 }
         }
     }
@@ -167,7 +167,7 @@ class RegistersController(
             is Failure -> return when (regSize.value) {
                 RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
-                RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
+                RegistersUserInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
             }
         }
         return when (val res = registersService.getRegistersFromUsersInConstruction(authUser.user.id, oid, page, initialDate, endDate)) {
@@ -202,7 +202,7 @@ class RegistersController(
                 RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
-                RegistersInfoError.InvalidParams -> TODO()
+                RegistersInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
             }
         }
     }
@@ -225,7 +225,7 @@ class RegistersController(
                 RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
-                RegistersInfoError.InvalidParams -> TODO()
+                RegistersInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
             }
         }
     }
@@ -249,7 +249,7 @@ class RegistersController(
             is Failure -> return when (regSize.value) {
                 RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
-                RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
+                RegistersUserInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
             }
         }
 
@@ -277,7 +277,7 @@ class RegistersController(
                 RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
-                RegistersInfoError.InvalidParams -> TODO()
+                RegistersInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
             }
         }
     }
@@ -301,7 +301,7 @@ class RegistersController(
             is Failure -> return when (regSize.value) {
                 RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
-                RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
+                RegistersUserInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
             }
         }
 
@@ -329,7 +329,7 @@ class RegistersController(
                 RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
-                RegistersInfoError.InvalidParams -> TODO()
+                RegistersInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
             }
         }
     }
@@ -346,13 +346,14 @@ class RegistersController(
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
 
         val regSize = registersService.getRegistersSize(authUser.user.id, "pending", oid, true)
+        println("asd: " + regSize)
         var size = 0
         when(regSize) {
             is Success -> size = regSize.value
             is Failure -> return when (regSize.value) {
                 RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
-                RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
+                RegistersUserInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
             }
         }
 
@@ -380,7 +381,7 @@ class RegistersController(
                 RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
-                RegistersInfoError.InvalidParams -> TODO()
+                RegistersInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
             }
         }
     }
@@ -398,7 +399,7 @@ class RegistersController(
             is Failure -> return when (regSize.value) {
                 RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
-                RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
+                RegistersUserInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
             }
         }
         return when (val res = registersService.getPendingRegistersFromUsers(authUser.user.id)) {
@@ -425,7 +426,7 @@ class RegistersController(
                 RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
                 RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
-                RegistersInfoError.InvalidParams -> TODO()
+                RegistersInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
             }
         }
     }
@@ -446,7 +447,7 @@ class RegistersController(
             is Failure -> return when (regSize.value) {
                 RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                 RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
-                RegistersUserInfoError.InvalidParams -> Problem.response(403, Problem.invalidQuery)
+                RegistersUserInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
             }
         }
         return when (res) {
@@ -474,7 +475,7 @@ class RegistersController(
                 when (res.value) {
                     RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
                     RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
-                    RegistersUserInfoError.InvalidParams -> TODO()
+                    RegistersUserInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
                 }
         }
     }
@@ -500,7 +501,7 @@ class RegistersController(
                     RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
                     RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
                     RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
-                    RegistersInfoError.InvalidParams -> TODO()
+                    RegistersInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
                 }
         }
     }

@@ -77,7 +77,7 @@ export interface UserRegistersAndObraOutputModel {
     meRoute: string,
     pendingRoute: string,
     allRoute: string,
-
+    registersSize?: number
 }
 
 export interface RegistosOutputModel {
@@ -140,6 +140,8 @@ interface states {
     value: string
 }
 
+export const pageSize = 5;
+
 export default function ObrasInfo() {
     const [cookies] = useCookies(["token"]);
     const [obra, setObra] = useState<Obra>()
@@ -149,6 +151,36 @@ export default function ObrasInfo() {
     const [editedObra, setEditedObra] = useState<Obra>();
     const [tabIndex, setTabIndex] = useState(0);
     const [state, setState] = useState<states>({ value: "geral" })
+
+    const handleNextPage = () => {
+        if (page) {
+            setPage(page + 1)
+        }
+    }
+
+    const handlePreviousPage = () => {
+        if (page > 1) {
+            setPage(page - 1)
+        }
+    }
+
+    const handleFilterReset = () => {
+        setInitialDate(null)
+        setEndDate(null)
+        setPage(1)
+    }
+
+    const handlePageChange = (pageNumber: number) => {
+        setPage(pageNumber)
+    }
+
+    const handleFirstPage = () => {
+        setPage(1)
+    }
+
+    const handleLastPage = () => {
+        setPage(totalPages)
+    }
 
     /*
      * Obras
@@ -181,12 +213,23 @@ export default function ObrasInfo() {
     useEffect(() => {
         handleGetObra()
         if (obra?.role === "admin") {
-            fetchIsPendingRegisters()
+            fetchIsPendingRegisters(1)
         }
     }, [cookies.token, oid, obra?.role]);
 
-    const fetchIsPendingRegisters = () => {
-        fetch(`${path}/obras/${oid}/registos/pendente`, {
+    const [page, setPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState(1);
+
+    const [initialDate, setInitialDate] = useState<string | null>(null);
+    const [endDate, setEndDate] = useState<string | null>(null);
+
+    const fetchIsPendingRegisters = (pageNumber: number) => {
+        const params = new URLSearchParams({ page: String(pageNumber) });
+        if (initialDate) params.append("initialDate", initialDate);
+        if (endDate) params.append("endDate", endDate);
+        const queryString = params.toString();
+        console.log("fez este fetch")
+        fetch(`${path}/obras/${oid}/registos/pendente?${queryString}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -314,19 +357,28 @@ export default function ObrasInfo() {
     /*
      *  Registers
      */
+
     const [registos, setRegistos] = useState<UserRegistersAndObraOutputModel>({
         registers: [],
         constructionStatus: "",
         meRoute: "",
         pendingRoute: "",
-        allRoute: "",})
+        allRoute: "",
+        registersSize: 0,
+    })
     const [searchParams, setSearchParams] = useSearchParams();
     const [openForm, setOpenForm] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [filterMode, setFilterMode] = useState<'all' | 'me' | 'pending' |'incomplete'>('all')
 
-    const handleGetRegistersMine = () => {
-        const page = searchParams.get('page') || '0'
-        fetch(`${path}/obras/${oid}/registos/me?page=${page}`, {
+    const handleGetRegistersMine = (pageNumber: number) => {
+        setFilterMode('me')
+        const params = new URLSearchParams({ page: String(pageNumber) });
+        if (initialDate) params.append("initialDate", initialDate);
+        if (endDate) params.append("endDate", endDate);
+        const queryString = params.toString();
+        console.log("queryString: " + queryString)
+        fetch(`${path}/obras/${oid}/registos/me?${queryString}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -339,6 +391,7 @@ export default function ObrasInfo() {
         }).then((body) => {
             if (body) {
                 setRegistos(body)
+                setTotalPages(Math.ceil(body.registersSize / pageSize))
                 setLoading(false)
             }
         }).catch(error => {
@@ -346,9 +399,14 @@ export default function ObrasInfo() {
         })
     }
 
-    const handleGetRegistersAll = () => {
-        const page = searchParams.get('page') || '0'
-        fetch(`${path}/obras/${oid}/registos?page=${page}`, {
+    const handleGetRegistersAll = (pageNumber: number) => {
+        setFilterMode('all')
+        const params = new URLSearchParams({ page: String(pageNumber) });
+        if (initialDate) params.append("initialDate", initialDate);
+        if (endDate) params.append("endDate", endDate);
+        const queryString = params.toString();
+        console.log("queryString: " + queryString)
+        fetch(`${path}/obras/${oid}/registos?${queryString}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -359,16 +417,15 @@ export default function ObrasInfo() {
             if (res.ok) return res.json()
             else return null
         }).then((body) => {
-            console.log("ads: " + body.registers)
             if (body) {
                 setRegistos(body)
+                setTotalPages(Math.ceil(body.registersSize / pageSize))
                 setLoading(false)
             }
         }).catch(error => {
             console.error("Error fetching registos: ", error)
         })
     }
-
 
     const handleClickOpenForm = () => {
         setOpenForm(true);
@@ -377,7 +434,7 @@ export default function ObrasInfo() {
     const handleCloseForm = (reload: boolean) => {
         setOpenForm(false);
         if (reload) {
-            handleGetRegistersMine()
+            handleGetRegistersMine(page)
         }
     };
 
@@ -392,12 +449,18 @@ export default function ObrasInfo() {
         meRoute: "",
         pendingRoute: "",
         allRoute: "",
+        registersSize: 0,
        });
     const [open, setOpen] = useState(false);
 
-    const handleGetPendingRegisters = () => {
-        const page = searchParams.get('page') || '0'
-        fetch(`${path}/obras/${oid}/registos/pendente?page=${page}`, {
+    const handleGetPendingRegisters = (pageNumber: number) => {
+        setFilterMode('pending')
+        const params = new URLSearchParams({ page: String(pageNumber) });
+        if (initialDate) params.append("initialDate", initialDate);
+        if (endDate) params.append("endDate", endDate);
+        const queryString = params.toString();
+        console.log("queryString: " + queryString)
+        fetch(`${path}/obras/${oid}/registos/pendente?${queryString}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -409,7 +472,9 @@ export default function ObrasInfo() {
             else return null
         }).then((body) => {
             if (body) {
+                console.log("body: " + body.registersSize)
                 setPendingRegisters(body)
+                setTotalPages(Math.ceil(body.registersSize / pageSize))
                 setLoading(false)
             }
         }).catch(error => {
@@ -663,13 +728,13 @@ export default function ObrasInfo() {
                             <Tab label="Visão Geral" onClick={handleVisaoGeral} sx={{ border: 'none'}}/>
 
                             {obra.role === "admin" && (
-                                <Tab label="Registos" onClick={handleGetRegistersAll} sx={{ border: 'none'}}/>
+                                <Tab label="Registos" onClick={() => handleGetRegistersAll(page)} sx={{ border: 'none'}}/>
                             )}
                             {obra.role === "admin" && (
                                 <Tab label="Membros" onClick={handleGetFuncionarios} sx={{ border: 'none'}}/>
                             )}
                             {obra.role === "funcionario" && (
-                                <Tab label="Registos" onClick={handleGetRegistersMine} sx={{ border: 'none'}}/>
+                                <Tab label="Registos" onClick={() => handleGetRegistersMine(page)} sx={{ border: 'none'}}/>
                             )}
 
                         </Tabs>
@@ -690,6 +755,7 @@ export default function ObrasInfo() {
                                 handleSuspendOrRecover={handleSuspendOrRecover}
                                 handleSaveObra={handleSaveObra}
                                 handleCancelEdit={handleCancelEdit}
+                                pageNumber={page}
                             />
                         )}
                         {state.value === "registo" && (
@@ -700,7 +766,21 @@ export default function ObrasInfo() {
                              openForm={openForm}
                              registo={registos}
                              setRegistos={setRegistos}
-                             obra={obra}/>
+                             obra={obra}
+                             totalPages={totalPages}
+                             setTotalPages={setTotalPages}
+                             handleNextPage={handleNextPage}
+                             handlePreviousPage={handlePreviousPage}
+                             handleFilterReset={handleFilterReset}
+                             handlePageChange={handlePageChange}
+                             handleFirstPage={handleFirstPage}
+                             handleLastPage={handleLastPage}
+                             page={page}
+                             initialDate={initialDate}
+                             setInitialDate={setInitialDate}
+                             endDate={endDate}
+                             setEndDate={setEndDate}
+                            />
                         )}
                         {state.value === "funcionarios" && obra.role === "admin" && (
                             <ObraFuncionariosForm
@@ -715,6 +795,19 @@ export default function ObrasInfo() {
                             <ObraRegistosOfAllPendingUsersForm
                                 table={tablePendingRegisters}
                                 handleAcceptOrRejectPendingRegister={handleAcceptOrRejectPendingRegister}
+                                totalPages={totalPages}
+                                handleNextPage={handleNextPage}
+                                handlePreviousPage={handlePreviousPage}
+                                handleFilterReset={handleFilterReset}
+                                handlePageChange={handlePageChange}
+                                handleFirstPage={handleFirstPage}
+                                handleLastPage={handleLastPage}
+                                page={page}
+                                initialDate={initialDate}
+                                setInitialDate={setInitialDate}
+                                endDate={endDate}
+                                setEndDate={setEndDate}
+                                handleGetPendingRegisters={handleGetPendingRegisters}
                             />
                         )}
                         {state.value === "registoFuncionario" && obra.role === "admin" && (

@@ -1,8 +1,5 @@
 import {
-    MRT_GlobalFilterTextField,
     MRT_TableBodyCellValue,
-    MRT_TablePagination,
-    useMaterialReactTable
 } from 'material-react-table';
 import {
     Box, Snackbar,
@@ -26,9 +23,6 @@ import {useNavigate} from "react-router-dom";
 import Button from "@mui/material/Button";
 import {path} from "../App";
 import NavBar from "../NavBar";
-import {FilterList} from "react-admin";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import RegistoExitForm from "./RegistoExitForm";
 import EditIcon from "@mui/icons-material/Edit";
@@ -118,7 +112,6 @@ export default function Registos () {
             if (body) {
                 setRegistos(body.registers);
                 setTotalPages(Math.ceil(body.registersSize / pageSize));
-                console.log("totalPages: ", body.registersSize / pageSize)
                 setLoading(false);
             }
         }).catch(error => {
@@ -150,8 +143,6 @@ export default function Registos () {
             if (body) {
                 setRegistos(body.registers)
                 setTotalPages(Math.ceil(body.registersSize / pageSize))
-              //  setInitialDate(null)
-              //  setEndDate(null)
                 setLoading(false)
             }
         }).catch(error => {
@@ -167,7 +158,6 @@ export default function Registos () {
         if (filterMode === 'incomplete') {
             fetchRegistosIncompletos(page)
         }
-        // falta meter a page no incompletos
     }, [cookies.token, page, initialDate, endDate])
 
     const handleNextPage = () => {
