@@ -77,10 +77,10 @@ class RegistersService(
         }
     }
 
-    fun getRegistersSize(uid: Int, type: String, oid: Int?): RegistersSizeInfoResult{
+    fun getRegistersSize(uid: Int, type: String, oid: Int?, forAdmin: Boolean): RegistersSizeInfoResult{
         if (type != "total" && type != "pending" && type != "unfinished")
             return failure(RegistersUserInfoError.InvalidParams)
-        val register = registersRepository.getUserRegistersSize(uid, type, oid)
+        val register = registersRepository.getUserRegistersSize(uid, type, oid, forAdmin)
         return success(register)
     }
 

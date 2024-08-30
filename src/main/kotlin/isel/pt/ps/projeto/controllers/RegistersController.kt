@@ -35,7 +35,7 @@ class RegistersController(
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         val res = registersService.getUserRegisters(authUser.user.id, page, initialDate, endDate)
 
-        val regSize = registersService.getRegistersSize(authUser.user.id, "total", null)
+        val regSize = registersService.getRegistersSize(authUser.user.id, "total", null, false)
         var size = 0
         when(regSize) {
             is Success -> size = regSize.value
@@ -160,7 +160,7 @@ class RegistersController(
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        val regSize = registersService.getRegistersSize(authUser.user.id, "total", oid)
+        val regSize = registersService.getRegistersSize(authUser.user.id, "total", oid, true)
         var size = 0
         when(regSize) {
             is Success -> size = regSize.value
@@ -242,7 +242,7 @@ class RegistersController(
     ): ResponseEntity<*>{
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
 
-        val regSize = registersService.getRegistersSize(userId, "total", oid)
+        val regSize = registersService.getRegistersSize(userId, "total", oid, false)
         var size = 0
         when(regSize) {
             is Success -> size = regSize.value
@@ -294,7 +294,7 @@ class RegistersController(
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
 
-        val regSize = registersService.getRegistersSize(authUser.user.id, "total", oid)
+        val regSize = registersService.getRegistersSize(authUser.user.id, "total", oid, false)
         var size = 0
         when(regSize) {
             is Success -> size = regSize.value
@@ -345,7 +345,7 @@ class RegistersController(
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
 
-        val regSize = registersService.getRegistersSize(authUser.user.id, "pending", oid)
+        val regSize = registersService.getRegistersSize(authUser.user.id, "pending", oid, true)
         var size = 0
         when(regSize) {
             is Success -> size = regSize.value
@@ -391,7 +391,7 @@ class RegistersController(
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        val regSize = registersService.getRegistersSize(authUser.user.id, "pending", null)
+        val regSize = registersService.getRegistersSize(authUser.user.id, "pending", null, false)
         var size = 0
         when(regSize) {
             is Success -> size = regSize.value
@@ -439,7 +439,7 @@ class RegistersController(
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         val res = registersService.getIncompleteRegisters(authUser.user.id, page, initialDate, endDate)
-        val regSize = registersService.getRegistersSize(authUser.user.id, "unfinished", null)
+        val regSize = registersService.getRegistersSize(authUser.user.id, "unfinished", null, false)
         var size = 0
         when(regSize) {
             is Success -> size = regSize.value
