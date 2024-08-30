@@ -21,8 +21,6 @@ import java.sql.Date
 import java.sql.SQLException
 import java.sql.Timestamp
 
-
-// Hello!!
 @Component
 class ConstructionsRepository(
     private val utils: UtilsServices,
@@ -30,9 +28,9 @@ class ConstructionsRepository(
 ) : ConstructionRepository {
     private fun initializeConnection(): Connection {
         val dataSource = PGSimpleDataSource()
-        dataSource.setURL(config.url)
-        dataSource.user = config.username
-        dataSource.password = config.password
+       // dataSource.setURL(config.url)
+        //dataSource.user = config.username
+        //dataSource.password = config.password
         return dataSource.connection
     }
 
