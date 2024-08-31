@@ -237,11 +237,11 @@ class RegistersTests(
     @Test
     fun `test pending registers size`(){
 
-        val result = registersRepository.getUserRegistersSize(1, "pending", 1, false)
+        val result = registersRepository.getUserRegistersSize(1, "pending", 1, false, null, null)
 
         assertEquals(1, result)
 
-        val result2 = registersRepository.getUserRegistersSize(1, "total", 1, true)
+        val result2 = registersRepository.getUserRegistersSize(1, "total", 1, true, null, null)
 
         assertEquals(3, result2)
 

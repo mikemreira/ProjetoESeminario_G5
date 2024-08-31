@@ -77,10 +77,24 @@ class RegistersService(
         }
     }
 
-    fun getRegistersSize(uid: Int, type: String, oid: Int?, forAdmin: Boolean): RegistersSizeInfoResult{
+    fun getRegistersSize(uid: Int, type: String, oid: Int?, forAdmin: Boolean, startDate: String?, endDate: String?): RegistersSizeInfoResult{
         if (type != "total" && type != "pending" && type != "unfinished")
             return failure(RegistersUserInfoError.InvalidParams)
-        val register = registersRepository.getUserRegistersSize(uid, type, oid, forAdmin)
+
+        var startDateRep: LocalDate? = null
+        var endDateRep: LocalDate? = null
+        if (startDate != null) {
+            if (!(utilsServices.isValidLocalDate(startDate)))
+                return failure(RegistersUserInfoError.InvalidParams)
+            startDateRep = startDate.toLocalDate().toJavaLocalDate()
+        }
+        if (endDate != null) {
+            if (!(utilsServices.isValidLocalDate(endDate)))
+                return failure(RegistersUserInfoError.InvalidParams)
+            endDateRep = endDate.toLocalDate().toJavaLocalDate()
+        }
+
+        val register = registersRepository.getUserRegistersSize(uid, type, oid, forAdmin, startDateRep?.atStartOfDay(), endDateRep?.plusDays(1L)?.atStartOfDay())
         return success(register)
     }
 

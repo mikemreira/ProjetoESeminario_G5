@@ -80,7 +80,7 @@ class RegistersRepository(
         }
     }
 
-    override fun getUserRegistersSize(userId: Int, type: String, oid: Int?, forAdmin: Boolean): Int {
+    override fun getUserRegistersSize(userId: Int, type: String, oid: Int?, forAdmin: Boolean, startDate: LocalDateTime?, endDate: LocalDateTime?): Int {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -88,7 +88,9 @@ class RegistersRepository(
                     val pStatement = it.prepareStatement(
                         "select Count(*) from registo R\n" +
                             "inner join Obra o on o.id = R.id_obra\n" +
-                            "where id_utilizador = COALESCE(?, id_utilizador) and (R.status = ? or R.status = ?) and o.id = COALESCE(?, o.id)"
+                            "where id_utilizador = COALESCE(?, id_utilizador)\n" +
+                            "      and (R.status = ? or R.status = ?) and o.id = COALESCE(?, o.id)\n" +
+                            "      and (R.entrada >= COALESCE(?, R.entrada)) and (R.entrada <= COALESCE(?, R.entrada))"
                     )
                     if (!forAdmin)
                         pStatement.setInt(1, userId)
@@ -102,6 +104,9 @@ class RegistersRepository(
                     } else {
                         pStatement.setNull(4, java.sql.Types.INTEGER)
                     }
+
+                    pStatement.setTimestamp(5, if (startDate == null) null  else Timestamp.valueOf(startDate))
+                    pStatement.setTimestamp(6, if (endDate == null) null else Timestamp.valueOf(endDate))
                     val res = pStatement.executeQuery()
                     res.next()
                     res.getInt("Count")
@@ -109,7 +114,9 @@ class RegistersRepository(
                 } else {
                     val pStatement = it.prepareStatement(
                         "select Count(*) from registo R\n" +
-                            "where id_utilizador = COALESCE(?, id_utilizador) and R.status = COALESCE(?, R.status) and R.id_obra = COALESCE(?, R.id_obra)"
+                            "where id_utilizador = COALESCE(?, id_utilizador)\n" +
+                            "      and R.status = COALESCE(?, R.status) and R.id_obra = COALESCE(?, R.id_obra)\n" +
+                            "      and (R.entrada >= COALESCE(?, R.entrada)) and (R.entrada <= COALESCE(?, R.entrada))"
                     )
                     if (!forAdmin)
                         pStatement.setInt(1, userId)
@@ -122,6 +129,8 @@ class RegistersRepository(
                     } else {
                         pStatement.setNull(3, java.sql.Types.INTEGER)
                     }
+                    pStatement.setTimestamp(4, if (startDate == null) null  else Timestamp.valueOf(startDate))
+                    pStatement.setTimestamp(5, if (endDate == null) null else Timestamp.valueOf(endDate))
                     val res = pStatement.executeQuery()
                     res.next()
                     res.getInt("Count")
