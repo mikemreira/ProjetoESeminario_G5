@@ -430,6 +430,57 @@ class RegistersController(
             }
         }
     }
+
+    @GetMapping("/obras/{oid}/registos/incompletos")
+    fun getUnfinishedRegistersOfUsersFromConstruction(
+        @PathVariable oid: Int,
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestHeader("Authorization") userToken: String,
+        @RequestParam initialDate: String?,
+        @RequestParam endDate: String?
+    ): ResponseEntity<*>{
+        val authUser =
+            requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+
+        val regSize = registersService.getRegistersSize(authUser.user.id, "unfinished", oid, true, initialDate, endDate)
+        var size = 0
+        when(regSize) {
+            is Success -> size = regSize.value
+            is Failure -> return when (regSize.value) {
+                RegistersUserInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersUserInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersUserInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
+            }
+        }
+
+        return when (val res = registersService.getIncompleteRegistersFromUsersInConstruction(authUser.user.id, oid, page, initialDate, endDate)) {
+            is Success -> ResponseEntity.status(200).body(
+                UserRegistersAndObraOutputModel(
+                    res.value.map {
+                        RegisterAndUser(
+                            it.userName,
+                            it.id,
+                            it.oid,
+                            it.uid,
+                            it.startTime,
+                            it.endTime,
+                            it.status
+                        )
+                    },
+                    registersSize = size
+                )
+            )
+            is Failure -> when (res.value) {
+                RegistersInfoError.NoConstruction -> Problem.response(404, Problem.constructionNotFound)
+                RegistersInfoError.NoAccessToConstruction -> Problem.response(403, Problem.noConstructions)
+                RegistersInfoError.NoPermission -> Problem.response(403, Problem.unauthorizedUser)
+                RegistersInfoError.InvalidRegister -> Problem.response(400, Problem.invalidRegister)
+                RegistersInfoError.NoRegisters -> Problem.response(404, Problem.noRegisters)
+                RegistersInfoError.ConstructionSuspended -> Problem.response(403, Problem.constructionSuspended)
+                RegistersInfoError.InvalidParams -> Problem.response(400, Problem.invalidParams)
+            }
+        }
+    }
     @GetMapping("/registos/incompletos")
     fun getRegisterWithoutExit(
         @RequestHeader("Authorization") userToken: String,

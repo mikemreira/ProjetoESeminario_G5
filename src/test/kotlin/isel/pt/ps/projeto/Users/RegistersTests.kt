@@ -202,6 +202,21 @@ class RegistersTests(
     }
 
     @Test
+    fun `test getPendingRegistersFromConstruction returns only unfinished registers`() {
+        // Given
+        val obraId = 1
+        val page = 1
+
+        // When
+        val registers = registersRepository.getIncompleteRegistersFromConstruction(obraId, obraId, "admin",page,null ,null)
+
+        // Then
+        assertNotNull(registers)
+        assertEquals(2, registers.size)
+        assertTrue(registers.all { (it.status == "unfinished" || it.status == "unfinished_nfc") && it.oid == obraId })
+    }
+
+    @Test
     fun `test getPendingRegisters returns pending registers for admin`() {
         // Given
         val adminUserId = 1  // Assuming this user is an admin

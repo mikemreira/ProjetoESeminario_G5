@@ -311,6 +311,34 @@ class RegistersService(
         return success(res)
     }
 
+    fun getIncompleteRegistersFromUsersInConstruction(userId: Int, oid: Int, page: Int, startDate: String?, endDate: String?): ListOfUsersRegistersInfoResult {
+        val construction = constructionRepository.getConstruction(oid)
+            ?: return failure(RegistersInfoError.NoConstruction)
+
+        val role = constructionRepository.getUserRoleFromConstruction(userId, construction.oid)
+            ?: return failure(RegistersInfoError.NoAccessToConstruction)
+
+        var startDateRep: LocalDate? = null
+        var endDateRep: LocalDate? = null
+        if (startDate != null) {
+            if (!(utilsServices.isValidLocalDate(startDate)))
+                return failure(RegistersInfoError.InvalidParams)
+            startDateRep = startDate.toLocalDate().toJavaLocalDate()
+        }
+        if (endDate != null) {
+            if (!(utilsServices.isValidLocalDate(endDate)))
+                return failure(RegistersInfoError.InvalidParams)
+            endDateRep = endDate.toLocalDate().toJavaLocalDate()
+        }
+        var pg = page
+        if (page <= 0)
+            pg = 1
+
+        val registers = registersRepository.getIncompleteRegistersFromConstruction(userId, oid, role.role, pg, startDateRep?.atStartOfDay(), endDateRep?.plusDays(1L)?.atStartOfDay())
+
+        return success(registers)
+    }
+
     fun insertExitOnWeb(userId: Int, registerId: Int, oid: Int, endTime: LocalDateTime): EntryOrExitRegisterResult {
         val construction = constructionRepository.getConstruction(oid)
             ?: return failure(RegistersInfoError.NoConstruction)

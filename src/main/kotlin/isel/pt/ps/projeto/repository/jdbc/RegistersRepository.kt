@@ -206,6 +206,59 @@ class RegistersRepository(
         }
     }
 
+    override fun getIncompleteRegistersFromConstruction(
+        userId: Int,
+        oid: Int,
+        role: String,
+        page: Int,
+        startDate: LocalDateTime?,
+        endDate: LocalDateTime?
+    ): List<RegisterAndUser> {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pg = (page-1)*5
+                val pStatement = it.prepareStatement(
+                    "SELECT r.id as rid, u.nome as nome, u.id as uid, r.entrada as entrada, r.saida as saida, r.status as status\n" +
+                        "FROM Utilizador u \n" +
+                        "INNER JOIN Registo r ON r.id_utilizador = u.id\n" +
+                        "WHERE r.id_utilizador = COALESCE(?, r.id_utilizador) and r.id_obra = ? and r.status in ('unfinished', 'unfinished_nfc') and (R.entrada >= COALESCE(?, R.entrada)) and (R.entrada <= COALESCE(?, R.entrada))\n" +
+                        "order by R.entrada desc\n" +
+                        "LIMIT 5 offset ?"
+                )
+                if (role=="admin")
+                    pStatement.setNull(1,java.sql.Types.INTEGER)
+                else
+                    pStatement.setInt(1, userId)
+                pStatement.setInt(2, oid)
+                pStatement.setTimestamp(3, if (startDate == null) null  else Timestamp.valueOf(startDate))
+                pStatement.setTimestamp(4, if (endDate == null) null else Timestamp.valueOf(endDate))
+                pStatement.setInt(5, pg)
+                val result = pStatement.executeQuery()
+                val registers = mutableListOf<RegisterAndUser>()
+                while (result.next()){
+                    val saida = result.getTimestamp("saida")
+                    registers.add(
+                        RegisterAndUser(
+                            result.getString("nome"),
+                            result.getInt("rid"),
+                            oid,
+                            result.getInt("uid"),
+                            result.getTimestamp("entrada").toLocalDateTime(),
+                            if (saida == null) null else saida.toLocalDateTime(),
+                            result.getString("status")
+                        )
+                    )
+                }
+                registers
+            }  catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }    }
+
     override fun addUserRegisterExit(regId: Int,userId: Int, obraId: Int, time: LocalDateTime) : Boolean {
         initializeConnection().use {
             it.autoCommit = false
