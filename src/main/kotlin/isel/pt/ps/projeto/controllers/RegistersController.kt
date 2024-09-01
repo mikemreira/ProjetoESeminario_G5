@@ -192,6 +192,8 @@ class RegistersController(
                     ,
                     "${utils.path}/obras/$oid/registos"
                     ,
+                    "${utils.path}/obras/{oid}/registos/incompletos"
+                    ,
                     size
                 )
             )
