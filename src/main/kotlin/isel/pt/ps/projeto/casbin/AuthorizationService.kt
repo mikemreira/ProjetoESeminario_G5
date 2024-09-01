@@ -71,6 +71,8 @@ class AuthorizationService(
                 savePolicy("construction_${construction.oid}_admin", "/obras/${construction.oid}/user/*", "DELETE")
                 savePolicy("construction_${construction.oid}_admin", "/obras/${construction.oid}/registos/pendente", "GET")
                 savePolicy("construction_${construction.oid}_admin", "/obras/${construction.oid}/registos/**", "DELETE")
+                savePolicy("construction_${construction.oid}_admin", "/obras/${construction.oid}/registos/incompletos", "GET")
+                savePolicy("construction_${construction.oid}_funcionario", "/obras/${construction.oid}/registos/incompletos", "GET")
                 savePolicy("construction_${construction.oid}_funcionario", "/obras/${construction.oid}/registos/**", "DELETE")
                 savePolicy("construction_${construction.oid}_funcionario", "/obras/${construction.oid}", "GET")
                 savePolicy("construction_${construction.oid}_funcionario", "/obras/${construction.oid}/registos/me", "GET")

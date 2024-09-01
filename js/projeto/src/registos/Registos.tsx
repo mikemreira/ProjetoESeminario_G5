@@ -359,7 +359,7 @@ export default function Registos () {
                             regTable.getRowModel().rows.length == 0 ?
                                 <TableRow>
                                     <TableCell colSpan={4} align="center">
-                                        Ainda não efetuou nenhum registo.
+                                        Não existem registos.
                                     </TableCell>
                                 </TableRow>
                                 :

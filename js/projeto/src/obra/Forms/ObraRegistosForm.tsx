@@ -26,7 +26,7 @@ import {FilterList} from "react-admin";
 import MenuItem from "@mui/material/MenuItem";
 import FilterListIcon from '@mui/icons-material/FilterList';
 import {useCookies} from "react-cookie";
-import {Obra, pageSize, RegistosOutputModel, UserRegistersAndObraOutputModel} from "../ObrasInfo";
+import {Obra, pageSize, UserRegistersAndObraOutputModel} from "../ObrasInfo";
 import EditIcon from "@mui/icons-material/Edit";
 import {Registo} from "../../registos/Registos";
 import RegistoExitForm from "../../registos/RegistoExitForm";
@@ -38,7 +38,6 @@ import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrow
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
-import {i} from "vite/dist/node/types.d-aGj9QkWt";
 
 interface ObraRegistosFormProps {
     obra: Obra;
@@ -88,7 +87,7 @@ export default function ObraRegistosForm({
     const [cookies] = useCookies(["token"]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const [selectedFilter, setSelectedFilter] = useState<string>(`${path}/obras/${obra.oid}/registos`)
-    const [filter, setFilter] = useState<'all' | 'me' | 'pending'>("all")
+    const [filter, setFilter] = useState<'all' | 'me' | 'pending' | 'unfinished'>("all")
     const [title, setTitle] = useState<string>("Registos")
     const [exitOpenForm, setExitOpenForm] = useState(false);
     const [selectedRegisto, setSelectedRegisto] = useState<Registo | null>(null);
@@ -119,6 +118,11 @@ export default function ObraRegistosForm({
                 setFilter('pending');
                 filter = registo.pendingRoute;
                 title = 'Registos Pendentes';
+                break;
+            case 'unfinished':
+                setFilter('unfinished');
+                filter = registo.unfinishedRoute;
+                title = 'Registos Incompletos';
                 break;
             default:
                 setFilter('all');
@@ -230,53 +234,48 @@ export default function ObraRegistosForm({
                         <AddIcon sx={{ fontSize: 32, color: 'white' }} />
                     </IconButton>
                 </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        {obra.role === "admin" && (
-                            <>
-                                <FormControl variant="outlined" sx={{ marginRight: 2, minWidth: 120 }}>
-                                    <InputLabel>Filtro</InputLabel>
-                                    <Select
-                                        value={filter}
-                                        onChange={handleFilterChange}
-                                        label="Filtro"
-                                    >
-                                        <MenuItem value="all">Todos</MenuItem>
-                                        <MenuItem value="me">Meus</MenuItem>
-                                        <MenuItem value="pending">Pendentes</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </>
-                        )}
-                        <TextField
-                            label="Desde"
-                            type="date"
-                            value={initialDate || ''}
-                            onChange={(e) => setInitialDate(e.target.value)}
-                            InputLabelProps={{ shrink: true }}
-                            sx={{ marginRight: 2 }}
-                        />
-                        <TextField
-                            label="Até"
-                            type="date"
-                            value={endDate || ''}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            InputLabelProps={{ shrink: true }}
-                            sx={{ marginRight: 2 }}
-                        />
-                        <Button variant="contained" color="primary" onClick={handleFilterReset}>
-                            Limpar Pesquisa
-                        </Button>
-
-
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-
-
-                    </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    {obra.role === "admin" && (
+                        <>
+                            <FormControl variant="outlined" sx={{ marginRight: 2, minWidth: 120 }}>
+                                <InputLabel>Filtro</InputLabel>
+                                <Select
+                                    value={filter}
+                                    onChange={handleFilterChange}
+                                    label="Filtro"
+                                >
+                                    <MenuItem value="all">Todos</MenuItem>
+                                    <MenuItem value="me">Meus</MenuItem>
+                                    <MenuItem value="pending">Pendentes</MenuItem>
+                                    <MenuItem value="unfinished">Incompletos</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </>
+                    )}
+                    <TextField
+                        label="Desde"
+                        type="date"
+                        value={initialDate || ''}
+                        onChange={(e) => setInitialDate(e.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                        sx={{ marginRight: 2 }}
+                    />
+                    <TextField
+                        label="Até"
+                        type="date"
+                        value={endDate || ''}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        InputLabelProps={{ shrink: true }}
+                        sx={{ marginRight: 2 }}
+                    />
+                    <Button variant="contained" color="primary" onClick={handleFilterReset}>
+                        Limpar Pesquisa
+                    </Button>
                 </Box>
                 <TableContainer sx={{ backgroundColor: '#cccccc', mt: 2 }}>
                     <Table sx={{ tableLayout: 'fixed' }}>
                         <TableHead>
-                            {table.getHeaderGroups().map((headerGroup) => (
+                            {table.getHeaderGroups().map((headerGroup: { id: React.Key | null | undefined; headers: any[]; }) => (
                                 <TableRow key={headerGroup.id}>
                                     {headerGroup.headers.map((header) => (
                                         <TableCell align="center" variant="head" key={header.id}>
@@ -295,12 +294,21 @@ export default function ObraRegistosForm({
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={table.getHeaderGroups().flatMap(headerGroup => headerGroup.headers).length} align="center">
+                                    <TableCell colSpan={table.getHeaderGroups().flatMap((headerGroup: { headers: any; }) => headerGroup.headers).length} align="center">
                                         <CircularProgress />
                                     </TableCell>
                                 </TableRow>
+                            ) : table.getRowModel().rows.length === 0 ? (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={table.getHeaderGroups().flatMap((headerGroup: { headers: any; }) => headerGroup.headers).length}
+                                        align="center"
+                                    >
+                                        Não existem registos.
+                                    </TableCell>
+                                </TableRow>
                             ) : (
-                                table.getRowModel().rows.map((row, rowIndex) => (
+                                table.getRowModel().rows.map((row: { id: React.Key | null | undefined; getIsSelected: () => boolean | undefined; getVisibleCells: () => any[]; original: Registo; }, rowIndex: number | undefined) => (
                                     <TableRow key={row.id} selected={row.getIsSelected()}>
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell align="center" variant="body" key={cell.id}>

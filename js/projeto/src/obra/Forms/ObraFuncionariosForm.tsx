@@ -24,7 +24,7 @@ import {path} from "../../App";
 interface ObraFuncionariosFormProps {
     handleClickAddFuncionario: () => void;
     handleViewProfile: (id: number) => void;
-    handleViewUserRecords: (id: number) => void;
+    handleViewUserRecords: (pageNumber: number, id: number) => void;
     users: UserOutputModel;
     handleRemoveUser: (id: number) => void;
 }
@@ -122,7 +122,7 @@ export default function ObraFuncionariosForm({
                                         variant="contained"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            handleViewUserRecords(user.id);
+                                            handleViewUserRecords(1, user.id);
                                         }}
                                         title="Ver registos"
                                         color={"default"}
