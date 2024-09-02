@@ -121,7 +121,7 @@ class RegistersService(
             return failure(RegistersInfoError.ConstructionSuspended)
 
         val lastRegister = registersRepository.getLatestEntryRegisterId(uid, construction.oid)
-        val res = if (lastRegister == null){
+        val res = if (lastRegister == null || lastRegister.status == "completed" || lastRegister.status == "pending" ){
             registersRepository.addUserRegisterEntry(uid, construction.oid, entry.toJavaLocalDateTime())
         } else {
             registersRepository.addUserRegisterNFC(lastRegister, uid, construction.oid, entry.toJavaLocalDateTime())
