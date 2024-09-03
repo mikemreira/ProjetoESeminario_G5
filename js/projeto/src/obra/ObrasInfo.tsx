@@ -397,6 +397,30 @@ export default function ObrasInfo() {
         })
     }
 
+
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    };
+
+    const mapStatusToPortuguese = (status: string) => {
+        const statusMap = {
+            pending: "Pendente",
+            completed: "Completo",
+            unfinished: "Incompleto",
+            unfinished_nfc: "Incompleto via NFC",
+        };
+
+        return statusMap[status] || status;
+    };
+
     const handleGetRegistersAll = (pageNumber: number) => {
         const params = new URLSearchParams({ page: String(pageNumber) });
         if (initialDate) params.append("initialDate", initialDate);
@@ -411,11 +435,29 @@ export default function ObrasInfo() {
             },
         }).then((res) => {
             setState({ value: "registo" })
-            if (res.ok) return res.json()
+            if (res.ok) {
+                console.log(res.ok)
+                return res.json()
+            }
             else return null
         }).then((body) => {
             if (body) {
-                setRegistos(body)
+                console.log("body: " + JSON.stringify(body))
+                const parsedRegisters = body.registers.map((register: { startTime: string; endTime: string; status: string; }) => ({
+                    ...register,
+                    startTime: formatDate(register.startTime),
+                    endTime: formatDate(register.endTime),
+                    status: mapStatusToPortuguese(register.status),
+                }));
+
+                setRegistos(() => ({
+                    ...body,
+                    registers: parsedRegisters,
+                }));
+                console.log("registos: " + JSON.stringify(parsedRegisters))
+
+                //setRegistos(body)
+
                 setTotalPages(Math.ceil(body.registersSize / pageSize))
             }
         }).catch(error => {

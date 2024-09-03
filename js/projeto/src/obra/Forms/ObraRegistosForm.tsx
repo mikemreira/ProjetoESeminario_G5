@@ -134,6 +134,29 @@ export default function ObraRegistosForm({
         handleFilterSelect(filter, title, 1);
     };
 
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    };
+
+    const mapStatusToPortuguese = (status: string) => {
+        const statusMap = {
+            pending: "Pendente",
+            completed: "Completo",
+            unfinished: "Incompleto",
+            unfinished_nfc: "Incompleto via NFC",
+        };
+
+        return statusMap[status] || status;
+    };
+
 
     const handleFilterSelect = (filter: string, title: string, pageNumber: number) => {
         setLoading(true)
@@ -157,10 +180,16 @@ export default function ObraRegistosForm({
             else return null
         }).then((body) => {
             if (body) {
+                const parsedRegisters = body.registers.map((register: { startTime: string; endTime: string; status: string; }) => ({
+                    ...register,
+                    startTime: formatDate(register.startTime),
+                    endTime: formatDate(register.endTime),
+                    status: mapStatusToPortuguese(register.status),
+                }));
                 setRegistos((prevState: UserRegistersAndObraOutputModel): UserRegistersAndObraOutputModel => {
                     return {
                         ...prevState,
-                        registers: body.registers,
+                        registers: parsedRegisters,
                         registersSize: body.registersSize ?? prevState.registersSize,
                     };
                 });
