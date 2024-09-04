@@ -146,20 +146,20 @@ class RegistersRepository(
         }
     }
 
-    override fun addUserRegisterEntry(userId: Int, obraId: Int, time: LocalDateTime): Boolean {
+    override fun addUserRegisterEntry(userId: Int, obraId: Int, time: LocalDateTime, type: String): Boolean {
         initializeConnection().use {
             it.autoCommit = false
             return try {
 
                 val pStatement = it.prepareStatement(
-                    "insert into registo(id_utilizador, id_obra, entrada, status) values(?, ?, ?, 'unfinished')"
+                    "insert into registo(id_utilizador, id_obra, entrada, status) values(?, ?, ?, ?)"
                 )
                 pStatement.setInt(1, userId)
                 pStatement.setInt(2, obraId)
 
                 val stamp = Timestamp.valueOf(time)
                 pStatement.setTimestamp(3, stamp)
-
+                pStatement.setString(4, type)
                 pStatement.executeUpdate()
                 true
             } catch (e: Exception) {
@@ -286,7 +286,7 @@ class RegistersRepository(
         }
     }
 
-    override fun addUserRegisterNFC(reg: Register?, userId: Int, obraId: Int, time: LocalDateTime): Boolean {
+    override fun addUserRegisterNFC(reg: Register?, userId: Int, obraId: Int, time: LocalDateTime, role: String): Boolean {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -299,7 +299,7 @@ class RegistersRepository(
                     )
                     val stamp = Timestamp.valueOf(time)
                     saidaStatement.setTimestamp(1, stamp)
-                    if (reg.status == "unfinished_nfc")
+                    if (reg.status == "unfinished_nfc" || role == "admin")
                         saidaStatement.setString(2, "completed")
                     else
                         saidaStatement.setString(2, "pending")

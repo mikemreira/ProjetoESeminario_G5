@@ -62,7 +62,7 @@ class RegistersTests(
         val time = LocalDateTime.now()
 
         // When
-        val result = registersRepository.addUserRegisterEntry(userId, obraId, time)
+        val result = registersRepository.addUserRegisterEntry(userId, obraId, time, "unfinished")
 
         // Then
         assertTrue(result)
@@ -82,7 +82,7 @@ class RegistersTests(
         val exitTime = LocalDateTime.now()
 
         // When
-        registersRepository.addUserRegisterEntry(userId, obraId, exitTime)
+        registersRepository.addUserRegisterEntry(userId, obraId, exitTime, "unfinished")
         val result = registersRepository.addUserRegisterExit(regId, userId, obraId, exitTime)
 
         // Then
@@ -103,7 +103,7 @@ class RegistersTests(
         val time = LocalDateTime.now()
 
         // When
-        registersRepository.addUserRegisterEntry(userId, obraId, time)
+        registersRepository.addUserRegisterEntry(userId, obraId, time, "unfinished")
         val incompleteRegisters = registersRepository.getIncompleteRegisters(userId, 1, null, null)
 
         // Then
@@ -121,7 +121,7 @@ class RegistersTests(
         val time = LocalDateTime.now()
 
         // When
-        registersRepository.addUserRegisterEntry(userId, obraId, time)
+        registersRepository.addUserRegisterEntry(userId, obraId, time, "unfinished")
         val result = registersRepository.insertExitOnWeb(userId, regId, obraId, role, time)
 
         // Then
@@ -144,7 +144,7 @@ class RegistersTests(
         val time = LocalDateTime.now()
 
         // When
-        registersRepository.addUserRegisterEntry(userId, obraId, time)
+        registersRepository.addUserRegisterEntry(userId, obraId, time, "unfinished")
         val result = registersRepository.insertExitOnWeb(userId, regId, obraId, role, time)
 
         // Then
@@ -272,7 +272,7 @@ class RegistersTests(
         val exitTime = LocalDateTime.now()
 
         // When
-        registersRepository.addUserRegisterEntry(userId, obraId, exitTime)
+        registersRepository.addUserRegisterEntry(userId, obraId, exitTime, "unfinished")
         registersRepository.addUserRegisterExit(regId, userId, obraId, exitTime)
         val result = registersRepository.acceptOrDeny(userId, obraId, regId, response)
 

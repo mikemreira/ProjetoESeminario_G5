@@ -105,7 +105,7 @@ class RegistersService(
         if (construction.status == "recoverable")
             return failure(RegistersInfoError.ConstructionSuspended)
 
-        val res = registersRepository.addUserRegisterEntry(uid, obraId, entry.toJavaLocalDateTime())
+        val res = registersRepository.addUserRegisterEntry(uid, obraId, entry.toJavaLocalDateTime(), "unfinished")
         return if (res) {
             success(true)
         } else {
@@ -120,11 +120,14 @@ class RegistersService(
         if (construction.status == "recoverable")
             return failure(RegistersInfoError.ConstructionSuspended)
 
+        val role = constructionRepository.getUserRoleFromConstruction(uid, construction.oid).also { println("ROLE : $it") }
+            ?: return failure(RegistersInfoError.NoAccessToConstruction)
+
         val lastRegister = registersRepository.getLatestEntryRegisterId(uid, construction.oid)
         val res = if (lastRegister == null || lastRegister.status == "completed" || lastRegister.status == "pending" ){
-            registersRepository.addUserRegisterEntry(uid, construction.oid, entry.toJavaLocalDateTime())
+            registersRepository.addUserRegisterEntry(uid, construction.oid, entry.toJavaLocalDateTime(), "unfinished_nfc")
         } else {
-            registersRepository.addUserRegisterNFC(lastRegister, uid, construction.oid, entry.toJavaLocalDateTime())
+            registersRepository.addUserRegisterNFC(lastRegister, uid, construction.oid, entry.toJavaLocalDateTime(), role.role)
         }
 
         return if (res) {
