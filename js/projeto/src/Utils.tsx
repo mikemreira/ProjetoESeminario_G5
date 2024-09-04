@@ -1,6 +1,7 @@
 import React, {ChangeEvent} from "react";
 import {useMaterialReactTable} from "material-react-table";
 import {styled} from "@mui/material/styles";
+import {DateObject} from "./obra/ObrasInfo";
 
 export const table = (columns: any, data: any) => useMaterialReactTable({
     columns,
@@ -85,3 +86,36 @@ export const VisuallyHiddenInput = styled('input')({
     whiteSpace: 'nowrap',
     width: 1,
 });
+
+export const formatDate = (dateString: string) => {
+    if (!dateString) return null
+    const date = new Date(dateString)
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = date.getFullYear()
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const seconds = String(date.getSeconds()).padStart(2, '0')
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`
+}
+
+export const parseDate = (dateObj: DateObject): string => {
+    const day = dateObj.dayOfMonth.toString().padStart(2, '0')
+    const month = dateObj.monthNumber.toString().padStart(2, '0')
+    const year = dateObj.year.toString();
+    return `${day}/${month}/${year}`
+}
+
+
+export const mapStatusToPortuguese = (status: string) => {
+    const statusMap = {
+        pending: "Pendente",
+        completed: "Completo",
+        unfinished: "Incompleto",
+        unfinished_nfc: "Incompleto via NFC",
+    }
+    // @ts-ignore
+    return statusMap[status] || status
+}
+
+

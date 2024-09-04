@@ -38,6 +38,7 @@ import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrow
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
+import {formatDate, mapStatusToPortuguese} from "../../Utils";
 
 interface ObraRegistosFormProps {
     obra: Obra;
@@ -133,30 +134,6 @@ export default function ObraRegistosForm({
         setTitle(title);
         handleFilterSelect(filter, title, 1);
     };
-
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        const seconds = String(date.getSeconds()).padStart(2, '0');
-
-        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-    };
-
-    const mapStatusToPortuguese = (status: string) => {
-        const statusMap = {
-            pending: "Pendente",
-            completed: "Completo",
-            unfinished: "Incompleto",
-            unfinished_nfc: "Incompleto via NFC",
-        };
-
-        return statusMap[status] || status;
-    };
-
 
     const handleFilterSelect = (filter: string, title: string, pageNumber: number) => {
         setLoading(true)
@@ -341,7 +318,7 @@ export default function ObraRegistosForm({
                                     <TableRow key={row.id} selected={row.getIsSelected()}>
                                         {row.getVisibleCells().map((cell) => (
                                             <TableCell align="center" variant="body" key={cell.id}>
-                                                {cell.column.id === 'endTime' && (row.original.status === 'unfinished' || row.original.status === "unfinished_nfc") ? (
+                                                {cell.column.id === 'endTime' && (row.original.status === 'Incompleto' || row.original.status === "Incompleto via NFC") ? (
                                                     <>
                                                         <IconButton color="primary" title={"Finalizar"} onClick={() => handleClickExitOpenForm(row.original)}>
                                                             <EditIcon />

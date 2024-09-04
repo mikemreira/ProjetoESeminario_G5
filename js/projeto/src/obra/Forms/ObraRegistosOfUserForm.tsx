@@ -89,7 +89,7 @@ export default function ObraRegistosOfUserForm({
     const [selectedRegisto, setSelectedRegisto] = useState<Registo | null>(null);
 
     useEffect(() => {
-        handleGetUserRegisters(page,selectedUser);
+        handleGetUserRegisters(page, selectedUser);
     }, [page, initialDate, endDate]);
 
     const handleClickDeleteRegister = (registo: Registo) => {
@@ -182,7 +182,7 @@ export default function ObraRegistosOfUserForm({
                                 <TableRow key={row.id} selected={row.getIsSelected()}>
                                     {row.getVisibleCells().map((cell, _columnIndex) => (
                                         <TableCell align="center" variant="body" key={cell.id}>
-                                            {cell.column.id === 'endTime' && (row.original.status === 'unfinished' || row.original.status === "unfinished_nfc") ? (
+                                            {cell.column.id === 'endTime' && (row.original.status === 'Incompleto' || row.original.status === "Incompleto via NFC") ? (
                                                 <>
                                                     <IconButton color="primary" title={"Finalizar"} onClick={() => handleClickExitOpenForm(row.original)}>
                                                         <EditIcon />

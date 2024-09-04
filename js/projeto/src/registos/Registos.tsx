@@ -27,7 +27,7 @@ import MenuItem from "@mui/material/MenuItem";
 import RegistoExitForm from "./RegistoExitForm";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {table} from "../Utils";
+import {formatDate, mapStatusToPortuguese, table} from "../Utils";
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import TextField from "@mui/material/TextField";
@@ -82,29 +82,6 @@ export default function Registos () {
     const [initialDate, setInitialDate] = useState<string | null>(null);
     const [endDate, setEndDate] = useState<string | null>(null);
 
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        const seconds = String(date.getSeconds()).padStart(2, '0');
-
-        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-    };
-
-    const mapStatusToPortuguese = (status: string) => {
-        const statusMap = {
-            pending: "Pendente",
-            completed: "Completo",
-            unfinished: "Incompleto",
-            unfinished_nfc: "Incompleto via NFC",
-        };
-
-        return statusMap[status] || status;
-    };
-
     const fetchRegistos = (pageNumber: number) => {
         handleMenuClose()
         setFilterMode('all')
@@ -134,10 +111,10 @@ export default function Registos () {
         }).then((body) => {
             if (body) {
                 console.log("body1: ", JSON.stringify(body));
-                const parsedRegisters = body.registers.map((register: { startTime: string; endTime: string; status: string; }) => ({
+                const parsedRegisters = body.registers.map((register: { entrada: string; saida: string; status: string; }) => ({
                     ...register,
-                    startTime: formatDate(register.startTime),
-                    endTime: formatDate(register.endTime),
+                    entrada: formatDate(register.entrada),
+                    saida: formatDate(register.saida),
                     status: mapStatusToPortuguese(register.status),
                 }));
                 setRegistos(parsedRegisters);
@@ -173,7 +150,16 @@ export default function Registos () {
             else return null
         }).then((body) => {
             if (body) {
-                setRegistos(body.registers)
+                console.log("body1: ", JSON.stringify(body));
+                const parsedRegisters = body.registers.map((register: { entrada: string; saida: string; status: string; }) => ({
+                    ...register,
+                    entrada: formatDate(register.entrada),
+                    saida: formatDate(register.saida),
+                    status: mapStatusToPortuguese(register.status),
+                }));
+                console.log("body2: ", JSON.stringify(parsedRegisters));
+                setRegistos(parsedRegisters);
+                //setRegistos(body.registers)
                 setTotalPages(Math.ceil(body.registersSize / pageSize))
                 setLoading(false)
             }
@@ -404,7 +390,7 @@ export default function Registos () {
                                                     {cell.row.original.nome_obra}
                                                 </Button>
                                             ) : cell.column.id === 'saida' ? (
-                                                (row.original.status === "unfinished" || row.original.status === "unfinished_nfc") ? (
+                                                (row.original.status === "Incompleto" || row.original.status === "Incompleto via NFC") ? (
                                                     <>
                                                         <IconButton color="primary" title={"Finalizar"} onClick={() => handleClickExitOpenForm(row.original as Registo)}>
                                                             <EditIcon />
