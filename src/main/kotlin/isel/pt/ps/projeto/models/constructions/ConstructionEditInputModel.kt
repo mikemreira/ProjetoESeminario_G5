@@ -6,8 +6,8 @@ data class ConstructionEditInputModel (
     val name: String,
     val location: String,
     val description: String,
-    val startDate: LocalDate,
-    val endDate: LocalDate?,
+    val startDate: String,
+    val endDate: String?,
     val foto: String?,
     val status: String?,
     val function: String

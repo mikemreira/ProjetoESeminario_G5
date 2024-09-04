@@ -143,6 +143,7 @@ class ConstructionTests(
         )
         val updatedConstruction = constructionsRepository.editConstruction(1, 1, editModel)
         assertNotNull(updatedConstruction)
+        println(updatedConstruction?.data_fim)
         assertEquals("Updated Construction", updatedConstruction?.nome)
     }
 
