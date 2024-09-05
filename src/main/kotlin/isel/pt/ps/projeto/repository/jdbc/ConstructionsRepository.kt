@@ -206,22 +206,22 @@ class ConstructionsRepository(
         initializeConnection().use {
             it.autoCommit = false
             return try {
+                var str = "select o.id, o.nome, o.localizacao, o.descricao, o.data_inicio, o.data_fim, o.status, o.foto from utilizador u\n" +
+                    "inner join papel p on p.id_utilizador = u.id\n" +
+                    "inner join obra o on o.id = p.id_obra\n" +
+                    "where 1=1 \n" +
+                    "   AND (o.status = COALESCE(?, o.status))\n" +
+                    "   AND (u.id = COALESCE(?, u.id))\n"
+                if (page != null)
+                    str+="limit 5 offset ? "
+
                 val pStatement =
-                    it.prepareStatement(
-                        "select o.id, o.nome, o.localizacao, o.descricao, o.data_inicio, o.data_fim, o.status, o.foto from utilizador u\n" +
-                            "inner join papel p on p.id_utilizador = u.id\n" +
-                            "inner join obra o on o.id = p.id_obra\n" +
-                            "where 1=1 \n" +
-                            "   AND (o.status = COALESCE(?, o.status))\n" +
-                            "   AND (u.id = COALESCE(?, u.id))\n" +
-                            "limit 5 offset ? ",
-                    )
+                    it.prepareStatement(str)
                 pStatement.setString(1, status)
                 pStatement.setInt(2, id)
                 if (page != null)
                     pStatement.setInt(3, (page-1)*5)
-                else
-                    pStatement.setNull(3, java.sql.Types.INTEGER)
+                
                 val result = pStatement.executeQuery()
                 val list = mutableListOf<Construction>()
                 while (result.next()) {
