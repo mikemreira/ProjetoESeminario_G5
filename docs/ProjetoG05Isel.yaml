@@ -237,6 +237,16 @@ paths:
       summary: Get all constructions
       description: Get list of user accessible constructions
       operationId: getConstructions
+      parameters:
+      - name: page
+        in: query
+        description: Page number for pagination
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+          default: 0
       responses:
         "200":
           description: constructions successfully obtained
@@ -353,6 +363,15 @@ paths:
         explode: false
         schema:
           type: integer
+      - name: page
+        in: query
+        description: Page number for pagination
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+          default: 0
       responses:
         "200":
           description: user list obtained successfully
@@ -502,15 +521,31 @@ paths:
           type: integer
       - name: page
         in: query
-        description: number of the page
+        description: Page number for pagination
         required: false
         style: form
         explode: true
         schema:
-          minimum: 0
           type: integer
-          format: int32
           default: 0
+      - name: initialDate
+        in: query
+        description: Filter registers from this date
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        description: Filter registers up to this date
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
       responses:
         "200":
           description: registers obtained successfully
@@ -630,15 +665,31 @@ paths:
           type: integer
       - name: page
         in: query
-        description: number of the page
+        description: Page number for pagination
         required: false
         style: form
         explode: true
         schema:
-          minimum: 0
           type: integer
-          format: int32
           default: 0
+      - name: initialDate
+        in: query
+        description: Filter registers from this date
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        description: Filter registers up to this date
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
       responses:
         "200":
           description: registers obtained successfully
@@ -671,15 +722,31 @@ paths:
           type: integer
       - name: page
         in: query
-        description: number of the page
+        description: Page number for pagination
         required: false
         style: form
         explode: true
         schema:
-          minimum: 0
           type: integer
-          format: int32
           default: 0
+      - name: initialDate
+        in: query
+        description: Filter registers from this date
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        description: Filter registers up to this date
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
       responses:
         "200":
           description: registers obtained successfully
@@ -823,6 +890,34 @@ paths:
       summary: Get user registers
       description: Get user registers by token
       operationId: getUserRegisters
+      parameters:
+      - name: page
+        in: query
+        description: Page number for pagination
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+          default: 0
+      - name: initialDate
+        in: query
+        description: Filter registers from this date
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        description: Filter registers up to this date
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
       responses:
         "200":
           description: registers obtained successfully
@@ -917,6 +1012,34 @@ paths:
       summary: Get unfinished registers for specific user
       description: Get unfinished registers for specific user through token
       operationId: getRegisterWithoutExit
+      parameters:
+      - name: page
+        in: query
+        description: Page number for pagination
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: integer
+          default: 0
+      - name: initialDate
+        in: query
+        description: Filter registers from this date
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        description: Filter registers up to this date
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: string
+          format: date
       responses:
         "200":
           description: records obtained successfully
@@ -925,7 +1048,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserRegistersAndObraOutputModel'
+                  $ref: '#/components/schemas/UserRegistersOutputModel'
         "400":
           description: invalid register
         "403":
@@ -990,6 +1113,24 @@ paths:
           description: user or construction not found
         "409":
           description: user already in this construction
+  /isAdmin:
+    get:
+      tags:
+      - user
+      summary: Check if user is an admin
+      description: Determines if the authenticated user is an admin.
+      operationId: isAdmin
+      responses:
+        "200":
+          description: User is an admin
+          content:
+            application/json:
+              schema:
+                type: boolean
+        "401":
+          description: Unauthorized user
+        "404":
+          description: User not found
   /convites:
     get:
       tags:
@@ -1131,6 +1272,9 @@ components:
           description: List of construction projects
           items:
             $ref: '#/components/schemas/ConstructionOutputModel'
+        size:
+          type: integer
+          description: constructions list size
     ConstructionOutputModel:
       type: object
       properties:
@@ -1281,6 +1425,9 @@ components:
           description: List of users with their functions or roles
           items:
             $ref: '#/components/schemas/SimpleUserAndFuncOutput'
+        size:
+          type: integer
+          description: users list size
     SimpleUserAndFuncOutput:
       type: object
       properties:
@@ -1343,6 +1490,13 @@ components:
           type: string
           description: Route for all information
           nullable: true
+        unfinishedRoute:
+          type: string
+          description: Route for all unfinished registers
+          nullable: true
+        registersSize:
+          type: integer
+          description: Registers list size
     RegisterAndUser:
       type: object
       properties:
@@ -1401,6 +1555,9 @@ components:
           type: string
           description: Pending status information
           nullable: true
+        registersSize:
+          type: integer
+          description: Registers list size
     RegisterOutputModel:
       type: object
       properties:

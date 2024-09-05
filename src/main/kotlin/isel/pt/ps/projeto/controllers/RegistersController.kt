@@ -346,9 +346,7 @@ class RegistersController(
     ): ResponseEntity<*>{
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-
         val regSize = registersService.getRegistersSize(authUser.user.id, "pending", oid, true, initialDate, endDate)
-        println("asd: " + regSize)
         var size = 0
         when(regSize) {
             is Success -> size = regSize.value

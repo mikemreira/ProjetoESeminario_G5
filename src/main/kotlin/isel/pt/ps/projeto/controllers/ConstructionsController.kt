@@ -239,7 +239,6 @@ class ConstructionsController(
         }
     }
 
-
     @GetMapping("")
     fun getConstructions(
         @RequestHeader("Authorization") userToken: String,
