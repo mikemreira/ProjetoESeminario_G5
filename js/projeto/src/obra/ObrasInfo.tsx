@@ -141,7 +141,8 @@ export interface UserModel {
 }
 
 export interface UserOutputModel {
-    users: UserModel[]
+    users: UserModel[],
+    size: number
 }
 
 interface states {
@@ -380,8 +381,11 @@ export default function ObrasInfo() {
     })
     const [searchParams, setSearchParams] = useSearchParams();
     const [openForm, setOpenForm] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const handleGetRegistersMine = (pageNumber: number) => {
+        setPage(1)
+        setLoading(true)
         const params = new URLSearchParams({ page: String(pageNumber) });
         if (initialDate) params.append("initialDate", initialDate);
         if (endDate) params.append("endDate", endDate);
@@ -413,10 +417,13 @@ export default function ObrasInfo() {
             }
         }).catch(error => {
             console.error("Error fetching registos: ", error)
-        })
+        }).finally(() =>
+            setLoading(false)
+        )
     }
 
     const handleGetRegistersAll = (pageNumber: number) => {
+        setPage(1)
         const params = new URLSearchParams({ page: String(pageNumber) });
         if (initialDate) params.append("initialDate", initialDate);
         if (endDate) params.append("endDate", endDate);
@@ -644,14 +651,17 @@ export default function ObrasInfo() {
     /*
      *  Funcionarios
      */
-    const [users, setUsers] = useState<UserOutputModel>({ users: [] });
+    const [users, setUsers] = useState<UserOutputModel>({ users: [], size: 0 });
 
     const handleClickAddFuncionario = () => {
         navigate(`/obras/${oid}/funcionario/invite`)
     }
 
-    const handleGetFuncionarios = () => {
-        fetch(`${path}/obras/${oid}/users`, {
+    const handleGetFuncionarios = (pageNumber: number) => {
+        setPage(1)
+        const params = new URLSearchParams({ page: String(pageNumber) });
+        const queryString = params.toString();
+        fetch(`${path}/obras/${oid}/users?${queryString}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -664,6 +674,7 @@ export default function ObrasInfo() {
         }).then((body) => {
             if (body) {
                 setUsers(body)
+                setTotalPages(Math.ceil(body.size / pageSize))
             }
         }).catch(error => {
             console.error("Error fetching registos: ", error)
@@ -821,13 +832,13 @@ export default function ObrasInfo() {
                             <Tab label="Visão Geral" onClick={handleVisaoGeral} sx={{ border: 'none'}}/>
 
                             {obra.role === "admin" && (
-                                <Tab label="Registos" onClick={() => handleGetRegistersAll(page)} sx={{ border: 'none'}}/>
+                                <Tab label="Registos" onClick={() => handleGetRegistersAll(1)} sx={{ border: 'none'}}/>
                             )}
                             {obra.role === "admin" && (
-                                <Tab label="Membros" onClick={handleGetFuncionarios} sx={{ border: 'none'}}/>
+                                <Tab label="Membros" onClick={() => handleGetFuncionarios(1)} sx={{ border: 'none'}}/>
                             )}
                             {obra.role === "funcionario" && (
-                                <Tab label="Registos" onClick={() => handleGetRegistersMine(page)} sx={{ border: 'none'}}/>
+                                <Tab label="Registos" onClick={() => handleGetRegistersMine(1)} sx={{ border: 'none'}}/>
                             )}
                         </Tabs>
                     </Grid>
@@ -872,6 +883,8 @@ export default function ObrasInfo() {
                              setInitialDate={setInitialDate}
                              endDate={endDate}
                              setEndDate={setEndDate}
+                             handleGetRegistersMine={handleGetRegistersMine}
+                             load={loading}
                             />
                         )}
                         {state.value === "funcionarios" && obra.role === "admin" && (
@@ -881,6 +894,14 @@ export default function ObrasInfo() {
                                 handleViewUserRecords={handleGetUserRegisters}
                                 handleClickAddFuncionario={handleClickAddFuncionario}
                                 handleRemoveUser={handleRemoveUser}
+                                handleGetFuncionarios={handleGetFuncionarios}
+                                totalPages={totalPages}
+                                handleNextPage={handleNextPage}
+                                handlePreviousPage={handlePreviousPage}
+                                handlePageChange={handlePageChange}
+                                handleFirstPage={handleFirstPage}
+                                handleLastPage={handleLastPage}
+                                page={page}
                             />
                         )}
                         {state.value === "pendente" && obra.role === "admin" &&(

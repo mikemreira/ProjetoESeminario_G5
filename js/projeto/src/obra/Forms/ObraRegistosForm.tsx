@@ -61,6 +61,8 @@ interface ObraRegistosFormProps {
     setInitialDate: (date: string) => void;
     endDate: string | null;
     setEndDate: (date: string) => void;
+    handleGetRegistersMine: (pageNumber: number) => void;
+    load: boolean
 }
 
 export default function ObraRegistosForm({
@@ -84,6 +86,8 @@ export default function ObraRegistosForm({
      setInitialDate,
      endDate,
      setEndDate,
+     handleGetRegistersMine,
+                                             load
 }: ObraRegistosFormProps) {
     const [cookies] = useCookies(["token"]);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -213,7 +217,12 @@ export default function ObraRegistosForm({
     const isMenuOpen = Boolean(anchorEl)
 
     useEffect(() => {
-        handleFilterSelect(selectedFilter, title, page);
+        if (obra.role === "admin") {
+            handleFilterSelect(selectedFilter, title, page);
+        }
+        if (obra.role === "funcionario") {
+            handleGetRegistersMine(page);
+        }
     }, [page, initialDate, endDate])
 
     return (
@@ -298,7 +307,7 @@ export default function ObraRegistosForm({
                             ))}
                         </TableHead>
                         <TableBody>
-                            {loading ? (
+                            {loading || load ? (
                                 <TableRow>
                                     <TableCell colSpan={table.getHeaderGroups().flatMap((headerGroup: { headers: any; }) => headerGroup.headers).length} align="center">
                                         <CircularProgress />

@@ -16,6 +16,11 @@ import Button from "@mui/material/Button";
 import {path} from "../App";
 // @ts-ignore
 import emptyFoto from "../assets/noImage.png";
+import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrowLeft";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
+import {pageSize} from "./ObrasInfo";
 
 interface DateObject {
     year: number;
@@ -40,16 +45,45 @@ interface Obra {
 
 interface ObrasOutputModel {
     obras: Obra[];
+    size: number;
 }
 
 export default function Obras() {
     const [cookies] = useCookies(["token"]);
-    const [obras, setObras] = useState<ObrasOutputModel>({ obras: [] });
+    const [obras, setObras] = useState<ObrasOutputModel>({ obras: [], size: 1 });
     const [loading, setLoading] = useState(true);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [page, setPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(1);
 
-    useEffect(() => {
-        fetch(`${path}/obras`, {
+    const handleNextPage = () => {
+        if (page) {
+            setPage(page + 1)
+        }
+    }
+
+    const handlePreviousPage = () => {
+        if (page > 1) {
+            setPage(page - 1)
+        }
+    }
+
+    const handlePageChange = (pageNumber: number) => {
+        setPage(pageNumber)
+    }
+
+    const handleFirstPage = () => {
+        setPage(1)
+    }
+
+    const handleLastPage = () => {
+        setPage(totalPages)
+    }
+
+    const fetchObras = (pageNumber: number) => {
+        const params = new URLSearchParams({ page: String(pageNumber) });
+        const queryString = params.toString();
+        fetch(`${path}/obras?${queryString}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -69,7 +103,8 @@ export default function Obras() {
             })
             .then((body) => {
                 if (body) {
-                    setObras(body);
+                    setObras(body)
+                    setTotalPages(Math.ceil(body.size / pageSize))
                 }
                 setLoading(false);
             })
@@ -77,7 +112,11 @@ export default function Obras() {
                 console.error("Error fetching obras:", error);
                 setLoading(false);
             });
-    }, [cookies.token]);
+    }
+
+    useEffect(() => {
+        fetchObras(page);
+    }, [cookies.token, page]);
 
     const navigate = useNavigate();
 
@@ -112,6 +151,7 @@ export default function Obras() {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    mb: 2,
                 }}
             >
                 <Typography variant="h4" color={"black"}>Obras</Typography>
@@ -176,6 +216,46 @@ export default function Obras() {
                     </TableBody>
                 </Table>
             </TableContainer>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                { totalPages > 0 && (
+                    <>
+                        <IconButton onClick={handleFirstPage} disabled={page === 1} title={"Retroceder tudo"}>
+                            <KeyboardDoubleArrowLeftIcon />
+                        </IconButton>
+                        <IconButton onClick={handlePreviousPage} disabled={page === 1} title={"Retroceder"}>
+                            <ArrowBackIosIcon />
+                        </IconButton>
+                        {[...Array(3)].map((_, index) => {
+                            const startPage = Math.max(1, Math.min(page - 1, totalPages - 2));
+                            const currentPage = startPage + index;
+                            if (currentPage <= totalPages) {
+                                return (
+                                    <Button
+                                        key={currentPage}
+                                        onClick={() => handlePageChange(currentPage)}
+                                        variant={page === currentPage ? "contained" : "outlined"}
+                                        sx={{
+                                            minWidth: '40px',
+                                            minHeight: '40px',
+                                            borderRadius: '50%',
+                                            mx: 1
+                                        }}
+                                    >
+                                        {currentPage}
+                                    </Button>
+                                );
+                            }
+                            return null;
+                        })}
+                        <IconButton onClick={handleNextPage} disabled={page === totalPages} title={"Avançar"}>
+                            <ArrowForwardIosIcon />
+                        </IconButton>
+                        <IconButton onClick={handleLastPage} disabled={page === totalPages} title={"Avançar tudo"}>
+                            <KeyboardDoubleArrowRightIcon />
+                        </IconButton>
+                    </>
+                )}
+            </Box>
 
             <Snackbar
                 open={snackbarOpen}

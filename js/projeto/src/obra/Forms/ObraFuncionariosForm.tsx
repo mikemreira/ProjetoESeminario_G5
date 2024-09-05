@@ -19,6 +19,11 @@ import {useCookies} from "react-cookie";
 import {useEffect, useState} from "react";
 import {UserModel} from "../../user/Profile";
 import {path} from "../../App";
+import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrowLeft";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import Button from "@mui/material/Button";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 
 
 interface ObraFuncionariosFormProps {
@@ -27,6 +32,14 @@ interface ObraFuncionariosFormProps {
     handleViewUserRecords: (pageNumber: number, id: number) => void;
     users: UserOutputModel;
     handleRemoveUser: (id: number) => void;
+    handleGetFuncionarios: (pageNumber: number) => void;
+    totalPages: number;
+    handleNextPage: () => void;
+    handlePreviousPage: () => void;
+    handlePageChange: (page: number) => void;
+    handleFirstPage: () => void;
+    handleLastPage: () => void;
+    page: number;
 }
 
 export default function ObraFuncionariosForm({
@@ -34,12 +47,20 @@ export default function ObraFuncionariosForm({
     handleViewProfile,
     handleViewUserRecords,
     users,
-    handleRemoveUser
+    handleRemoveUser,
+    handleGetFuncionarios,
+    totalPages,
+    handleNextPage,
+    handlePreviousPage,
+    handlePageChange,
+    handleFirstPage,
+    handleLastPage,
+    page
 }: ObraFuncionariosFormProps) {
     const [cookies] = useCookies(['token']);
     const [currUser, setCurrUser] = useState<UserModel | undefined>(undefined)
 
-    useEffect(() => {
+    const fetchGetMe = () => {
         fetch(`${path}/users/me`, {
             method: "GET",
             headers: {
@@ -58,6 +79,11 @@ export default function ObraFuncionariosForm({
         }).catch((error) => {
             console.error("Error fetching: ", error);
         })
+    }
+
+    useEffect(() => {
+        fetchGetMe()
+        handleGetFuncionarios(page);
     }, [cookies.token]);
 
     if (currUser === undefined) {
@@ -71,6 +97,7 @@ export default function ObraFuncionariosForm({
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    mb: 2,
                 }}
             >
                 <Typography variant="h4" color="black">Membros</Typography>
@@ -151,6 +178,46 @@ export default function ObraFuncionariosForm({
                     </TableBody>
                 </Table>
             </TableContainer>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                { totalPages > 0 && (
+                    <>
+                        <IconButton onClick={handleFirstPage} disabled={page === 1} title={"Retroceder tudo"}>
+                            <KeyboardDoubleArrowLeftIcon />
+                        </IconButton>
+                        <IconButton onClick={handlePreviousPage} disabled={page === 1} title={"Retroceder"}>
+                            <ArrowBackIosIcon />
+                        </IconButton>
+                        {[...Array(3)].map((_, index) => {
+                            const startPage = Math.max(1, Math.min(page - 1, totalPages - 2));
+                            const currentPage = startPage + index;
+                            if (currentPage <= totalPages) {
+                                return (
+                                    <Button
+                                        key={currentPage}
+                                        onClick={() => handlePageChange(currentPage)}
+                                        variant={page === currentPage ? "contained" : "outlined"}
+                                        sx={{
+                                            minWidth: '40px',
+                                            minHeight: '40px',
+                                            borderRadius: '50%',
+                                            mx: 1
+                                        }}
+                                    >
+                                        {currentPage}
+                                    </Button>
+                                );
+                            }
+                            return null;
+                        })}
+                        <IconButton onClick={handleNextPage} disabled={page === totalPages} title={"Avançar"}>
+                            <ArrowForwardIosIcon />
+                        </IconButton>
+                        <IconButton onClick={handleLastPage} disabled={page === totalPages} title={"Avançar tudo"}>
+                            <KeyboardDoubleArrowRightIcon />
+                        </IconButton>
+                    </>
+                )}
+            </Box>
         </Stack>
     );
 }
