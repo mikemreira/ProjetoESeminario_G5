@@ -1,6 +1,5 @@
 import {
     Box,
-    FormControl, InputLabel, Select,
     Stack,
     Table,
     TableBody,
@@ -12,13 +11,10 @@ import {
 } from "@mui/material";
 import {
     flexRender,
-    MRT_GlobalFilterTextField,
     MRT_TableBodyCellValue,
-    MRT_TablePagination,
     MRT_ToolbarAlertBanner
 } from "material-react-table";
 import IconButton from "@mui/material/IconButton";
-import {Delete, Edit} from "@mui/icons-material";
 import * as React from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -29,14 +25,9 @@ import RegistoForm from "../../registos/RegistoForm";
 import RegistoExitForm from "../../registos/RegistoExitForm";
 import {useEffect, useState} from "react";
 import {Obra} from "../ObrasInfo";
-import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrowLeft";
-import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import Button from "@mui/material/Button";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
-import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
-import {i} from "vite/dist/node/types.d-aGj9QkWt";
+import {Pagination} from "../../Utils";
 
 interface ObraRegistosOfUserFormProps {
     obra: Obra;
@@ -47,7 +38,6 @@ interface ObraRegistosOfUserFormProps {
     handleCloseForm: (reload: boolean) => void;
     openForm: boolean;
     totalPages: number;
-    setTotalPages: (totalpages: number) => void;
     handleNextPage: () => void;
     handlePreviousPage: () => void;
     handleFilterReset: () => void;
@@ -71,7 +61,6 @@ export default function ObraRegistosOfUserForm({
     handleCloseForm,
     openForm,
     totalPages,
-    setTotalPages,
     handleNextPage,
     handlePreviousPage,
     handleFilterReset,
@@ -205,46 +194,15 @@ export default function ObraRegistosOfUserForm({
                         </TableBody>
                     </Table>
                 </TableContainer>
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                    { totalPages > 0 && (
-                        <>
-                            <IconButton onClick={handleFirstPage} disabled={page === 1} title={"Retroceder tudo"}>
-                                <KeyboardDoubleArrowLeftIcon />
-                            </IconButton>
-                            <IconButton onClick={handlePreviousPage} disabled={page === 1} title={"Retroceder"}>
-                                <ArrowBackIosIcon />
-                            </IconButton>
-                            {[...Array(3)].map((_, index) => {
-                                const startPage = Math.max(1, Math.min(page - 1, totalPages - 2));
-                                const currentPage = startPage + index;
-                                if (currentPage <= totalPages) {
-                                    return (
-                                        <Button
-                                            key={currentPage}
-                                            onClick={() => handlePageChange(currentPage)}
-                                            variant={page === currentPage ? "contained" : "outlined"}
-                                            sx={{
-                                                minWidth: '40px',
-                                                minHeight: '40px',
-                                                borderRadius: '50%',
-                                                mx: 1
-                                            }}
-                                        >
-                                            {currentPage}
-                                        </Button>
-                                    );
-                                }
-                                return null;
-                            })}
-                            <IconButton onClick={handleNextPage} disabled={page === totalPages} title={"Avançar"}>
-                                <ArrowForwardIosIcon />
-                            </IconButton>
-                            <IconButton onClick={handleLastPage} disabled={page === totalPages} title={"Avançar tudo"}>
-                                <KeyboardDoubleArrowRightIcon />
-                            </IconButton>
-                        </>
-                    )}
-                </Box>
+                <Pagination
+                    totalPages={totalPages}
+                    page={page}
+                    handleFirstPage={handleFirstPage}
+                    handlePreviousPage={handlePreviousPage}
+                    handlePageChange={handlePageChange}
+                    handleNextPage={handleNextPage}
+                    handleLastPage={handleLastPage}
+                />
                 <MRT_ToolbarAlertBanner stackAlertBanner table={table} />
                 <RegistoForm open={openForm} onHandleClose={handleCloseForm} obra={obra}/>
                 <RegistoExitForm open={exitOpenForm} onHandleClose={handleExitCloseForm} registo={selectedRegisto}/>

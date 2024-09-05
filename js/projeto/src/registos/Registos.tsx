@@ -27,7 +27,7 @@ import MenuItem from "@mui/material/MenuItem";
 import RegistoExitForm from "./RegistoExitForm";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {formatDate, mapStatusToPortuguese, table} from "../Utils";
+import {DateRangeFilter, formatDate, mapStatusToPortuguese, Pagination, table} from "../Utils";
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import TextField from "@mui/material/TextField";
@@ -305,29 +305,13 @@ export default function Registos () {
                 }}
             >
                 <Typography variant="h4" color={"black"}>{title}</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-
-                        <TextField
-                            label="Desde"
-                            type="date"
-                            value={initialDate || ''}
-                            onChange={(e) => setInitialDate(e.target.value)}
-                            InputLabelProps={{ shrink: true }}
-                            sx={{ marginRight: 2 }}
-                        />
-                        <TextField
-                            label="Até"
-                            type="date"
-                            value={endDate || ''}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            InputLabelProps={{ shrink: true }}
-                            sx={{ marginRight: 2 }}
-                        />
-                        <Button variant="contained" color="primary" onClick={handleFilterReset}>
-                            Limpar Pesquisa
-                        </Button>
-
-                </Box>
+                <DateRangeFilter
+                    initialDate={initialDate}
+                    endDate={endDate}
+                    setInitialDate={setInitialDate}
+                    setEndDate={setEndDate}
+                    handleFilterReset={handleFilterReset}
+                />
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <FormControl variant="outlined" sx={{ marginRight: 2, minWidth: 120 }}>
                         <InputLabel>Filtro</InputLabel>
@@ -422,49 +406,17 @@ export default function Registos () {
                     </TableBody>
                 </Table>
             </TableContainer>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                { totalPages > 0 && (
-                    <>
-                    <IconButton onClick={handleFirstPage} disabled={page === 1} title={"Retroceder tudo"}>
-                        <KeyboardDoubleArrowLeftIcon />
-                    </IconButton>
-                    <IconButton onClick={handlePreviousPage} disabled={page === 1} title={"Retroceder"}>
-                        <ArrowBackIosIcon />
-                    </IconButton>
-                    {[...Array(3)].map((_, index) => {
-                        const startPage = Math.max(1, Math.min(page - 1, totalPages - 2));
-                        const currentPage = startPage + index;
-                        if (currentPage <= totalPages) {
-                            return (
-                                <Button
-                                    key={currentPage}
-                                    onClick={() => handlePageChange(currentPage)}
-                                    variant={page === currentPage ? "contained" : "outlined"}
-                                    sx={{
-                                        minWidth: '40px',
-                                        minHeight: '40px',
-                                        borderRadius: '50%',
-                                        mx: 1
-                                    }}
-                                >
-                                    {currentPage}
-                                </Button>
-                            );
-                        }
-                        return null;
-                    })}
-                    <IconButton onClick={handleNextPage} disabled={page === totalPages} title={"Avançar"}>
-                        <ArrowForwardIosIcon />
-                    </IconButton>
-                    <IconButton onClick={handleLastPage} disabled={page === totalPages} title={"Avançar tudo"}>
-                        <KeyboardDoubleArrowRightIcon />
-                    </IconButton>
-                </>
-                )}
-            </Box>
+            <Pagination
+                totalPages={totalPages}
+                page={page}
+                handleFirstPage={handleFirstPage}
+                handlePreviousPage={handlePreviousPage}
+                handlePageChange={handlePageChange}
+                handleNextPage={handleNextPage}
+                handleLastPage={handleLastPage}
+            />
             <RegistoForm open={openForm} onHandleClose={handleCloseForm} obra={undefined}/>
             <RegistoExitForm open={exitOpenForm} onHandleClose={handleExitCloseForm} registo={selectedRegisto}/>
-
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={10000}

@@ -46,11 +46,6 @@ interface Obra {
     function: string;
 }
 
-interface InviteResponse {
-    oid: number;
-    response: string;
-}
-
 interface InvitesModel {
     obrasAndRole: Obra[];
 }

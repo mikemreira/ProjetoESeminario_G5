@@ -18,7 +18,6 @@ export default function ResetPassword() {
     const [submitted, setSubmitted] = useState(false)
     const [valid, setValid] = useState(false)
     const [error, setError] = useState("")
-    const [open, setOpen] = useState(false)
     const navigate = useNavigate()
 
     const queryParams = new URLSearchParams(location.search)
@@ -49,7 +48,6 @@ export default function ResetPassword() {
             setSubmitted(true)
             if (res.status == 201) {
                 setValid(true)
-                setOpen(true)
                 return res.json()
             }
             else {

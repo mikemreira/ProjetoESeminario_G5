@@ -21,6 +21,7 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
 import {pageSize} from "./ObrasInfo";
+import {Pagination} from "../Utils";
 
 interface DateObject {
     year: number;
@@ -216,47 +217,15 @@ export default function Obras() {
                     </TableBody>
                 </Table>
             </TableContainer>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                { totalPages > 0 && (
-                    <>
-                        <IconButton onClick={handleFirstPage} disabled={page === 1} title={"Retroceder tudo"}>
-                            <KeyboardDoubleArrowLeftIcon />
-                        </IconButton>
-                        <IconButton onClick={handlePreviousPage} disabled={page === 1} title={"Retroceder"}>
-                            <ArrowBackIosIcon />
-                        </IconButton>
-                        {[...Array(3)].map((_, index) => {
-                            const startPage = Math.max(1, Math.min(page - 1, totalPages - 2));
-                            const currentPage = startPage + index;
-                            if (currentPage <= totalPages) {
-                                return (
-                                    <Button
-                                        key={currentPage}
-                                        onClick={() => handlePageChange(currentPage)}
-                                        variant={page === currentPage ? "contained" : "outlined"}
-                                        sx={{
-                                            minWidth: '40px',
-                                            minHeight: '40px',
-                                            borderRadius: '50%',
-                                            mx: 1
-                                        }}
-                                    >
-                                        {currentPage}
-                                    </Button>
-                                );
-                            }
-                            return null;
-                        })}
-                        <IconButton onClick={handleNextPage} disabled={page === totalPages} title={"Avançar"}>
-                            <ArrowForwardIosIcon />
-                        </IconButton>
-                        <IconButton onClick={handleLastPage} disabled={page === totalPages} title={"Avançar tudo"}>
-                            <KeyboardDoubleArrowRightIcon />
-                        </IconButton>
-                    </>
-                )}
-            </Box>
-
+            <Pagination
+                totalPages={totalPages}
+                page={page}
+                handleFirstPage={handleFirstPage}
+                handlePreviousPage={handlePreviousPage}
+                handlePageChange={handlePageChange}
+                handleNextPage={handleNextPage}
+                handleLastPage={handleLastPage}
+            />
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={10000}

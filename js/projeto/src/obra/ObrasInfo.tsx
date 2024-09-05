@@ -1,7 +1,7 @@
-import {ChangeEvent, useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import * as React from "react";
-import { useNavigate, useParams, useSearchParams} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
     Card,
     CardContent,
@@ -34,7 +34,6 @@ import {
 } from "../Utils";
 // @ts-ignore
 import emptyFoto from "../assets/noImage.png";
-import { DataObject } from "@mui/icons-material";
 
 export interface DateObject {
     year: number;
@@ -96,23 +95,6 @@ export interface RegistosOutputModel {
     allRoute: string
 }
 
-const parseDate = (dateStr: string): DateObject | null => {
-    if (!dateStr) return null
-    const date = new Date(dateStr)
-    if (isNaN(date.getTime())) {
-        return null
-    }
-    return {
-        year: date.getFullYear(),
-        dayOfMonth: date.getDate(),
-        month: date.toLocaleString('default', { month: 'long' }),
-        dayOfWeek: date.toLocaleString('default', { weekday: 'long' }),
-        dayOfYear: Math.ceil((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / 86400000),
-        monthNumber: date.getMonth() + 1,
-        value$kotlinx_datetime: date.toISOString(),
-    }
-}
-
 const columns = [
     {
         accessorKey: 'userName',
@@ -130,7 +112,7 @@ const columns = [
         accessorKey: 'status',
         header: 'Estado',
     }
-];
+]
 
 export interface UserModel {
     id: number
@@ -153,13 +135,13 @@ interface states {
 export const pageSize = 5;
 
 export default function ObrasInfo() {
-    const [cookies] = useCookies(["token"]);
+    const [cookies] = useCookies(["token"])
     const [obra, setObra] = useState<Obra>()
-    const { oid } = useParams<{ oid: string }>();
-    const navigate = useNavigate();
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedObra, setEditedObra] = useState<Obra>();
-    const [tabIndex, setTabIndex] = useState(0);
+    const { oid } = useParams<{ oid: string }>()
+    const navigate = useNavigate()
+    const [isEditing, setIsEditing] = useState(false)
+    const [editedObra, setEditedObra] = useState<Obra>()
+    const [tabIndex, setTabIndex] = useState(0)
     const [state, setState] = useState<states>({ value: "geral" })
 
     const handleNextPage = () => {
@@ -205,19 +187,16 @@ export default function ObrasInfo() {
             },
         })
             .then((res) => {
-                if (res.ok) {
-                    return res.json();
-                } else {
-                    throw new Error('Failed to fetch obra');
-                }
+                if (res.ok) return res.json()
+                else throw new Error('Failed to fetch obra')
             })
             .then((body) => {
-                setObra(body);
-                setEditedObra(body);
+                setObra(body)
+                setEditedObra(body)
             })
             .catch((error) => {
-                console.error("Error fetching obra:", error);
-            });
+                console.error("Error fetching obra:", error)
+            })
     }
 
     useEffect(() => {
@@ -225,20 +204,19 @@ export default function ObrasInfo() {
         if (obra?.role === "admin") {
             fetchIsPendingRegisters(1)
         }
-    }, [cookies.token, oid, obra?.role]);
+    }, [cookies.token, oid, obra?.role])
 
-    const [page, setPage] = useState<number>(1);
-    const [totalPages, setTotalPages] = useState(1);
+    const [page, setPage] = useState<number>(1)
+    const [totalPages, setTotalPages] = useState(1)
 
-    const [initialDate, setInitialDate] = useState<string | null>(null);
-    const [endDate, setEndDate] = useState<string | null>(null);
+    const [initialDate, setInitialDate] = useState<string | null>(null)
+    const [endDate, setEndDate] = useState<string | null>(null)
 
     const fetchIsPendingRegisters = (pageNumber: number) => {
-        const params = new URLSearchParams({ page: String(pageNumber) });
-        if (initialDate) params.append("initialDate", initialDate);
-        if (endDate) params.append("endDate", endDate);
-        const queryString = params.toString();
-        console.log("fez este fetch")
+        const params = new URLSearchParams({ page: String(pageNumber) })
+        if (initialDate) params.append("initialDate", initialDate)
+        if (endDate) params.append("endDate", endDate)
+        const queryString = params.toString()
         fetch(`${path}/obras/${oid}/registos/pendente?${queryString}`, {
             method: "GET",
             headers: {
@@ -246,16 +224,13 @@ export default function ObrasInfo() {
                 "Authorization": `Bearer ${cookies.token}`,
             },
         }).then((res) => {
-            if (res.ok) {
-                return res.json();
-            } else {
-                throw new Error('Failed to fetch registos pendentes');
-            }
+            if (res.ok) return res.json()
+            else throw new Error('Failed to fetch registos pendentes');
         }).then((body) => {
-            setPendingRegisters(body);
+            setPendingRegisters(body)
         }).catch((error) => {
-            console.error("Error fetching registos pendentes:", error);
-        });
+            console.error("Error fetching registos pendentes:", error)
+        })
     }
 
     const handleVisaoGeral = () => {
@@ -267,21 +242,17 @@ export default function ObrasInfo() {
             },
         })
             .then((res) => {
-                if (res.ok) {
-                    return res.json();
-                } else {
-                    throw new Error('Failed to fetch obra');
-                }
+                if (res.ok) return res.json()
+                else throw new Error('Failed to fetch obra')
             })
             .then((body) => {
-                console.log("body: " + JSON.stringify(body))
-                setObra(body);
-                setEditedObra(body);
+                setObra(body)
+                setEditedObra(body)
                 setState({ value: "geral" })
             })
             .catch((error) => {
-                console.error("Error fetching obra:", error);
-            });
+                console.error("Error fetching obra:", error)
+            })
     }
 
     const handleClickEditObra = () => {
@@ -311,8 +282,7 @@ export default function ObrasInfo() {
                 endDate: editedObra.endDate instanceof Object 
                 ? editedObra.endDate.value$kotlinx_datetime 
                 : editedObra.endDate,
-            };
-            console.log(editedObra)
+            }
             fetch(`${path}/obras/${oid}`, {
                 method: "PUT",
                 headers: {
@@ -322,15 +292,12 @@ export default function ObrasInfo() {
                 body: JSON.stringify(editedObraForUpdate),
             })
                 .then((res) => {
-                    if (res.ok) {
-                        //setObra(obra)
-                        setIsEditing(false)
-                    } else {
-                        console.error("Failed to update obra")
-                    }
+                    if (res.ok) setIsEditing(false)
+                    else console.error("Failed to update obra")
                 })
                 .then((body) => {
-                    setObra(body)
+                    // @ts-ignore
+                    return setObra(body)
                 })
                 .catch((error) => {
                     console.error("Error updating profile:", error)
@@ -345,7 +312,7 @@ export default function ObrasInfo() {
             startDate: obra.startDate?.value$kotlinx_datetime || null,
             endDate: obra.endDate?.value$kotlinx_datetime || null,
             status: status || "on going",
-        };
+        }
         fetch(`${path}/obras/${oid}`, {
             method: "PUT",
             headers: {
@@ -370,8 +337,8 @@ export default function ObrasInfo() {
     }
 
     const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-        setTabIndex(newValue);
-    };
+        setTabIndex(newValue)
+    }
 
     /*
      *  Registers
@@ -386,18 +353,16 @@ export default function ObrasInfo() {
         unfinishedRoute: "",
         registersSize: 0,
     })
-    const [searchParams, setSearchParams] = useSearchParams();
-    const [openForm, setOpenForm] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [openForm, setOpenForm] = useState(false)
+    const [loading, setLoading] = useState(false)
 
     const handleGetRegistersMine = (pageNumber: number) => {
         setPage(1)
         setLoading(true)
-        const params = new URLSearchParams({ page: String(pageNumber) });
-        if (initialDate) params.append("initialDate", initialDate);
-        if (endDate) params.append("endDate", endDate);
-        const queryString = params.toString();
-        console.log("queryString: " + queryString)
+        const params = new URLSearchParams({ page: String(pageNumber) })
+        if (initialDate) params.append("initialDate", initialDate)
+        if (endDate) params.append("endDate", endDate)
+        const queryString = params.toString()
         fetch(`${path}/obras/${oid}/registos/me?${queryString}`, {
             method: "GET",
             headers: {
@@ -415,11 +380,11 @@ export default function ObrasInfo() {
                     startTime: formatDate(register.startTime),
                     endTime: formatDate(register.endTime),
                     status: mapStatusToPortuguese(register.status),
-                }));
+                }))
                 setRegistos(() => ({
                     ...body,
                     registers: parsedRegisters,
-                }));
+                }))
                 setTotalPages(Math.ceil(body.registersSize / pageSize))
             }
         }).catch(error => {
@@ -431,54 +396,11 @@ export default function ObrasInfo() {
 
     const handleGetRegistersAll = (pageNumber: number) => {
         setPage(1)
-        const params = new URLSearchParams({ page: String(pageNumber) });
-        if (initialDate) params.append("initialDate", initialDate);
-        if (endDate) params.append("endDate", endDate);
-        const queryString = params.toString();
-        console.log("queryString: " + queryString)
+        const params = new URLSearchParams({ page: String(pageNumber) })
+        if (initialDate) params.append("initialDate", initialDate)
+        if (endDate) params.append("endDate", endDate)
+        const queryString = params.toString()
         fetch(`${path}/obras/${oid}/registos?${queryString}`, {
-            method: "GET",
-            headers: {
-                "Content-type": "application/json",
-                "Authorization": `Bearer ${cookies.token}`
-            },
-        }).then((res) => {
-            setState({ value: "registo" })
-            if (res.ok) {
-                console.log(res.ok)
-                return res.json()
-            }
-            else return null
-        }).then((body) => {
-            if (body) {
-                console.log("body: " + JSON.stringify(body))
-                const parsedRegisters = body.registers.map((register: { startTime: string; endTime: string; status: string; }) => ({
-                    ...register,
-                    startTime: formatDate(register.startTime),
-                    endTime: formatDate(register.endTime),
-                    status: mapStatusToPortuguese(register.status),
-                }));
-
-                setRegistos(() => ({
-                    ...body,
-                    registers: parsedRegisters,
-                }));
-                console.log("registos: " + JSON.stringify(parsedRegisters))
-                //setRegistos(body)
-                setTotalPages(Math.ceil(body.registersSize / pageSize))
-            }
-        }).catch(error => {
-            console.error("Error fetching registos: ", error)
-        })
-    }
-
-    const handleGetRegistersIncomplete = (pageNumber: number) => {
-        const params = new URLSearchParams({ page: String(pageNumber) });
-        if (initialDate) params.append("initialDate", initialDate);
-        if (endDate) params.append("endDate", endDate);
-        const queryString = params.toString();
-        console.log("queryString: " + queryString)
-        fetch(`${path}/obras/${oid}/registos/incompletos?${queryString}`, {
             method: "GET",
             headers: {
                 "Content-type": "application/json",
@@ -495,12 +417,11 @@ export default function ObrasInfo() {
                     startTime: formatDate(register.startTime),
                     endTime: formatDate(register.endTime),
                     status: mapStatusToPortuguese(register.status),
-                }));
+                }))
                 setRegistos(() => ({
                     ...body,
                     registers: parsedRegisters,
-                }));
-                //setRegistos(body)
+                }))
                 setTotalPages(Math.ceil(body.registersSize / pageSize))
             }
         }).catch(error => {
@@ -509,15 +430,15 @@ export default function ObrasInfo() {
     }
 
     const handleClickOpenForm = () => {
-        setOpenForm(true);
-    };
+        setOpenForm(true)
+    }
 
     const handleCloseForm = (reload: boolean) => {
-        setOpenForm(false);
+        setOpenForm(false)
         if (reload) {
             handleGetRegistersMine(page)
         }
-    };
+    }
 
     const tableRegisters = table(columns, registos.registers);
 
@@ -532,14 +453,13 @@ export default function ObrasInfo() {
         allRoute: "",
         unfinishedRoute: "",
         registersSize: 0,
-       });
-    const [open, setOpen] = useState(false);
+    })
 
     const handleGetPendingRegisters = (pageNumber: number) => {
-        const params = new URLSearchParams({ page: String(pageNumber) });
-        if (initialDate) params.append("initialDate", initialDate);
-        if (endDate) params.append("endDate", endDate);
-        const queryString = params.toString();
+        const params = new URLSearchParams({ page: String(pageNumber) })
+        if (initialDate) params.append("initialDate", initialDate)
+        if (endDate) params.append("endDate", endDate)
+        const queryString = params.toString()
         console.log("queryString: " + queryString)
         fetch(`${path}/obras/${oid}/registos/pendente?${queryString}`, {
             method: "GET",
@@ -563,8 +483,6 @@ export default function ObrasInfo() {
                     ...body,
                     registers: parsedRegisters,
                 }));
-                console.log("body: " + body.registersSize)
-                //setPendingRegisters(body)
                 setTotalPages(Math.ceil(body.registersSize / pageSize))
             }
         }).catch(error => {
@@ -582,8 +500,8 @@ export default function ObrasInfo() {
             body: JSON.stringify({ registerId: registerId, userId: userId, response: response })
         })
             .then((res) => {
-                if (res.ok) return res;
-                else return null;
+                if (res.ok) return res
+                else return null
             })
             .then((body) => {
                 setPendingRegisters((prevRegistos) => ({
@@ -595,9 +513,9 @@ export default function ObrasInfo() {
                 navigate(`/obras/${oid}`)
             })
             .catch(error => {
-                console.error("Error fetching: ", error);
-            });
-    };
+                console.error("Error fetching: ", error)
+            })
+    }
 
     const tablePendingRegisters = table(columns, pendingRegisters.registers);
 
@@ -618,10 +536,10 @@ export default function ObrasInfo() {
 
     const handleGetUserRegisters = (pageNumber: number, uid: number) => {
         setSelectedUser(uid)
-        const params = new URLSearchParams({ page: String(pageNumber) });
-        if (initialDate) params.append("initialDate", initialDate);
-        if (endDate) params.append("endDate", endDate);
-        const queryString = params.toString();
+        const params = new URLSearchParams({ page: String(pageNumber) })
+        if (initialDate) params.append("initialDate", initialDate)
+        if (endDate) params.append("endDate", endDate)
+        const queryString = params.toString()
         fetch(`${path}/obras/${oid}/registos/${uid}?${queryString}`, {
             method: "GET",
             headers: {
@@ -639,12 +557,11 @@ export default function ObrasInfo() {
                     startTime: formatDate(register.startTime),
                     endTime: formatDate(register.endTime),
                     status: mapStatusToPortuguese(register.status),
-                }));
+                }))
                 setRegistosFuncionario(() => ({
                     ...body,
                     registers: parsedRegisters,
-                }));
-                //setRegistosFuncionario(body)
+                }))
                 setUsername(body.registers[0].userName)
                 setTotalPages(Math.ceil(body.registersSize / pageSize))
             }
@@ -940,7 +857,6 @@ export default function ObrasInfo() {
                                 handleCloseForm={handleCloseForm}
                                 openForm={openForm}
                                 totalPages={totalPages}
-                                setTotalPages={setTotalPages}
                                 handleNextPage={handleNextPage}
                                 handlePreviousPage={handlePreviousPage}
                                 handleFilterReset={handleFilterReset}

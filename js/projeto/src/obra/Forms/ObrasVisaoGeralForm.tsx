@@ -47,7 +47,7 @@ const func = [
 
 const formatDate = (dateObj: DateObject | null | undefined): string => {
     if (!dateObj || !dateObj.value$kotlinx_datetime) {
-        return "";
+        return "Sem data definida";
     }
     return dateObj.value$kotlinx_datetime.split('T')[0];
 }
