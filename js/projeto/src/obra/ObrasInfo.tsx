@@ -302,10 +302,9 @@ export default function ObrasInfo() {
     const handleSaveObra = () => {
         if (editedObra) {
             const editedObraForUpdate = {
-                ...editedObra,
-                startDate: editedObra.startDate?.value$kotlinx_datetime || null,
-                endDate: editedObra.endDate?.value$kotlinx_datetime || null,
+                ...editedObra
             };
+            console.log(editedObra)
             fetch(`${path}/obras/${oid}`, {
                 method: "PUT",
                 headers: {
@@ -316,11 +315,14 @@ export default function ObrasInfo() {
             })
                 .then((res) => {
                     if (res.ok) {
-                        setObra(editedObra)
+                        //setObra(obra)
                         setIsEditing(false)
                     } else {
                         console.error("Failed to update obra")
                     }
+                })
+                .then((body) => {
+                    setObra(body)
                 })
                 .catch((error) => {
                     console.error("Error updating profile:", error)

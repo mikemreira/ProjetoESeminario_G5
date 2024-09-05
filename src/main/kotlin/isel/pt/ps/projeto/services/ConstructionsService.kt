@@ -90,8 +90,8 @@ class ConstructionsService(
         return failure(ConstructionInfoError.NoPermission)
     }
 
-    fun getConstructionsOfUser(uid: Int): ConstructionsInfoResult {
-        val construction = constructionsRepository.getConstructionsOfUser(uid)
+    fun getConstructionsOfUser(uid: Int, page: Int): ConstructionsInfoResult {
+        val construction = constructionsRepository.getConstructionsOfUser(uid, page = if (page <= 0) 1 else page)
         return if (construction.isEmpty()) {
             failure(ConstructionInfoError.NoConstructions)
         } else {
@@ -100,7 +100,7 @@ class ConstructionsService(
     }
 
     fun getOnGoingConstructionsOfUser(uid: Int): ConstructionsInfoResult {
-        val construction = constructionsRepository.getConstructionsOfUser(uid, "on going")
+        val construction = constructionsRepository.getConstructionsOfUser(uid, "on going", null)
         return if (construction.isEmpty()) {
             failure(ConstructionInfoError.NoConstructions)
         } else {

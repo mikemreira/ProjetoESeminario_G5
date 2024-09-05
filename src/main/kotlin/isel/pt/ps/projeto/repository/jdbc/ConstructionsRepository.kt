@@ -176,7 +176,7 @@ class ConstructionsRepository(
     }
 
 
-    override fun getConstructionsOfUser(id: Int, status: String?): List<Construction> {
+    override fun getConstructionsOfUser(id: Int, status: String?, page: Int?): List<Construction> {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -187,10 +187,15 @@ class ConstructionsRepository(
                             "inner join obra o on o.id = p.id_obra\n" +
                             "where 1=1 \n" +
                             "   AND (o.status = COALESCE(?, o.status))\n" +
-                            "   AND (u.id = COALESCE(?, u.id))",
+                            "   AND (u.id = COALESCE(?, u.id))\n" +
+                            "limit 5 offset ? ",
                     )
                 pStatement.setString(1, status)
                 pStatement.setInt(2, id)
+                if (page != null)
+                    pStatement.setInt(3, (page-1)*5)
+                else
+                    pStatement.setNull(3, java.sql.Types.INTEGER)
                 val result = pStatement.executeQuery()
                 val list = mutableListOf<Construction>()
                 while (result.next()) {

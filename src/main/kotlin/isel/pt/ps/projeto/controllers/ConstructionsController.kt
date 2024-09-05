@@ -14,15 +14,7 @@ import kotlinx.datetime.toLocalDate
 import kotlinx.datetime.toLocalDateTime
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 // First controllera
 @RestController
@@ -200,8 +192,8 @@ class ConstructionsController(
     fun getConstructionUser(
         @RequestHeader("Authorization") userToken: String,
         @PathVariable oid: Int,
-        @PathVariable uid: Int,
-    ): ResponseEntity<*> {
+        @PathVariable uid: Int
+        ): ResponseEntity<*> {
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         val res = constructionService.getConstructionUser(authUser.user.id, oid, uid)
@@ -248,10 +240,11 @@ class ConstructionsController(
     @GetMapping("")
     fun getConstructions(
         @RequestHeader("Authorization") userToken: String,
+        @RequestParam(defaultValue = "0") page: Int
     ): ResponseEntity<*> {
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        val res = constructionService.getConstructionsOfUser(authUser.user.id)
+        val res = constructionService.getConstructionsOfUser(authUser.user.id, page)
         return when (res) {
             is Success ->
                 ResponseEntity.status(200)
