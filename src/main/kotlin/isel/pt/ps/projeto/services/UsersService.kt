@@ -136,7 +136,7 @@ class UsersService(
         val token = usersDomain.generateTokenValue()
         usersRepository.setForgetPassword(email, token)
         emailSenderService.sendEmail(email, "Forgot Password", "Hello $email, \n" +
-            "Click in this link to reset your password http://localhost:5173/set-password?email=$email&token=$token"
+            "Click in this link to reset your password https://registo-acessos.azurewebsites.net/set-password?email=$email&token=$token"
         )
         return success("To reset your password go to your email")
     }

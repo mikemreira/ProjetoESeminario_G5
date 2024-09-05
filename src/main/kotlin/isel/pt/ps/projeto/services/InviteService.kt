@@ -48,7 +48,7 @@ class InviteService(
 
         val res = inviteRepository.inviteToConstruction(oid, invite.email, invite.function, invite.role)
 
-        var msg = "http://localhost:5173/"
+        var msg = "https://registo-acessos.azurewebsites.net/"
 
         if (user == null)
             msg += "signup"
