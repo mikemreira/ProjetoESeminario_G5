@@ -221,7 +221,7 @@ class ConstructionsRepository(
                 pStatement.setInt(2, id)
                 if (page != null)
                     pStatement.setInt(3, (page-1)*5)
-                
+
                 val result = pStatement.executeQuery()
                 val list = mutableListOf<Construction>()
                 while (result.next()) {
@@ -422,15 +422,16 @@ class ConstructionsRepository(
             it.autoCommit = false
             return try {
                 val fotoBytes = if (inputModel.foto != null) utils.base64ToByteArray(inputModel.foto) else null
+
                 val pStatement = it.prepareStatement(
                     "UPDATE Obra\n" +
-                        "SET nome = ?, localizacao = ?, descricao = ?, data_inicio = ?, data_fim = ?, foto = ?, status = ? \n" +
+                        "SET nome = ?, localizacao = ?, descricao = ?, data_inicio = COALESCE(?, data_inicio), data_fim = COALESCE(?, data_fim), foto = ?, status = ? \n" +
                         "WHERE id = ?"
                 )
                 pStatement.setString(1, inputModel.name)
                 pStatement.setString(2, inputModel.location)
                 pStatement.setString(3, inputModel.description)
-                pStatement.setDate(4, Date.valueOf(inputModel.startDate))
+                pStatement.setDate(4, if (inputModel.startDate != null) Date.valueOf(inputModel.startDate) else null)
                 pStatement.setDate(5, if (inputModel.endDate != null) Date.valueOf(inputModel.endDate) else null)
                 pStatement.setBytes(6, fotoBytes)
                 pStatement.setString(7, inputModel.status)

@@ -34,6 +34,7 @@ import {
 } from "../Utils";
 // @ts-ignore
 import emptyFoto from "../assets/noImage.png";
+import { DataObject } from "@mui/icons-material";
 
 export interface DateObject {
     year: number;
@@ -303,7 +304,13 @@ export default function ObrasInfo() {
     const handleSaveObra = () => {
         if (editedObra) {
             const editedObraForUpdate = {
-                ...editedObra
+                ...editedObra,
+                startDate: editedObra.startDate instanceof Object 
+                    ? editedObra.startDate.value$kotlinx_datetime 
+                    : editedObra.startDate,
+                endDate: editedObra.endDate instanceof Object 
+                ? editedObra.endDate.value$kotlinx_datetime 
+                : editedObra.endDate,
             };
             console.log(editedObra)
             fetch(`${path}/obras/${oid}`, {

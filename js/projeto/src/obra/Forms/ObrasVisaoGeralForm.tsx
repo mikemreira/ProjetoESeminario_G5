@@ -141,7 +141,7 @@ export default function ObraVisaoGeralForm({
                                 fullWidth
                                 name="startDate"
                                 type={"date"}
-                                value={formatDate(editedObra?.startDate) || ""}
+                                value={editedObra?.startDate || ""}
                                 onChange={handleChange}
                             />
                         ) : (
@@ -157,7 +157,7 @@ export default function ObraVisaoGeralForm({
                                 fullWidth
                                 name="endDate"
                                 type={"date"}
-                                value={formatDate(editedObra?.endDate) || ""}
+                                value={editedObra?.endDate || ""}
                                 onChange={handleChange}
                             />
                         ) : (

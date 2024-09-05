@@ -115,6 +115,7 @@ class ConstructionsController(
     ): ResponseEntity<*> {
         val authUser =
             requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
+        println("INPUT : $input")
         val res = constructionService.editConstruction(authUser.user.id, oid, input)
         return when (res) {
             is Success -> {
