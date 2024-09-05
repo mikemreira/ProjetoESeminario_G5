@@ -4,7 +4,9 @@ import isel.pt.ps.projeto.domain.constructions.ConstructionsDomain
 import isel.pt.ps.projeto.models.constructions.Construction
 import isel.pt.ps.projeto.models.constructions.ConstructionAndRole
 import isel.pt.ps.projeto.models.constructions.ConstructionEditInputModel
+import isel.pt.ps.projeto.models.constructions.ConstructionsListAndSize
 import isel.pt.ps.projeto.models.registers.RegisterAndUser
+import isel.pt.ps.projeto.models.users.ListOfUsersAndSize
 import isel.pt.ps.projeto.models.users.SimpleUserAndFunc
 import isel.pt.ps.projeto.repository.jdbc.ConstructionsRepository
 import isel.pt.ps.projeto.repository.jdbc.UsersRepository
@@ -53,13 +55,13 @@ typealias NfcResult = Either<NfcError, String?>
 
 typealias ConstructionAndRoleResult = Either<ConstructionInfoError, ConstructionAndRole>
 typealias ConstructionCreationResult = Either<ConstructionCreationError, Int>
-typealias ConstructionsInfoResult = Either<ConstructionInfoError, List<Construction>>
+typealias ConstructionsInfoResult = Either<ConstructionInfoError, ConstructionsListAndSize>
 typealias ConstructionEditResult = Either<ConstructionEditError, Construction?>
 
 typealias RegisterInfoResult = Either<ConstructionInfoError, Boolean>
 typealias RemoveUserFromConstructionResult = Either<ConstructionUserError, Boolean>
 
-typealias EmployeesInConstructionResult = Either<ConstructionInfoError, List<SimpleUserAndFunc>>
+typealias EmployeesInConstructionResult = Either<ConstructionInfoError, ListOfUsersAndSize>
 typealias EmployeeInConstructionResult = Either<ConstructionUserError, SimpleUserAndFunc>
 
 typealias IsAdminResult = Either<IsAdminError, Boolean>
@@ -72,7 +74,7 @@ class ConstructionsService(
     private val constructionsDomain: ConstructionsDomain
 ) {
 
-    fun getConstructionUsers(userId: Int, oid: Int): EmployeesInConstructionResult{
+    fun getConstructionUsers(userId: Int, oid: Int, page: Int): EmployeesInConstructionResult{
         val construction = constructionsRepository.getConstruction(oid)
             ?: return failure(ConstructionInfoError.ConstructionNotFound)
 
@@ -80,31 +82,36 @@ class ConstructionsService(
             ?: return failure(ConstructionInfoError.NoAccessToConstruction)
 
         if (role.role == "admin") {
-            val users = constructionsRepository.getConstructionsUsers(oid)
+            val users = constructionsRepository.getConstructionsUsers(oid, if (page<=0) 1 else page)
+            val size = constructionsRepository.getSizeOfUsersInConstructions(oid)
+            val res = ListOfUsersAndSize(users, size)
             return if (users.isEmpty()) {
                 failure(ConstructionInfoError.EmptyEmployees)
             } else {
-                success(users)
+                success(res)
             }
         }
         return failure(ConstructionInfoError.NoPermission)
     }
 
     fun getConstructionsOfUser(uid: Int, page: Int): ConstructionsInfoResult {
-        val construction = constructionsRepository.getConstructionsOfUser(uid, page = if (page <= 0) 1 else page)
-        return if (construction.isEmpty()) {
+        val constructions = constructionsRepository.getConstructionsOfUser(uid, page = if (page <= 0) 1 else page)
+        val size = constructionsRepository.getSizeOfConstructions(uid)
+        val res = ConstructionsListAndSize(constructions, size)
+        return if (res.list.isEmpty()) {
             failure(ConstructionInfoError.NoConstructions)
         } else {
-            success(construction)
+            success(res)
         }
     }
 
     fun getOnGoingConstructionsOfUser(uid: Int): ConstructionsInfoResult {
         val construction = constructionsRepository.getConstructionsOfUser(uid, "on going", null)
+        val res = ConstructionsListAndSize(construction, 0)
         return if (construction.isEmpty()) {
             failure(ConstructionInfoError.NoConstructions)
         } else {
-            success(construction)
+            success(res)
         }
     }
 

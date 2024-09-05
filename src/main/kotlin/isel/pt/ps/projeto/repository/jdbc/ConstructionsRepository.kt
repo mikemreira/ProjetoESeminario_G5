@@ -105,7 +105,7 @@ class ConstructionsRepository(
         }
     }
 
-    override fun getConstructionsUsers(oid: Int): List<SimpleUserAndFunc> {
+    override fun getConstructionsUsers(oid: Int, page: Int): List<SimpleUserAndFunc> {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -115,20 +115,23 @@ class ConstructionsRepository(
                             "inner join UtilizadorImagem ui on ui.id_utilizador = ut.id\n" +
                             "inner join papel pa on pa.id_utilizador = ut.id\n" +
                             "inner join obra o on o.id = pa.id_obra\n" +
-                            "where o.id = ?",
+                            "where o.id = ?\n" +
+                            "limit 5 offset ? ",
                     )
                 pStatement.setInt(1, oid)
+                pStatement.setInt(2, (page-1)*5)
                 val result = pStatement.executeQuery()
                 val list = mutableListOf<SimpleUserAndFunc>()
                 while (result.next()) {
                     list.add(SimpleUserAndFunc(
-                        result.getInt("id"),
-                        result.getString("nome"),
-                        result.getString("email"),
-                        result.getString("morada"),
-                        result.getString("funcao"),
-                        result.getBytes("foto")
-                    ))
+                            result.getInt("id"),
+                            result.getString("nome"),
+                            result.getString("email"),
+                            result.getString("morada"),
+                            result.getString("funcao"),
+                            result.getBytes("foto")
+                        )
+                    )
                 }
                 list
             } catch (e: Exception) {
@@ -139,6 +142,29 @@ class ConstructionsRepository(
             }
         }
     }
+
+    override fun getSizeOfUsersInConstructions(oid: Int): Int {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement =
+                    it.prepareStatement(
+                        "select Count(*) from utilizador u\n" +
+                            "inner join papel p on p.id_utilizador = u.id\n" +
+                            "inner join obra o on o.id = p.id_obra\n" +
+                            "where o.id = ?",
+                    )
+                pStatement.setInt(1, oid)
+                val res = pStatement.executeQuery()
+                res.next()
+                res.getInt("Count")
+            } catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }        }
 
     override fun getConstructionUser(oid: Int, uid: Int): SimpleUserAndFunc? {
         initializeConnection().use {
@@ -214,6 +240,30 @@ class ConstructionsRepository(
                     )
                 }
                 list
+            } catch (e: Exception) {
+                it.rollback()
+                throw e
+            } finally {
+                it.commit()
+            }
+        }
+    }
+
+    override fun getSizeOfConstructions(uid: Int): Int {
+        initializeConnection().use {
+            it.autoCommit = false
+            return try {
+                val pStatement =
+                    it.prepareStatement(
+                        "select Count(*) from utilizador u\n" +
+                            "inner join papel p on p.id_utilizador = u.id\n" +
+                            "inner join obra o on o.id = p.id_obra\n" +
+                            "where u.id = ?",
+                    )
+                pStatement.setInt(1, uid)
+                val res = pStatement.executeQuery()
+                res.next()
+                res.getInt("Count")
             } catch (e: Exception) {
                 it.rollback()
                 throw e

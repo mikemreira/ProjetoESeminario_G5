@@ -17,9 +17,11 @@ interface ConstructionRepository {
      */
     fun getConstruction(oid: Int): Construction?
     fun getConstructionByNFCID(nfcId: String): Construction?
-    fun getConstructionsUsers(oid: Int): List<SimpleUserAndFunc>
+    fun getConstructionsUsers(oid: Int, page: Int): List<SimpleUserAndFunc>
+    fun getSizeOfUsersInConstructions(oid: Int): Int
     fun getConstructionUser(oid: Int, uid: Int): SimpleUserAndFunc?
     fun getConstructionsOfUser(id: Int, status: String? = null, page: Int?): List<Construction>
+    fun getSizeOfConstructions(uid: Int): Int
     fun createConstruction(userId: Int, name: String, location: String, description: String, startDate: LocalDate, endDate: LocalDate?, foto: ByteArray?, status: String?, function: String): Int
     fun getUserRoleFromConstruction(id: Int, oid: Int): Role?
     fun getUserByEmailFromConstructions(oid: Int, email: String): SimpleUser?

@@ -68,7 +68,7 @@ class ConstructionTests(
 
     @Test
     fun `test getConstructionsUsers`() {
-        val users = constructionsRepository.getConstructionsUsers(1)
+        val users = constructionsRepository.getConstructionsUsers(1, 1)
         assertNotNull(users)
         assertTrue(users.isNotEmpty())
         assertEquals(1, users[0].id)
@@ -83,7 +83,7 @@ class ConstructionTests(
 
     @Test
     fun `test getConstructionsOfUser`() {
-        val constructions = constructionsRepository.getConstructionsOfUser(1, "on going")
+        val constructions = constructionsRepository.getConstructionsOfUser(1, "on going", 1)
         assertNotNull(constructions)
         assertTrue(constructions.isNotEmpty())
         assertEquals("Obra A", constructions[0].nome)

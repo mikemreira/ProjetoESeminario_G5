@@ -54,7 +54,7 @@ class AuthorizationService(
         usersRepository.getUsers().map { user ->
             saveUserRole(user.email)
             enforcer.addRoleForUser(user.email, "user")
-            constructionsRepository.getConstructionsOfUser(user.id).map { construction ->
+            constructionsRepository.getConstructionsOfUser(user.id, null, null).map { construction ->
                 savePolicy("construction_${construction.oid}_admin", "/obras/${construction.oid}", "GET")
                 savePolicy("construction_${construction.oid}_admin", "/obras/${construction.oid}", "POST")
                 savePolicy("construction_${construction.oid}_admin", "/obras/${construction.oid}", "PUT")
