@@ -259,21 +259,22 @@ class RegistersRepository(
             }
         }    }
 
-    override fun addUserRegisterExit(regId: Int,userId: Int, obraId: Int, time: LocalDateTime) : Boolean {
+    override fun addUserRegisterExit(regId: Int,userId: Int, obraId: Int, role: String, time: LocalDateTime) : Boolean {
         initializeConnection().use {
             it.autoCommit = false
             return try {
                 val pStatement = it.prepareStatement(
                     "update registo " +
                         "set saida=?, " +
-                        "    status= 'pending' " +
+                        "    status= ? " +
                         "where id_utilizador=? and id_obra=? and id = ?"
                 )
                 val stamp = Timestamp.valueOf(time)
                 pStatement.setTimestamp(1, stamp)
-                pStatement.setInt(2, userId)
-                pStatement.setInt(3, obraId)
-                pStatement.setInt(4, regId)
+                pStatement.setString(2, if (role == "admin") "completed" else "pending")
+                pStatement.setInt(3, userId)
+                pStatement.setInt(4, obraId)
+                pStatement.setInt(5, regId)
                 pStatement.executeUpdate()
 
                 true

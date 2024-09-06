@@ -151,7 +151,10 @@ class RegistersService(
         if (lastRegister.endTime != null)
             return failure(RegistersInfoError.InvalidRegister)
 
-        val res = registersRepository.addUserRegisterExit(lastRegister.id, uid, obraId, exit.toJavaLocalDateTime())
+        val role = constructionRepository.getUserRoleFromConstruction(uid, construction.oid).also { println("ROLE : $it") }
+            ?: return failure(RegistersInfoError.NoAccessToConstruction)
+
+        val res = registersRepository.addUserRegisterExit(lastRegister.id, uid, obraId, role.role, exit.toJavaLocalDateTime())
         return if (res) {
             success(true)
         } else {

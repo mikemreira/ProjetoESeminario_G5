@@ -83,7 +83,7 @@ class RegistersTests(
 
         // When
         registersRepository.addUserRegisterEntry(userId, obraId, exitTime, "unfinished")
-        val result = registersRepository.addUserRegisterExit(regId, userId, obraId, exitTime)
+        val result = registersRepository.addUserRegisterExit(regId, userId, obraId,"funcionario", exitTime)
 
         // Then
         assertTrue(result)
@@ -273,7 +273,7 @@ class RegistersTests(
 
         // When
         registersRepository.addUserRegisterEntry(userId, obraId, exitTime, "unfinished")
-        registersRepository.addUserRegisterExit(regId, userId, obraId, exitTime)
+        registersRepository.addUserRegisterExit(regId, userId, obraId, "funcionario", exitTime)
         val result = registersRepository.acceptOrDeny(userId, obraId, regId, response)
 
         // Then
