@@ -18,7 +18,7 @@ sealed class InviteInfoError {
     object AlreadyInConstruction: InviteInfoError()
 }
 
-typealias InviteInfoResult = Either<InviteInfoError, Boolean>
+typealias InviteInfoResult = Either<InviteInfoError, String>
 typealias ListOfInvitesInfoResult = Either<InviteInfoError, List<ConstructionAndRole>>
 
 

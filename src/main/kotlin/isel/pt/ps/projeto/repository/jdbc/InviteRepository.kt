@@ -61,7 +61,7 @@ class InviteRepository(
 
  */
 
-    override fun inviteToConstruction(oid: Int, email: String, function: String, role: String): Boolean {
+    override fun inviteToConstruction(oid: Int, email: String, function: String, role: String): String {
         initializeConnection().use {
             it.autoCommit = false
             return try {
@@ -71,11 +71,11 @@ class InviteRepository(
                 pStatement.setString(3, function)
                 pStatement.setString(4, role)
                 pStatement.executeUpdate()
-                true
+                "invited"
             }  catch (e: SQLException) {
                 if (e.sqlState == "23505") { // SQL state for unique violation
                     println("Duplicate entry: $email, $oid")
-                    false
+                    ""
                 } else {
                     throw e
                 }
@@ -129,10 +129,18 @@ class InviteRepository(
         }
     }
 
-    override fun acceptOrDeny(email: String, oid: Int, response: String): Boolean {
+    override fun acceptOrDeny(email: String, oid: Int, response: String): String {
         initializeConnection().use {
             it.autoCommit = false
             return try {
+                val statement = it.prepareStatement("SELECT papel FROM Convite WHERE email=?;")
+                statement.setString(1, email)
+                val rs = statement.executeQuery()
+
+                var papel: String? = null
+
+                if (rs.next()) papel = rs.getString("papel")
+
                 val pStatement = it.prepareStatement(
                     "UPDATE Convite \n" +
                         "SET status = ? \n" +
@@ -143,7 +151,7 @@ class InviteRepository(
                 pStatement.setString(2, email)
                 pStatement.setInt(3, oid)
                 pStatement.executeUpdate()
-                true
+                papel ?: ""
             }  catch (e: SQLException) {
                 it.rollback()
                 throw e

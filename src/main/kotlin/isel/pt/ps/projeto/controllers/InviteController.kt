@@ -97,7 +97,7 @@ class InviteController(
         return when(res) {
             is Success -> {
                 println("ADDED USER ${authUser.user.id}")
-                authorizationService.saveConstructionUserRole(authUser.user.email, input.oid, if (authorizationService.isConstructionAdmin(input.oid, authUser.user.email)) "admin" else "funcionario")
+                authorizationService.saveConstructionUserRole(authUser.user.email, input.oid, res.value)
                 ResponseEntity.status(201)
                     .body("O Convite foi ${input.response}")
             }

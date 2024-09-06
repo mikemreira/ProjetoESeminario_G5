@@ -6,8 +6,8 @@ import isel.pt.ps.projeto.models.users.SimpleUser
 interface InviteRepository {
 
     //fun getInvitedToConstruction(oid: Int) : List<SimpleUser>
-    fun inviteToConstruction(oid: Int, email: String, function: String, role: String): Boolean
+    fun inviteToConstruction(oid: Int, email: String, function: String, role: String): String
     fun invited(email: String): List<ConstructionAndRole>
-    fun acceptOrDeny(email: String, oid: Int, response: String): Boolean
+    fun acceptOrDeny(email: String, oid: Int, response: String): String
 
 }
