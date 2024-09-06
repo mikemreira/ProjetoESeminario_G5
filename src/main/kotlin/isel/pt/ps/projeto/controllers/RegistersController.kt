@@ -34,7 +34,6 @@ class RegistersController(
     ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
         val res = registersService.getUserRegisters(authUser.user.id, page, initialDate, endDate)
-
         val regSize = registersService.getRegistersSize(authUser.user.id, "total", null, false, initialDate, endDate)
         var size = 0
         when(regSize) {
@@ -106,7 +105,6 @@ class RegistersController(
         @RequestBody register: RegisterByNfcInputModel
     ): ResponseEntity<*> {
         val authUser = requestTokenProcessor.processAuthorizationHeaderValue(userToken) ?: return Problem.response(401, Problem.unauthorizedUser)
-        println("Registo NFC")
         val res = registersService.addRegisterEntryByNFC(authUser.user.id, register.nfcId, register.time.toKotlinLocalDateTime())
         return when (res) {
             is Success ->
