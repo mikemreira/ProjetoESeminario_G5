@@ -7,6 +7,7 @@ import isel.pt.ps.projeto.models.Problem
 import isel.pt.ps.projeto.models.constructions.ConstructionAndRoleOutputModel
 import isel.pt.ps.projeto.models.constructions.ListOfConstructionAndRoleOutputModel
 import isel.pt.ps.projeto.models.invite.AcceptOrDenyInviteModel
+import isel.pt.ps.projeto.services.ConstructionsService
 import isel.pt.ps.projeto.services.InviteInfoError
 import isel.pt.ps.projeto.services.InviteService
 import isel.pt.ps.projeto.utils.Failure
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*
 @Profile("!test")
 class InviteController(
     private val inviteService: InviteService,
+    private val constructionsService: ConstructionsService,
     private val authorizationService: AuthorizationService,
     private val requestTokenProcessor: RequestTokenProcessor,
     private val utils: UtilsController
@@ -95,7 +97,7 @@ class InviteController(
         return when(res) {
             is Success -> {
                 println("ADDED USER ${authUser.user.id}")
-                authorizationService.saveConstructionUserRole(authUser.user.email, input.oid, "funcionario")
+                authorizationService.saveConstructionUserRole(authUser.user.email, input.oid, if (authorizationService.isConstructionAdmin(input.oid, authUser.user.email)) "admin" else "funcionario")
                 ResponseEntity.status(201)
                     .body("O Convite foi ${input.response}")
             }

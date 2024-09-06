@@ -93,6 +93,8 @@ class AuthorizationService(
         enforcer.addRoleForUser(email, "construction_${oid}_$role")
     }
 
+    fun isConstructionAdmin(oid: Int, email: String) = enforcer.hasRoleForUser(email, "construction_${oid}_admin")
+
     fun createConstructionPolicies(oid: Int) {
         savePolicy("construction_${oid}_admin", "/obras/${oid}", "GET")
         savePolicy("construction_${oid}_admin", "/obras/${oid}", "POST")
