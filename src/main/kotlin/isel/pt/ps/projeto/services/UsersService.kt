@@ -184,8 +184,8 @@ class UsersService(
 
     fun editUser(id: Int, nome: String, morada: String?, foto: String?): SimpleUserResult {
         val fotoBytes: UserImages? = if (foto!=null) {
-            val thumbnail = utilsService.resizeAndCompressImageBase64(foto, 1280, 1280, 0.99F)
-            val list = utilsService.resizeAndCompressImageBase64(foto, 640, 640, 0.99F)
+            val thumbnail = utilsService.resizeAndCompressImageBase64(foto, 1280, 640, 0.99F)
+            val list = utilsService.resizeAndCompressImageBase64(foto, 640, 320, 0.99F)
             val icon = utilsService.resizeAndCompressImageBase64(foto, 256, 256, 0.99F)
             UserImages(thumbnail, icon, list)
         } else null
