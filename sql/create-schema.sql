@@ -90,10 +90,9 @@ BEGIN
     IF NEW.status = 'accepted' THEN
         -- Check if a user with the given email exists
         SELECT id INTO user_id FROM Utilizador WHERE email = NEW.email;
-
         INSERT INTO Papel (id_utilizador, id_obra, papel, funcao)
         VALUES (user_id, NEW.id_obra, NEW.papel, NEW.funcao);
-
+        DELETE FROM Convite WHERE email = NEW.email AND id_obra = NEW.id_obra;
 
     -- Check if the status is being updated to 'rejected'
     ELSIF NEW.status = 'rejected' THEN
