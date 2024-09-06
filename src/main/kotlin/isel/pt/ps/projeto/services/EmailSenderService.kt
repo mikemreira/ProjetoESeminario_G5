@@ -11,7 +11,7 @@ class EmailSenderService(
     fun sendEmail(toEmail : String, subject: String, body: String) {
         val message = SimpleMailMessage()
         message.setTo(toEmail)
-        message.text = "Este Link irá redirecioná-lo $body"
+        message.text = "$body\nEste link irá redirecioná-lo: https://registo-acessos.azurewebsites.net/"
         message.subject = subject
         println(message)
         emailSender.send(message)
