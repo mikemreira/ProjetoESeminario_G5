@@ -13,5 +13,5 @@ class UtilsController {
     //val path = "https://spring-api-ps-isel.test.azuremicroservices.io/spring-app-api/default"
     //val path = "https://spring-api-ps-isel-spring-app-api.azuremicroservices.io"
     //val path = "/api"
-    val path= "https://rest-api.braveforest-4129df1b.northeurope.azurecontainerapps.io"
+    val path = "https://rest-api.braveforest-4129df1b.northeurope.azurecontainerapps.io"
 }
