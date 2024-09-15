@@ -380,6 +380,7 @@ class ConstructionsController(
         }
     }
 
+    //ver se o user é admin numa qualquer obra
     @GetMapping("/isAdmin")
     fun isAdmin(
         @RequestHeader("Authorization") userToken: String,
