@@ -18,6 +18,7 @@ import ResetPassword from "./user/ResetPassword";
 
 export const path = "https://rest-api.braveforest-4129df1b.northeurope.azurecontainerapps.io"
 //export const path = "/api"
+//
 
 const AppLayout = () => {
   return (
